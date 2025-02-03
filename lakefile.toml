@@ -1,0 +1,24 @@
+name = "evm-equivalence"
+version = "0.1.0"
+defaultTargets = ["EvmEquivalence"]
+
+[leanOptions]
+pp.unicode.fun = true # pretty-prints `fun a ↦ b`
+autoImplicit = false
+
+[[require]]
+name = "evmyul"
+scope = "NethermindEth"
+rev = "julek/rv-fix"
+
+[[require]]
+name = "mathlib"
+scope = "leanprover-community"
+rev = "v4.16.0-rc2"
+
+[[lean_lib]]
+name = "EvmEquivalence"
+
+[[lean_exe]]
+name = "evm-equivalence"
+root = "Main"
