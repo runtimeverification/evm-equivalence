@@ -10,7 +10,7 @@ open EvmYul
 
 namespace KEVMInterface
 
--- Someunctions are uninterpreted for now, so we have to axiomatize the behavior
+-- Some functions are uninterpreted for now, so we have to axiomatize the behavior
 -- For functions that are defined, the axioms are theorems
 
 -- Behavior for `ite`
