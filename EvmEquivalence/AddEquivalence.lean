@@ -1,6 +1,7 @@
 import EvmEquivalence.Summaries
 import EvmEquivalence.StateMap
-import EvmEquivalence.Interface
+import EvmEquivalence.Interfaces.FuncInterface
+import EvmEquivalence.Interfaces.GasInterface
 
 open EvmYul
 open StateMap
@@ -375,6 +376,13 @@ theorem step_add_equiv
   --rw [@EVM.step_add_summary _ (intMap W0) (intMap W1) gas gasCost]
 
 
+theorem leGas_def (g₁ g₂ : SortGas) :
+  «_<=Gas__GAS-SYNTAX_Bool_Gas_Gas»  g₁ g₂ = «_<=Int_» (SortGas.val g₁) (SortGas.val g₂) := by rfl
+
+-- This should be true
+theorem intMap_sub_dist (n m : SortInt) (le_m_n : m <= n) (pos : 0 <= m) (size : n <= UInt256.size) :
+  intMap (n - m) = intMap n - intMap m := by sorry
+  --simp [intMap, Int.toNat]
 /- Deviations from the KEVM produced specifications:
  1. The program is not symbolic, it is instead a 1-opcode (`ADD`) program
  2. The program counter is also not symbolic, and it is set to 0
@@ -432,7 +440,9 @@ theorem X_add_equiv
   (gasOn: USEGAS = true)
   (cancun : SCHED = .CANCUN_EVM)
   (codeAdd : _Gen0 = ⟨⟨#[(1 : UInt8)]⟩⟩)
-  (pcZero : PCOUNT = 0):
+  (pcZero : PCOUNT = 0)
+  (enoughGas : _Val1 = true)
+  (boundedGas : GAVAIL.1 ≤ ↑UInt256.size):
   EVM.X false (UInt256.toNat (intMap GAVAIL.1)) (stateMap symState (@addLHS GAVAIL PCOUNT W0 W1 SCHED USEGAS WS _DotVar0 _DotVar2 _DotVar3 _Gen0 _Gen1 _Gen10 _Gen11 _Gen12 _Gen13 _Gen14 _Gen15 _Gen16 _Gen17 _Gen18 _Gen19 _Gen2 _Gen20 _Gen21 _Gen22 _Gen3 _Gen4 _Gen5 _Gen6 _Gen7 _Gen8 _Gen9)) =
   .ok (.success (stateMap {symState with execLength := symState.execLength + 2} (@addRHS _Val10 _Val11 _Val0 _Val3 _Val6 _Val7 _Val8 _Val9 SCHED USEGAS _Val1 _Val2 _Val4 _Val5 WS _DotVar0 _DotVar2 _DotVar3 _Gen0 _Gen1 _Gen10 (⟨ByteArray.empty⟩) _Gen12 _Gen13 _Gen14 _Gen15 _Gen16 _Gen17 _Gen18 _Gen19 _Gen2 _Gen20 _Gen21 _Gen22 _Gen3 _Gen4 _Gen5 _Gen6 _Gen7 _Gen8 _Gen9)) ByteArray.empty) := by
   -- With `simp` doesn't work
@@ -441,7 +451,12 @@ theorem X_add_equiv
   have pc_equiv : intMap 0 = UInt256.ofNat 0 := by rfl
   rw [pc_equiv, X_add_summary]
   · congr
-    · revert defn_Val10; simp [subGas_def]; sorry
+    · simp [subGas_def, subInt_def] at defn_Val10
+      simp [cancun, GasInterface.cancun_def] at *
+      simp [leGas_def, «_<=Int_», enoughGas, SortGas.val, ←defn_Val0, inj] at defn_Val1
+      simp [←defn_Val9, ←defn_Val10, SortGas.val, inj, Inj.inj]
+      rw [intMap_sub_dist] <;> first | simp | try assumption
+      congr
     · sorry
     · sorry
   · sorry
