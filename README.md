@@ -31,7 +31,7 @@ More context on the `klean` tool can be found in the [K repository](https://gith
 ### Generation Instructions
 
 1. Clone the [KEVM](https://github.com/runtimeverification/evm-semantics) repository and build it locally (instructions in the repo). The build artifact should be under `~/.cache/k-dist-$digest`
-2. Clone [K](https://github.com/runtimeverification/k/tree/master] and go to the [`pyk` folder](https://github.com/runtimeverification/k/tree/master/pyk/src/pyk/klean)
+2. Clone [K](https://github.com/runtimeverification/k/tree/master) and go to the [`pyk` folder](https://github.com/runtimeverification/k/tree/master/pyk/src/pyk/klean)
 3. From there do `poetry install` (install the [poetry](https://python-poetry.org/docs/) tool if you don't have it in your system)
 4. Once inside the virtual environment, run the following command where `$path_to_kdist` is your custom path to the build of `KEVM`.
    ```bash
