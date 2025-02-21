@@ -424,7 +424,7 @@ mutual
   deriving BEq
 
   structure SortAccountCellMap : Type where
-    coll : (MapHook SortAcctIDCell SortAccountCell).map
+    coll : List (SortAcctIDCell × SortAccountCell)--(MapHook SortAcctIDCell SortAccountCell).map
   deriving BEq
 
   structure SortAccountsCell : Type where
@@ -672,7 +672,7 @@ mutual
   deriving BEq
 
   structure SortList : Type where
-    coll : (ListHook SortKItem).list
+    coll : List SortKItem --(ListHook SortKItem).list
   deriving BEq
 
   structure SortLogCell : Type where
@@ -680,7 +680,7 @@ mutual
   deriving BEq
 
   structure SortMap : Type where
-    coll : (MapHook SortKItem SortKItem).map
+    coll : List (SortKItem × SortKItem) --(MapHook SortKItem SortKItem).map
   deriving BEq
 
   structure SortMessageCell : Type where
@@ -704,7 +704,7 @@ mutual
   deriving BEq
 
   structure SortMessageCellMap : Type where
-    coll : (MapHook SortMsgIDCell SortMessageCell).map
+    coll : List (SortMsgIDCell × SortMessageCell) --(MapHook SortMsgIDCell SortMessageCell).map
   deriving BEq
 
   structure SortMessagesCell : Type where
@@ -732,7 +732,7 @@ mutual
   deriving BEq
 
   structure SortSet : Type where
-    coll : (SetHook SortKItem).set
+    coll : List SortKItem--(SetHook SortKItem).set
   deriving BEq
 
   structure SortStorageCell : Type where
