@@ -32,13 +32,13 @@ More context on the `klean` tool can be found in the [K repository](https://gith
 
 1. Clone the [KEVM](https://github.com/runtimeverification/evm-semantics) repository and build it locally (instructions in the repo). The build artifact should be under `~/.cache/k-dist-$digest`
 2. Clone [K](https://github.com/runtimeverification/k/tree/master) and go to the [`pyk` folder](https://github.com/runtimeverification/k/tree/master/pyk/src/pyk/klean)
-3. From there do `poetry install` (install the [poetry](https://python-poetry.org/docs/) tool if you don't have it in your system)
-4. Once inside the virtual environment, run the following command where `$path_to_kdist` is your custom path to the build of `KEVM`.
+3. In the `pyk` folder do `poetry install` (install the [poetry](https://python-poetry.org/docs/) tool if you don't have it in your system)
+4. Once `poetry install` has finished, run the following command where `$path_to_kdist` is your custom path to the build of `KEVM`
    ```bash
-   klean "$path_to_kdist/evm-semantics/llvm" kevm2lean --rule 'EVM-OPTIMIZATIONS.optimized.add' --output $your_desired_output_folder
+   poetry run klean "$path_to_kdist/evm-semantics/llvm" kevm2lean --rule 'EVM-OPTIMIZATIONS.optimized.add' --output $your_desired_output_folder
    ```
 
-That should generate all the necessary Lean 4 code to faithfully represent the rule described in `--rule`. In this case is a rule which represents the summary of the `ADD` opcode in `KEVM`. Such rule can be found [here](https://github.com/runtimeverification/evm-semantics/blob/master/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/optimizations.md).
+That should generate all the necessary Lean 4 code to faithfully represent the rule described in `--rule`. In this case, the rule `EVM-OPTIMIZATIONS.optimized.add` is the summary of running the `ADD` opcode in `KEVM`. Such rule can be found [here](https://github.com/runtimeverification/evm-semantics/blob/master/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/optimizations.md).
 
 #### Troubleshooting
 
