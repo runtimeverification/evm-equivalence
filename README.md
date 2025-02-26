@@ -18,6 +18,7 @@ To this end, the K framework allows for the generation of Lean 4 code representi
 Under [EvmEquivalence](./EvmEquivalence) we have the following structure:
 * [KEVM2Lean](./EvmEquivalence/KEVM2Lean): K-generated Lean 4 code with modifications
 * [Interfaces](./EvmEquivalence/Interfaces): Proving interfaces to interact with the K-generated Lean 4 code
+* [Utils](./EvmEquivalence/Utils): Useful results for the proving
 * [Summaries.lean](./EvmEquivalence/Summaries.lean): Summaries of relevant functions from the `EvmYul` model
 * [StateMap.lean](./EvmEquivalence/StateMap.lean): Function mapping `KEVM` states to `EvmYul` states
 * [AddEquivalence.lean](./EvmEquivalence/AddEquivalence.lean): Proof of equivalence between the models for the `ADD` opcode
@@ -43,3 +44,7 @@ That should generate all the necessary Lean 4 code to faithfully represent the r
 #### Troubleshooting
 
 If the `poetry install` seems to take too long or to hang, try `export PYTHON_KEYRING_BACKEND=keyring.backends.fail.Keyring` and `poetry install` again.
+
+## Lean 4 Code Modifications
+
+tbd
