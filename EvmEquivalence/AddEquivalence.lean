@@ -2,6 +2,7 @@ import EvmEquivalence.Summaries
 import EvmEquivalence.StateMap
 import EvmEquivalence.Interfaces.FuncInterface
 import EvmEquivalence.Interfaces.GasInterface
+import EvmEquivalence.Interfaces.EvmYulInterface
 
 open EvmYul
 open StateMap
@@ -340,54 +341,60 @@ theorem step_add_equiv
   {_Gen9 : SortStaticCell}
   (defn_Val0 : «_<_>_SCHEDULE_Int_ScheduleConst_Schedule» (SortScheduleConst.Gverylow_SCHEDULE_ScheduleConst) SCHED = some _Val0)
   (defn_Val1 : «_<=Gas__GAS-SYNTAX_Bool_Gas_Gas» ((@inj SortInt SortGas) _Val0) GAVAIL = some _Val1)
-  (defn_Val2 : kite USEGAS _Val1 true = some _Val2)
+  /- (defn_Val2 : kite USEGAS _Val1 true = some _Val2)
   (defn_Val3 : «#sizeWordStack» WS = some _Val3)
   (defn_Val4 : «_<=Int_» _Val3 1023 = some _Val4)
-  (defn_Val5 : _andBool_ _Val2 _Val4 = some _Val5)
+  (defn_Val5 : _andBool_ _Val2 _Val4 = some _Val5) -/
   (defn_Val6 : «_+Int_» W0 W1 = some _Val6)
   (defn_Val7 : chop _Val6 = some _Val7)
   (defn_Val8 : «_+Int_» PCOUNT 1 = some _Val8)
   (defn_Val9 : «_<_>_SCHEDULE_Int_ScheduleConst_Schedule» (SortScheduleConst.Gverylow_SCHEDULE_ScheduleConst) SCHED = some _Val9)
   (defn_Val10 : «_-Gas__GAS-SYNTAX_Gas_Gas_Gas» GAVAIL ((@inj SortInt SortGas) _Val9) = some _Val10)
   (defn_Val11 : kite USEGAS _Val10 GAVAIL = some _Val11)
-  (req : _Val5 = true)
+  /- (req : _Val5 = true) -/
   (symState : EVM.State)
+  -- needed for EVM.step
+  (gas gasCost : ℕ)
   -- Necessary assumptions for equivalence
   (gasOn: USEGAS = true)
   (cancun : SCHED = .CANCUN_EVM)
-  -- needed for EVM.step
-  (gas gasCost : ℕ)
-  (gasEnough : 0 < gas):
+  (gasEnough : 0 < gas)
+  (gavailEnough : 3 ≤ GAVAIL.1)
+  (gavailSmall : GAVAIL.1 < ↑UInt256.size)
+  (gasCostValue : gasCost = GasConstants.Gverylow)
+  (pcountSmall : PCOUNT + 1 < UInt256.size)
+  (pcountNonneg : 0 ≤ PCOUNT)
+  (W0ge0 : 0 ≤ W0)
+  (W1ge0 : 0 ≤ W1):
   EVM.step_add gas gasCost (stateMap symState (@addLHS GAVAIL PCOUNT W0 W1 SCHED USEGAS WS _DotVar0 _DotVar2 _DotVar3 _Gen0 _Gen1 _Gen10 _Gen11 _Gen12 _Gen13 _Gen14 _Gen15 _Gen16 _Gen17 _Gen18 _Gen19 _Gen2 _Gen20 _Gen21 _Gen22 _Gen3 _Gen4 _Gen5 _Gen6 _Gen7 _Gen8 _Gen9)) =
-  .ok (stateMap symState (@addRHS _Val10 _Val11 _Val0 _Val3 _Val6 _Val7 _Val8 _Val9 SCHED USEGAS _Val1 _Val2 _Val4 _Val5 WS _DotVar0 _DotVar2 _DotVar3 _Gen0 _Gen1 _Gen10 _Gen11 _Gen12 _Gen13 _Gen14 _Gen15 _Gen16 _Gen17 _Gen18 _Gen19 _Gen2 _Gen20 _Gen21 _Gen22 _Gen3 _Gen4 _Gen5 _Gen6 _Gen7 _Gen8 _Gen9)) := by
+  .ok (stateMap {symState with execLength := symState.execLength + 1} (@addRHS _Val10 _Val11 _Val0 _Val3 _Val6 _Val7 _Val8 _Val9 SCHED USEGAS _Val1 _Val2 _Val4 _Val5 WS _DotVar0 _DotVar2 _DotVar3 _Gen0 _Gen1 _Gen10 _Gen11 _Gen12 _Gen13 _Gen14 _Gen15 _Gen16 _Gen17 _Gen18 _Gen19 _Gen2 _Gen20 _Gen21 _Gen22 _Gen3 _Gen4 _Gen5 _Gen6 _Gen7 _Gen8 _Gen9)) := by
   rw [add_prestate_equiv, add_poststate_equiv] <;> try assumption
   cases gas; contradiction
   case succ gas =>
-  simp [EVM.step_add_summary]
-  sorry
-  --constructor <;> try constructor <;> try constructor
-  --· sorry
-  --· sorry --simp [«_+Int'_», plusIntIsSome, UInt256.add, intMap]
-  --· sorry--
-  --· sorry--rw [←Option.some_inj]
-  --#check @EVM.step_add_summary (intMap W0) (intMap W1) (gas + 1) gasCost gasEnough symState
-  -- rw [EVM.step_add_summary_refined]
-  -- rw [EVM.step_add_summary]
-  --rw [@EVM.step_add_summary _ (intMap W0) (intMap W1) gas gasCost]
+    rw [EVM.step_add_summary] <;> try assumption
+    congr
+    . subst cancun
+      simp_all [GasInterface.cancun_def]; subst defn_Val9
+      simp_all [subGas_def]; subst defn_Val10
+      simp [subInt_def]; try assumption
+      simp [SortGas.val, inj, Inj.inj]
+      rw [intMap_sub_dist] <;> first | assumption | try simp
+      rfl
+    . have mod_rw : (PCOUNT + 1) % UInt256.size = PCOUNT + 1 := by
+        rw [Int.mod_cast, Int.toNat_ofNat, Nat.mod_eq_of_lt] <;> try linarith
+        . rw [Int.ofNat_toNat, sup_eq_left]; linarith
+        . rw [Int.toNat_lt] <;> linarith
+      rw [plusInt_def, ←mod_rw, intMap_add_dist] <;> first | assumption | try simp
+      congr
+    . simp [intMap, chop_def, plusInt_def]; rw [←intMap, ←intMap, ←intMap, intMap_add_dist] <;> assumption
 
-
-theorem leGas_def (g₁ g₂ : SortGas) :
-  «_<=Gas__GAS-SYNTAX_Bool_Gas_Gas»  g₁ g₂ = «_<=Int_» (SortGas.val g₁) (SortGas.val g₂) := by rfl
-
--- This should be true
-theorem intMap_sub_dist (n m : SortInt) (le_m_n : m <= n) (pos : 0 <= m) (size : n <= UInt256.size) :
-  intMap (n - m) = intMap n - intMap m := by sorry
-  --simp [intMap, Int.toNat]
 /- Deviations from the KEVM produced specifications:
  1. The program is not symbolic, it is instead a 1-opcode (`ADD`) program
  2. The program counter is also not symbolic, and it is set to 0
  3. In the RHS, the output cell (mapped to `returnData`) is set to `ByteArray.empty`
  4. The schedule is set to `CANCUN`
+ 5. `GAVAIL` is in the `UInt256` range
+ 6. `W0` and `W1` are nonnegative
  -/
 theorem X_add_equiv
   {GAVAIL _Val10 _Val11 : SortGas}
@@ -442,7 +449,9 @@ theorem X_add_equiv
   (codeAdd : _Gen0 = ⟨⟨#[(1 : UInt8)]⟩⟩)
   (pcZero : PCOUNT = 0)
   (enoughGas : _Val1 = true)
-  (boundedGas : GAVAIL.1 ≤ ↑UInt256.size):
+  (boundedGas : GAVAIL.1 < ↑UInt256.size)
+  (W0ge0 : 0 ≤ W0)
+  (W1ge0 : 0 ≤ W1):
   EVM.X false (UInt256.toNat (intMap GAVAIL.1)) (stateMap symState (@addLHS GAVAIL PCOUNT W0 W1 SCHED USEGAS WS _DotVar0 _DotVar2 _DotVar3 _Gen0 _Gen1 _Gen10 _Gen11 _Gen12 _Gen13 _Gen14 _Gen15 _Gen16 _Gen17 _Gen18 _Gen19 _Gen2 _Gen20 _Gen21 _Gen22 _Gen3 _Gen4 _Gen5 _Gen6 _Gen7 _Gen8 _Gen9)) =
   .ok (.success (stateMap {symState with execLength := symState.execLength + 2} (@addRHS _Val10 _Val11 _Val0 _Val3 _Val6 _Val7 _Val8 _Val9 SCHED USEGAS _Val1 _Val2 _Val4 _Val5 WS _DotVar0 _DotVar2 _DotVar3 _Gen0 _Gen1 _Gen10 (⟨ByteArray.empty⟩) _Gen12 _Gen13 _Gen14 _Gen15 _Gen16 _Gen17 _Gen18 _Gen19 _Gen2 _Gen20 _Gen21 _Gen22 _Gen3 _Gen4 _Gen5 _Gen6 _Gen7 _Gen8 _Gen9)) ByteArray.empty) := by
   -- With `simp` doesn't work
@@ -457,9 +466,15 @@ theorem X_add_equiv
       simp [←defn_Val9, ←defn_Val10, SortGas.val, inj, Inj.inj]
       rw [intMap_sub_dist] <;> first | simp | try assumption
       congr
-    · sorry
-    · sorry
+    · simp [pcZero, plusInt_def]; rfl
+    · simp [intMap, chop_def, plusInt_def]; rw [←intMap, ←intMap, ←intMap, intMap_add_dist] <;> assumption
   · sorry
-  · sorry
+  · cases WS <;> try simp
+    simp [sizeWordStack_def] at defn_Val3; subst defn_Val3
+    have true_cond: _Val4 = true := by
+      subst req; rw [andBool_def] at defn_Val5
+      subst cancun codeAdd pcZero enoughGas gasOn
+      simp_all only [Option.some.injEq, Bool.and_eq_true]
+    simp_all [true_cond, «_<=Int_», Int.add_one_le_iff, ←Nat.lt_sub_iff_add_lt]
 
 end AddOpcodeEquivalence
