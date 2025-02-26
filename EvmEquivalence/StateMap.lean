@@ -9,19 +9,8 @@ open EVM
 
 namespace StateMap
 
--- Necessary for using `Fin.ofNat'`
-instance: NeZero UInt256.size where
-  out := Nat.noConfusion
-
 /- Maps from K types to EvmYul types -/
-
--- Using Int.toNat might cause trouble and will likely need to be revisited
--- `intMap` converts modulo UInt256.size, which means the following:
--- `intMap (Int.ofNat (UInt256.size + 1))` = `1`
--- `intMap` also collapses all negative integers to zero:
--- `intMap (-42 : SortInt)` = `0`
-def intMap (n : SortInt) : UInt256 :=
-  ⟨@Fin.ofNat' UInt256.size _ (Int.toNat n)⟩
+abbrev intMap (n : SortInt) : UInt256 := UInt256.toSigned n
 
 @[simp]
 def wordStackMap (ws : SortWordStack) : Stack UInt256 :=
