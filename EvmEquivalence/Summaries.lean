@@ -12,7 +12,7 @@ variable (symStack : Stack UInt256)
 variable (symPc : UInt256)
 variable (symGasAvailable : UInt256)
 variable (symExecLength : ℕ)
-variable (symReturnData : ByteArray)
+variable (symReturnData symCode : ByteArray)
 
 abbrev addEVM := @Operation.ADD .EVM
 abbrev add_instr : Option (Operation .EVM × Option (UInt256 × Nat)) :=
@@ -37,14 +37,18 @@ theorem EVM.step_add_to_step_add (gpos : 0 < gas) (symState : EVM.State):
   EVM.step_add gas gasCost
     {symState with
       stack := word₁ :: word₂ :: symStack,
-      pc := symPc
-      gasAvailable := symGasAvailable
-      execLength := symExecLength} =
+      pc := symPc,
+      gasAvailable := symGasAvailable,
+      execLength := symExecLength,
+      executionEnv := {symState.executionEnv with code := symCode},
+      returnData := symReturnData} =
   EvmYul.step_add
     {symState with
     stack := word₁ :: word₂ :: symStack
     gasAvailable := symGasAvailable - UInt256.ofNat gasCost
     pc := symPc,
+    executionEnv := {symState.executionEnv with code := symCode},
+    returnData := symReturnData,
     execLength := symExecLength + 1} := by
       cases gas; contradiction
       simp [EVM.step_add, EVM.step]; rfl
@@ -55,11 +59,15 @@ theorem EVM.step_add_summary (gpos : 0 < gas) (symState : EVM.State):
       stack := word₁ :: word₂ :: symStack,
       pc := symPc,
       gasAvailable := symGasAvailable,
+      returnData := symReturnData,
+      executionEnv := {symState.executionEnv with code := symCode},
       execLength := symExecLength} =
     .ok {symState with
           stack := (word₁ + word₂) :: symStack,
           pc := UInt256.add symPc (.ofNat 1),
           gasAvailable := symGasAvailable - UInt256.ofNat gasCost,
+          returnData := symReturnData,
+          executionEnv := {symState.executionEnv with code := symCode},
           execLength := symExecLength + 1} := by
   rw [EVM.step_add_to_step_add]; rfl; assumption
 
@@ -210,7 +218,7 @@ theorem X_add_summary (enoughGas : GasConstants.Gverylow < symGasAvailable.toNat
     rw [g_case, twoSucc, Nat.add_lt_iff_lt_sub_right, Nat.add_sub_cancel] at enoughGas
     apply (@Nat.lt_trans 1 2 g_pos (by simp) enoughGas)
   have gPos : (0 < g_pos) := by exact @Nat.lt_trans 0 1 g_pos (by simp) g_pos_gt_1
-  have step_rw := (EVM.step_add_summary word₁ word₂ g_pos GasConstants.Gverylow symStack (.ofNat 0) symGasAvailable symExecLength gPos evm)
+  have step_rw := (EVM.step_add_summary word₁ word₂ g_pos GasConstants.Gverylow symStack (.ofNat 0) symGasAvailable symExecLength symReturnData ⟨#[(0x1 : UInt8)]⟩ gPos evm)
   cases stateOk; rw [←EVM.step_add, step_rw]
   dsimp [Except.instMonad, Except.bind]; rw [X.eq_def]
   cases cgp: g_pos; rw [cgp] at gPos; contradiction
