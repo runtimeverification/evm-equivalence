@@ -32,7 +32,6 @@ theorem EvmYul.step_add_summary (symState : EVM.State):
         stack := (word₁ + word₂) :: symStack
         pc := symPc + .ofNat 1} := by rfl
 
-set_option maxHeartbeats 230000
 theorem EVM.step_add_to_step_add (gpos : 0 < gas) (symState : EVM.State):
   EVM.step_add gas gasCost
     {symState with
@@ -72,7 +71,6 @@ theorem EVM.step_add_summary (gpos : 0 < gas) (symState : EVM.State):
   rw [EVM.step_add_to_step_add]; rfl; assumption
 
 -- Necessary preparation for X summary
---set_option maxHeartbeats 4050000
 theorem EvmYul.step_stop_summary_simple (symState : EVM.State) :
   EvmYul.step false (@Operation.STOP .EVM) symState =
   .ok {symState with returnData := ByteArray.empty} := by rfl
@@ -181,7 +179,6 @@ theorem UInt256.sub_0 (n : UInt256) : n - .ofNat 0 = n := by
   simp [Id.run, HSub.hSub, Sub.sub, UInt256.sub]
   simp [Fin.sub]; rw [Nat.mod_eq_iff_lt]; assumption; simp [UInt256.size] -/
 
-set_option maxHeartbeats 340000
 theorem X_add_summary (enoughGas : GasConstants.Gverylow < symGasAvailable.toNat)
                       (symStack_ok : symStack.length < 1024)
                       (symState : EVM.State):
