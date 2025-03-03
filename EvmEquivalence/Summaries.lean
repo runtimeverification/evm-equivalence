@@ -30,7 +30,7 @@ theorem EvmYul.step_add_summary (symState : EVM.State):
     pc := symPc} =
   .ok {symState with
         stack := (word₁ + word₂) :: symStack
-        pc := symPc + .ofNat 1} := by rfl
+        pc := symPc + .ofNat 1} := rfl
 
 theorem EVM.step_add_to_step_add (gpos : 0 < gas) (symState : EVM.State):
   EVM.step_add gas gasCost
@@ -73,7 +73,7 @@ theorem EVM.step_add_summary (gpos : 0 < gas) (symState : EVM.State):
 -- Necessary preparation for X summary
 theorem EvmYul.step_stop_summary_simple (symState : EVM.State) :
   EvmYul.step false (@Operation.STOP .EVM) symState =
-  .ok {symState with returnData := ByteArray.empty} := by rfl
+  .ok {symState with returnData := ByteArray.empty} := rfl
 
 theorem EvmYul.step_stop_summary (symState : EVM.State) :
 EvmYul.step false (@Operation.STOP .EVM)
@@ -87,7 +87,7 @@ EvmYul.step false (@Operation.STOP .EVM)
       pc := symPc,
       gasAvailable := symGasAvailable,
       execLength := symExecLength,
-      returnData := ByteArray.empty} := by rfl
+      returnData := ByteArray.empty} := rfl
 
 theorem EVM.step_stop_summary_simple (gpos : 0 < gas) (symState : EVM.State) :
   EVM.step false gas gasCost (some (@Operation.STOP .EVM, none)) symState =
@@ -145,7 +145,7 @@ theorem array_append_size_le {α : Type} (a1 a2 : Array α) :
 
 @[simp]
 theorem decode_singleton_add :
-  decode ⟨#[0x1]⟩ (.ofNat 0) = some ⟨addEVM, none⟩ := by rfl
+  decode ⟨#[0x1]⟩ (.ofNat 0) = some ⟨addEVM, none⟩ := rfl
 
 @[simp]
 theorem memoryExpansionCost_add (symState : EVM.State) :
@@ -155,15 +155,15 @@ theorem memoryExpansionCost_add (symState : EVM.State) :
 theorem isCreate_false {τ : OperationType} (opcode : Operation τ) (noCreate : opcode ≠ Operation.CREATE) (noCreate2 : opcode ≠ Operation.CREATE2):
   opcode.isCreate = false := by
   cases opc: opcode <;> rw [Operation.isCreate]; next op =>
-  cases op <;> rw [opc] at noCreate <;> rw [opc] at noCreate2 <;> contradiction
+  cases op <;> aesop
 
 @[simp]
 theorem C'_add (symState : EVM.State) :
-  C' symState addEVM = GasConstants.Gverylow := by rfl
+  C' symState addEVM = GasConstants.Gverylow := rfl
 
 @[simp]
 theorem C'_stop (symState : EVM.State) :
-  C' symState .STOP = 0 := by rfl
+  C' symState .STOP = 0 := rfl
 
 @[simp]
 theorem UInt256.sub_0 (n : UInt256) : n - .ofNat 0 = n := by
