@@ -19,37 +19,43 @@ namespace KEVMInterface
 theorem iteMap {SortSort : Type} (c : SortBool) (x1 x2 : SortSort) :
   kite c x1 x2  = ite c x1 x2 := by cases c <;> rfl
 
+section
+
+variable {m n : SortInt}
+
 -- Behavior for `«_?Int_»`
-theorem plusIntIsSome (n m : SortInt): «_+Int_» n m = some (n + m) := by rfl
+theorem plusIntIsSome : «_+Int_» n m = some (n + m) := rfl
 
 def «_+Int'_» (n m : SortInt) : SortInt :=
-  («_+Int_» n m).get (by simp [plusIntIsSome])
+  («_+Int_» n m).get rfl
 
-theorem plusInt_def (n m : SortInt) : «_+Int'_» n m = n + m := by rfl
+theorem plusInt_def : «_+Int'_» n m = n + m := rfl
 
-theorem subIntIsSome (n m : SortInt): «_-Int_» n m = some (n - m) := by rfl
+theorem subIntIsSome : «_-Int_» n m = some (n - m) := rfl
 
 def «_-Int'_» (n m : SortInt) : SortInt :=
-  («_-Int_» n m).get (by simp [subIntIsSome])
+  («_-Int_» n m).get rfl
 
-theorem subInt_def (n m : SortInt) : «_-Int'_» n m = n - m := by rfl
+theorem subInt_def : «_-Int'_» n m = n - m := rfl
 
-theorem mulIntIsSome (n m : SortInt): «_*Int_» n m = some (n * m) := by rfl
+theorem mulIntIsSome : «_*Int_» n m = some (n * m) := rfl
 
 def «_*Int'_» (n m : SortInt) : SortInt :=
-  («_*Int_» n m).get (by simp [mulIntIsSome])
+  («_*Int_» n m).get rfl
 
-theorem mulInt_def (n m : SortInt) : «_*Int'_» n m = n * m := by rfl
+theorem mulInt_def : «_*Int'_» n m = n * m := rfl
 
 -- Behavior for `chop`
 --`_modInt_` is still uninterpreted
-theorem chopIsSome (n : SortInt) : chop n = some (n % UInt256.size) := by sorry
+theorem chopIsSome : chop n = some (n % UInt256.size) := by sorry
 
 noncomputable def chop' (n : SortInt) : SortInt :=
   (chop n).get (by simp [chopIsSome])
 
 theorem chop_def (n : SortInt) : chop' n = n % UInt256.size := by
-  simp [chop', Option.get]; split; rename_i _ _ _ _ eq _; simp_all [chopIsSome]
+  aesop (add simp [chop', chopIsSome])
+
+end
 
 -- Utils to aid in proofs
 def SortGas.val (g : SortGas) : SortInt :=
