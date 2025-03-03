@@ -114,9 +114,7 @@ theorem EVM.step_stop_summary (gpos : 0 < gas) (symState : EVM.State) :
 
 theorem ofNat_toNat_eq {n : ℕ} (n_le_size : n < UInt256.size) :
   (UInt256.ofNat n).toNat = n := by
-  simp [UInt256.ofNat, UInt256.toNat]; split
-  next h => exfalso; apply Nat.lt_le_asymm n_le_size h
-  simp [Id.run, Fin.ofNat]; apply n_le_size
+  aesop (add simp [UInt256.ofNat, UInt256.toNat, Id.run, dbgTrace, Fin.ofNat])
 
 ----
 -- For having symbolic programs instead of singleton ones
@@ -203,18 +201,15 @@ theorem X_add_summary (enoughGas : GasConstants.Gverylow < symGasAvailable.toNat
   have ss_lt2_f  (n : ℕ) : (n + 1 + 1 < 2) = False := by simp
   simp [X, δ, ss_lt2_f]
   have stack_ok_rw : (1024 < List.length symStack + 1) = False := by
-    simp [eq_iff_iff, iff_false, not_lt, Nat.reduceLeDiff]
-    apply Nat.le_of_lt_add_one; assumption
+    aesop (add safe (by omega))
   have enough_gas_rw : (symGasAvailable.toNat < GasConstants.Gverylow) = False :=
-    by simp only [eq_iff_iff, iff_false]; apply lt_asymm; assumption
+    by aesop (add safe (by omega))
   simp [α, stack_ok_rw, enough_gas_rw]
   split; contradiction
   case h_2 evm _ stateOk =>
   have g_pos_gt_1 : (1 < g_pos) := by
-    have twoSucc : GasConstants.Gverylow = 2 + 1 := by rfl
-    rw [g_case, twoSucc, Nat.add_lt_iff_lt_sub_right, Nat.add_sub_cancel] at enoughGas
-    apply (@Nat.lt_trans 1 2 g_pos (by simp) enoughGas)
-  have gPos : (0 < g_pos) := by exact @Nat.lt_trans 0 1 g_pos (by simp) g_pos_gt_1
+    aesop (add simp [GasConstants.Gverylow]) (add safe (by omega))
+  have gPos : (0 < g_pos) := by aesop (add safe (by omega))
   have step_rw := (EVM.step_add_summary word₁ word₂ g_pos GasConstants.Gverylow symStack (.ofNat 0) symGasAvailable symExecLength symReturnData ⟨#[(0x1 : UInt8)]⟩ gPos evm)
   cases stateOk; rw [←EVM.step_add, step_rw]
   dsimp [Except.instMonad, Except.bind]; rw [X.eq_def]
@@ -223,16 +218,9 @@ theorem X_add_summary (enoughGas : GasConstants.Gverylow < symGasAvailable.toNat
   -- part of this could be a lemma
   simp [memoryExpansionCost, Cₘ, memoryExpansionCost.μᵢ', decode, ByteArray.get?]
   have bad_opcode : (((UInt256.ofNat 0).add (UInt256.ofNat 1)).toNat < ({data := #[1] } : ByteArray).size) = False :=
-    by simp [eq_iff_iff, iff_false, not_lt]; rfl
-  simp [bad_opcode]
-  simp [δ, α, stack_ok_rw]; split; contradiction
+    by aesop
+  simp [bad_opcode, δ, α, stack_ok_rw]; split <;> try contradiction
   case h_2 _ _ stateOk =>
-  cases stateOk
-  dsimp [Except.instMonad, Except.bind]
-  rw [EVM.step_stop_summary_simple]
-  · split; contradiction;
-    case h_2 _ _ stateOk =>
-    cases stateOk; simp; rfl
-  · rw [cgp] at g_pos_gt_1; rw [←(@Nat.lt_add_left_iff_pos 1 n)]; assumption
+  cases stateOk; aesop (add simp [EVM.step_stop_summary_simple])
 
 end AddSummary
