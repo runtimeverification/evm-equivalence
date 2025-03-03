@@ -101,7 +101,7 @@ theorem sizeWordStack_add_one {w n : SortInt} {ws : SortWordStack} :
   let val1 ← «_+Int_» 1 val0
   return val1 := by
   revert n
-  induction ws <;> simp_all [sizeWordStackAux, _432555e, _75897fa, plusIntIsSome]; introv; rw [Int.add_comm]
+  induction ws <;> simp_all [sizeWordStackAux, _432555e, _75897fa, plusIntIsSome]; introv; ring
 
 theorem sizeWordStackAuxAdd {n : SortInt} {ws : SortWordStack} :
   sizeWordStackAux ws (n + 1) = do
@@ -115,11 +115,11 @@ theorem sizeWordStackIsSome {ws : SortWordStack} :
   unfold «#sizeWordStack» _c0f9e27
   induction' ws
   . aesop (add simp [sizeWordStackAux, _432555e])
-  . aesop (add simp [sizeWordStack_add_one, plusIntIsSome, Int.add_comm])
+  . aesop (add simp [sizeWordStack_add_one, wsLength]) (add safe (by ring))
 
 theorem wsLength_eq_length_wordStackMap {ws : SortWordStack} :
   wsLength ws = List.length (wordStackMap ws) := by
-  induction ws <;> simp_all [wsLength, wordStackMap, Nat.add_comm]
+  induction ws <;> simp_all [wsLength]
 
 theorem sizeWordStack_def {ws : SortWordStack} :
   «#sizeWordStack» ws = some (List.length (wordStackMap ws)) :=
