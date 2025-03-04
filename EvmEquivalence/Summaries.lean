@@ -30,9 +30,8 @@ theorem EvmYul.step_add_summary (symState : EVM.State):
     pc := symPc} =
   .ok {symState with
         stack := (word₁ + word₂) :: symStack
-        pc := symPc + .ofNat 1} := by rfl
+        pc := symPc + .ofNat 1} := rfl
 
-set_option maxHeartbeats 230000
 theorem EVM.step_add_to_step_add (gpos : 0 < gas) (symState : EVM.State):
   EVM.step_add gas gasCost
     {symState with
@@ -72,10 +71,9 @@ theorem EVM.step_add_summary (gpos : 0 < gas) (symState : EVM.State):
   rw [EVM.step_add_to_step_add]; rfl; assumption
 
 -- Necessary preparation for X summary
---set_option maxHeartbeats 4050000
 theorem EvmYul.step_stop_summary_simple (symState : EVM.State) :
   EvmYul.step false (@Operation.STOP .EVM) symState =
-  .ok {symState with returnData := ByteArray.empty} := by rfl
+  .ok {symState with returnData := ByteArray.empty} := rfl
 
 theorem EvmYul.step_stop_summary (symState : EVM.State) :
 EvmYul.step false (@Operation.STOP .EVM)
@@ -89,7 +87,7 @@ EvmYul.step false (@Operation.STOP .EVM)
       pc := symPc,
       gasAvailable := symGasAvailable,
       execLength := symExecLength,
-      returnData := ByteArray.empty} := by rfl
+      returnData := ByteArray.empty} := rfl
 
 theorem EVM.step_stop_summary_simple (gpos : 0 < gas) (symState : EVM.State) :
   EVM.step false gas gasCost (some (@Operation.STOP .EVM, none)) symState =
@@ -116,9 +114,7 @@ theorem EVM.step_stop_summary (gpos : 0 < gas) (symState : EVM.State) :
 
 theorem ofNat_toNat_eq {n : ℕ} (n_le_size : n < UInt256.size) :
   (UInt256.ofNat n).toNat = n := by
-  simp [UInt256.ofNat, UInt256.toNat]; split
-  next h => exfalso; apply Nat.lt_le_asymm n_le_size h
-  simp [Id.run, Fin.ofNat]; apply n_le_size
+  aesop (add simp [UInt256.ofNat, UInt256.toNat, Id.run, dbgTrace, Fin.ofNat])
 
 ----
 -- For having symbolic programs instead of singleton ones
@@ -149,7 +145,7 @@ theorem array_append_size_le {α : Type} (a1 a2 : Array α) :
 
 @[simp]
 theorem decode_singleton_add :
-  decode ⟨#[0x1]⟩ (.ofNat 0) = some ⟨addEVM, none⟩ := by rfl
+  decode ⟨#[0x1]⟩ (.ofNat 0) = some ⟨addEVM, none⟩ := rfl
 
 @[simp]
 theorem memoryExpansionCost_add (symState : EVM.State) :
@@ -159,15 +155,15 @@ theorem memoryExpansionCost_add (symState : EVM.State) :
 theorem isCreate_false {τ : OperationType} (opcode : Operation τ) (noCreate : opcode ≠ Operation.CREATE) (noCreate2 : opcode ≠ Operation.CREATE2):
   opcode.isCreate = false := by
   cases opc: opcode <;> rw [Operation.isCreate]; next op =>
-  cases op <;> rw [opc] at noCreate <;> rw [opc] at noCreate2 <;> contradiction
+  cases op <;> aesop
 
 @[simp]
 theorem C'_add (symState : EVM.State) :
-  C' symState addEVM = GasConstants.Gverylow := by rfl
+  C' symState addEVM = GasConstants.Gverylow := rfl
 
 @[simp]
 theorem C'_stop (symState : EVM.State) :
-  C' symState .STOP = 0 := by rfl
+  C' symState .STOP = 0 := rfl
 
 @[simp]
 theorem UInt256.sub_0 (n : UInt256) : n - .ofNat 0 = n := by
@@ -181,7 +177,6 @@ theorem UInt256.sub_0 (n : UInt256) : n - .ofNat 0 = n := by
   simp [Id.run, HSub.hSub, Sub.sub, UInt256.sub]
   simp [Fin.sub]; rw [Nat.mod_eq_iff_lt]; assumption; simp [UInt256.size] -/
 
-set_option maxHeartbeats 340000
 theorem X_add_summary (enoughGas : GasConstants.Gverylow < symGasAvailable.toNat)
                       (symStack_ok : symStack.length < 1024)
                       (symState : EVM.State):
@@ -206,18 +201,15 @@ theorem X_add_summary (enoughGas : GasConstants.Gverylow < symGasAvailable.toNat
   have ss_lt2_f  (n : ℕ) : (n + 1 + 1 < 2) = False := by simp
   simp [X, δ, ss_lt2_f]
   have stack_ok_rw : (1024 < List.length symStack + 1) = False := by
-    simp [eq_iff_iff, iff_false, not_lt, Nat.reduceLeDiff]
-    apply Nat.le_of_lt_add_one; assumption
+    aesop (add safe (by omega))
   have enough_gas_rw : (symGasAvailable.toNat < GasConstants.Gverylow) = False :=
-    by simp only [eq_iff_iff, iff_false]; apply lt_asymm; assumption
+    by aesop (add safe (by omega))
   simp [α, stack_ok_rw, enough_gas_rw]
   split; contradiction
   case h_2 evm _ stateOk =>
   have g_pos_gt_1 : (1 < g_pos) := by
-    have twoSucc : GasConstants.Gverylow = 2 + 1 := by rfl
-    rw [g_case, twoSucc, Nat.add_lt_iff_lt_sub_right, Nat.add_sub_cancel] at enoughGas
-    apply (@Nat.lt_trans 1 2 g_pos (by simp) enoughGas)
-  have gPos : (0 < g_pos) := by exact @Nat.lt_trans 0 1 g_pos (by simp) g_pos_gt_1
+    aesop (add simp [GasConstants.Gverylow]) (add safe (by omega))
+  have gPos : (0 < g_pos) := by aesop (add safe (by omega))
   have step_rw := (EVM.step_add_summary word₁ word₂ g_pos GasConstants.Gverylow symStack (.ofNat 0) symGasAvailable symExecLength symReturnData ⟨#[(0x1 : UInt8)]⟩ gPos evm)
   cases stateOk; rw [←EVM.step_add, step_rw]
   dsimp [Except.instMonad, Except.bind]; rw [X.eq_def]
@@ -226,16 +218,9 @@ theorem X_add_summary (enoughGas : GasConstants.Gverylow < symGasAvailable.toNat
   -- part of this could be a lemma
   simp [memoryExpansionCost, Cₘ, memoryExpansionCost.μᵢ', decode, ByteArray.get?]
   have bad_opcode : (((UInt256.ofNat 0).add (UInt256.ofNat 1)).toNat < ({data := #[1] } : ByteArray).size) = False :=
-    by simp [eq_iff_iff, iff_false, not_lt]; rfl
-  simp [bad_opcode]
-  simp [δ, α, stack_ok_rw]; split; contradiction
+    by aesop
+  simp [bad_opcode, δ, α, stack_ok_rw]; split <;> try contradiction
   case h_2 _ _ stateOk =>
-  cases stateOk
-  dsimp [Except.instMonad, Except.bind]
-  rw [EVM.step_stop_summary_simple]
-  · split; contradiction;
-    case h_2 _ _ stateOk =>
-    cases stateOk; simp; rfl
-  · rw [cgp] at g_pos_gt_1; rw [←(@Nat.lt_add_left_iff_pos 1 n)]; assumption
+  cases stateOk; aesop (add simp [EVM.step_stop_summary_simple])
 
 end AddSummary

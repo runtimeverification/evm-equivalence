@@ -239,7 +239,7 @@ theorem add_prestate_equiv
     gasAvailable := intMap GAVAIL.1
     executionEnv := {symState.executionEnv with code := _Gen0.val}
     returnData := _Gen11.val
-    } := by rfl
+    } := rfl
 
 theorem add_poststate_equiv
   {GAVAIL _Val10 _Val11 : SortGas}
@@ -295,13 +295,7 @@ theorem add_poststate_equiv
     gasAvailable := intMap _Val10.1
     executionEnv := {symState.executionEnv with code := _Gen0.val}
     returnData := _Gen11.val
-    } := by
-  simp [stateMap, addRHS, programOfGTC]
-  constructor <;> try constructor
-  all_goals congr
-  · simp [iteMap, gasOn] at defn_Val11; rw [defn_Val11]
-  · simp [«_+Int'_», defn_Val8]
-  · simp [«_+Int'_», chop', defn_Val6, defn_Val7]
+    } := by aesop (add simp [iteMap, «_+Int'_», chop'])
 
 open AddSummary
 
@@ -373,20 +367,15 @@ theorem step_add_equiv
   case succ gas =>
     rw [EVM.step_add_summary] <;> try assumption
     congr
-    . subst cancun
-      simp_all [GasInterface.cancun_def]; subst defn_Val9
-      simp_all [subGas_def]; subst defn_Val10
-      simp [subInt_def]; try assumption
-      simp [SortGas.val, inj, Inj.inj]
-      rw [intMap_sub_dist] <;> first | assumption | try simp
-      rfl
+    . aesop (add simp [GasInterface.cancun_def, subGas_def, subInt_def])
+            (add simp [GasConstants.Gverylow, SortGas.val, inj, Inj.inj])
+            (add simp [intMap_sub_dist])
     . have mod_rw : (PCOUNT + 1) % UInt256.size = PCOUNT + 1 := by
         rw [Int.mod_cast, Int.toNat_ofNat, Nat.mod_eq_of_lt] <;> try linarith
-        . rw [Int.ofNat_toNat, sup_eq_left]; linarith
+        . aesop (add safe (by linarith))
         . rw [Int.toNat_lt] <;> linarith
-      rw [plusInt_def, ←mod_rw, intMap_add_dist] <;> first | assumption | try simp
-      congr
-    . simp [intMap, chop_def, plusInt_def]; rw [←intMap, ←intMap, ←intMap, intMap_add_dist] <;> assumption
+      rw [plusInt_def, ←mod_rw, intMap_add_dist] <;> aesop
+    . aesop (add simp [intMap, chop_def, plusInt_def, intMap_add_dist])
 
 /- Deviations from the KEVM produced specifications:
  1. The program is not symbolic, it is instead a 1-opcode (`ADD`) program
@@ -457,24 +446,14 @@ theorem X_add_equiv
   -- With `simp` doesn't work
   rw [codeAdd, pcZero, add_prestate_equiv, add_poststate_equiv] <;> try assumption
   -- If we don't apply this lemma we cannot rewrite X_add_summary
-  have pc_equiv : intMap 0 = UInt256.ofNat 0 := by rfl
+  have pc_equiv : intMap 0 = UInt256.ofNat 0 := rfl
   rw [pc_equiv, X_add_summary]
-  · congr
-    · simp [subGas_def, subInt_def] at defn_Val10
-      simp [cancun, GasInterface.cancun_def] at *
-      simp [leGas_def, «_<=Int_», enoughGas, SortGas.val, ←defn_Val0, inj] at defn_Val1
-      simp [←defn_Val9, ←defn_Val10, SortGas.val, inj, Inj.inj]
-      rw [intMap_sub_dist] <;> first | simp | try assumption
-      congr
-    · simp [pcZero, plusInt_def]; rfl
-    · simp [intMap, chop_def, plusInt_def]; rw [←intMap, ←intMap, ←intMap, intMap_add_dist] <;> assumption
+  · aesop (add simp [subGas_def, GasInterface.cancun_def, subInt_def])
+      (add simp [SortGas.val, inj, Inj.inj, leGas_def, «_<=Int_», intMap_sub_dist])
+      (add simp [chop_def, plusInt_def, intMap_add_dist])
   · sorry
-  · cases WS <;> try simp
-    simp [sizeWordStack_def] at defn_Val3; subst defn_Val3
-    have true_cond: _Val4 = true := by
-      subst req; rw [andBool_def] at defn_Val5
-      subst cancun codeAdd pcZero enoughGas gasOn
-      simp_all only [Option.some.injEq, Bool.and_eq_true]
-    simp_all [true_cond, «_<=Int_», Int.add_one_le_iff, ←Nat.lt_sub_iff_add_lt]
+    /- aesop (add simp [leGas_def, «_<=Int_», SortGas.val, inj, Inj.inj])
+    (add simp [GasInterface.cancun_def, GasConstants.Gverylow]) -/
+  · aesop (add simp [sizeWordStack_def, «_<=Int_», andBool_def]) (add safe (by omega))
 
 end AddOpcodeEquivalence
