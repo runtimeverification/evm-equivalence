@@ -16,8 +16,9 @@ namespace KEVMInterface
 -- For functions that are defined, the axioms are theorems
 
 -- Behavior for `ite`
-theorem iteMap {SortSort : Type} (c : SortBool) (x1 x2 : SortSort) :
-  kite c x1 x2  = ite c x1 x2 := by aesop
+-- `Ite` not present in the moment
+/- theorem iteMap {SortSort : Type} (c : SortBool) (x1 x2 : SortSort) :
+  kite c x1 x2  = ite c x1 x2 := by aesop -/
 
 section
 
@@ -60,7 +61,10 @@ end
 -- Utils to aid in proofs
 def SortGas.val (g : SortGas) : SortInt := g.1
 
-section
+/-
+`«_-Gas__GAS-SYNTAX_Gas_Gas_Gas»` and `«_<=Gas__GAS-SYNTAX_Bool_Gas_Gas»` not present at the moment
+ -/
+/- section
 
 variable {g₁ g₂ : SortGas}
 
@@ -70,7 +74,7 @@ theorem subGas_def :
 theorem leGas_def :
   «_<=Gas__GAS-SYNTAX_Bool_Gas_Gas»  g₁ g₂ = «_<=Int_» (SortGas.val g₁) (SortGas.val g₂) := rfl
 
-end
+end -/
 
 -- TODO: Add to a specific `axioms` namespace when enough functions have been interpreted
 
@@ -98,31 +102,32 @@ theorem sizeWordStackNotEmpty {n w : SortInt} {ws : SortWordStack} :
 theorem sizeWordStack_add_one {w n : SortInt} {ws : SortWordStack} :
   sizeWordStackAux (.«_:__EVM-TYPES_WordStack_Int_WordStack» w ws) n = do
   let val0 ← sizeWordStackAux ws n
-  let val1 ← «_+Int_» 1 val0
+  let val1 ← «_+Int_» val0 1
   return val1 := by
   revert n
-  induction ws <;> simp_all [sizeWordStackAux, _432555e, _75897fa, plusIntIsSome]; introv; ring
+  induction ws <;> simp_all [sizeWordStackAux, _432555e, _75897fa, plusIntIsSome]
 
 theorem sizeWordStackAuxAdd {n : SortInt} {ws : SortWordStack} :
   sizeWordStackAux ws (n + 1) = do
   let a ← sizeWordStackAux ws n
-  let b ← «_+Int_» 1 a
+  let b ← «_+Int_» a 1
   return b := by
   rw [←sizeWordStackNotEmpty (w := 0), sizeWordStack_add_one]
 
 theorem sizeWordStackIsSome {ws : SortWordStack} :
-  «#sizeWordStack» ws = some (wsLength ws) := by
-  unfold «#sizeWordStack» _c0f9e27
+  sizeWordStackAux ws 0 = some (wsLength ws) := by
+  unfold sizeWordStackAux
   induction' ws
   . aesop (add simp [sizeWordStackAux, _432555e])
-  . aesop (add simp [sizeWordStack_add_one, wsLength]) (add safe (by ring))
+  . simp_all [sizeWordStack_add_one, wsLength]; rewrite [←sizeWordStackAux] at *
+    aesop (add simp [sizeWordStack_add_one])
 
 theorem wsLength_eq_length_wordStackMap {ws : SortWordStack} :
   wsLength ws = List.length (wordStackMap ws) := by
   induction ws <;> simp_all [wsLength]
 
 theorem sizeWordStack_def {ws : SortWordStack} :
-  «#sizeWordStack» ws = some (List.length (wordStackMap ws)) :=
+  sizeWordStackAux ws 0 = some (List.length (wordStackMap ws)) :=
   wsLength_eq_length_wordStackMap ▸ sizeWordStackIsSome
 
 end KEVMInterface

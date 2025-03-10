@@ -73,3 +73,4 @@ def SortScheduleConst.toNat (sc : SortScheduleConst) : Nat :=
   | Rsstoreclear_SCHEDULE_ScheduleConst           => 4
   | maxCodeSize_SCHEDULE_ScheduleConst            => 2
   | maxInitCodeSize_SCHEDULE_ScheduleConst        => 4
+  | Gpointeval_SCHEDULE_ScheduleConst             => 4
