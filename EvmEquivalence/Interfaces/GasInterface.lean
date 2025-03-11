@@ -93,7 +93,7 @@ theorem sched_default_def :
   | .maxInitCodeSize_SCHEDULE_ScheduleConst        => some 0
   | .Ginitcodewordcost_SCHEDULE_ScheduleConst      => some 0
   | .Rmaxquotient_SCHEDULE_ScheduleConst           => some 2
-  --| .Gpointeval_SCHEDULE_ScheduleConst => some 0
+  | .Gpointeval_SCHEDULE_ScheduleConst => some 0
   := by
   simp_schedule1; cases const <;> simp_schedule2
 
@@ -169,7 +169,7 @@ theorem sched_istanbul_def :
   | const => «_<_>_SCHEDULE_Int_ScheduleConst_Schedule» const .PETERSBURG_EVM := by
   simp_schedule1; cases const <;> simp_schedule2
 
-attribute [local simp] SCHEDULE_GsloadBer SCHEDULE_GsstoreresetBer
+attribute [local simp] SCHEDULE_GsloadBerlin SCHEDULE_GsstoreresetBerlin
 
 @[local simp]
 theorem sched_berlin_def :
@@ -187,23 +187,23 @@ theorem sched_berlin_def :
   simp_schedule1; cases const <;> simp_schedule2
   simp_schedule1; simp_schedule2
   simp [«_<_>_SCHEDULE_Int_ScheduleConst_Schedule»];
-  simp [SCHEDULE_GaccesslistaddressBer];
-  simp [SCHEDULE_GaccesslistaddressDef];
-  simp [SCHEDULE_GaccessliststoragekeyBer];
-  simp [SCHEDULE_GaccessliststoragekeyDef];
-  simp [SCHEDULE_GbalanceDef];
-  simp [SCHEDULE_GbalanceIst];
-  simp [SCHEDULE_GbalanceTang];
-  simp [SCHEDULE_GbaseDef];
-  simp [SCHEDULE_GblockhashDef];
-  simp [SCHEDULE_GcallDef];
-  simp [SCHEDULE_GcallTang];
-  simp [SCHEDULE_GcallstipendDef];
-  simp [SCHEDULE_GcallvalueDef];
-  simp [SCHEDULE_GcodedepositDef];
-  simp [SCHEDULE_GcoldaccountaccessBer];
-  simp [SCHEDULE_GcoldaccountaccessDef];
-  simp [SCHEDULE_GcoldsloadBer]
+  simp [SCHEDULE_GaccesslistaddressBerlin];
+  simp [SCHEDULE_GaccesslistaddressDefault];
+  simp [SCHEDULE_GaccessliststoragekeyBerlin];
+  simp [SCHEDULE_GaccessliststoragekeyDefault];
+  simp [SCHEDULE_GbalanceDefault];
+  simp [SCHEDULE_GbalanceIstanbul];
+  simp [SCHEDULE_GbalanceTangerine];
+  simp [SCHEDULE_GbaseDefault];
+  simp [SCHEDULE_GblockhashDefault];
+  simp [SCHEDULE_GcallDefault];
+  simp [SCHEDULE_GcallTangerine];
+  simp [SCHEDULE_GcallstipendDefault];
+  simp [SCHEDULE_GcallvalueDefault];
+  simp [SCHEDULE_GcodedepositDefault];
+  simp [SCHEDULE_GcoldaccountaccessBerlin];
+  simp [SCHEDULE_GcoldaccountaccessDefault];
+  simp [SCHEDULE_GcoldsloadBerlin]
 
 @[local simp]
 theorem sched_london_def :
@@ -239,7 +239,7 @@ theorem sched_cancun_def :
   «_<_>_SCHEDULE_Int_ScheduleConst_Schedule» const .CANCUN_EVM =
   match const with
   | .Gwarmstoragedirtystore_SCHEDULE_ScheduleConst => some 100
-  --| .Gpointeval_SCHEDULE_ScheduleConst => some 50000
+  | .Gpointeval_SCHEDULE_ScheduleConst => some 50000
   | const => «_<_>_SCHEDULE_Int_ScheduleConst_Schedule» const .SHANGHAI_EVM := by
   simp_schedule1; cases const <;> simp_schedule2
   simp_schedule1; simp_schedule2
@@ -301,7 +301,7 @@ theorem cancun_def :
   | .maxInitCodeSize_SCHEDULE_ScheduleConst        => some 49152
   | .Ginitcodewordcost_SCHEDULE_ScheduleConst      => some 2
   | .Rmaxquotient_SCHEDULE_ScheduleConst           => some 5
-  --| .Gpointeval_SCHEDULE_ScheduleConst => some 50000
+  | .Gpointeval_SCHEDULE_ScheduleConst => some 50000
   := by
   simp [«_<_>_SCHEDULE_Int_ScheduleConst_Schedule»]
   cases const <;> simp
