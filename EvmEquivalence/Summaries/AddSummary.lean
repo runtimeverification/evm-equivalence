@@ -70,48 +70,6 @@ theorem EVM.step_add_summary (gpos : 0 < gas) (symState : EVM.State):
           execLength := symExecLength + 1} := by
   rw [EVM.step_add_to_step_add]; rfl; assumption
 
--- Necessary preparation for X summary
-theorem EvmYul.step_stop_summary_simple (symState : EVM.State) :
-  EvmYul.step false (@Operation.STOP .EVM) symState =
-  .ok {symState with returnData := ByteArray.empty} := rfl
-
-theorem EvmYul.step_stop_summary (symState : EVM.State) :
-EvmYul.step false (@Operation.STOP .EVM)
-  {symState with
-      stack := symStack,
-      pc := symPc,
-      gasAvailable := symGasAvailable,
-      execLength := symExecLength}  =
-  .ok {symState with
-      stack := symStack,
-      pc := symPc,
-      gasAvailable := symGasAvailable,
-      execLength := symExecLength,
-      returnData := ByteArray.empty} := rfl
-
-theorem EVM.step_stop_summary_simple (gpos : 0 < gas) (symState : EVM.State) :
-  EVM.step false gas gasCost (some (@Operation.STOP .EVM, none)) symState =
-  .ok {symState with
-    gasAvailable := symState.gasAvailable - UInt256.ofNat gasCost,
-    returnData := ByteArray.empty
-    execLength := symState.execLength + 1} := by
-  cases cg: gas; rw [cg] at gpos; contradiction; rfl
-
-theorem EVM.step_stop_summary (gpos : 0 < gas) (symState : EVM.State) :
-  EVM.step false gas gasCost (some (@Operation.STOP .EVM, none))
-    {symState with
-      stack := symStack,
-      pc := symPc,
-      gasAvailable := symGasAvailable,
-      execLength := symExecLength} =
-    .ok {symState with
-      stack := symStack,
-      pc := symPc,
-      gasAvailable := symGasAvailable - UInt256.ofNat gasCost,
-      returnData := ByteArray.empty
-      execLength := symExecLength + 1} := by
-  cases cg: gas; rw [cg] at gpos; contradiction; rfl
-
 theorem ofNat_toNat_eq {n : ℕ} (n_le_size : n < UInt256.size) :
   (UInt256.ofNat n).toNat = n := by
   aesop (add simp [UInt256.ofNat, UInt256.toNat, Id.run, dbgTrace, Fin.ofNat])
