@@ -1,4 +1,4 @@
-# Interfaces of the [EvmYul](https://github.com/nethermindEth/EVMYulLean/) and [KEVM](https://github.com/runtimeverification/evm-semantics) models
+# Interfaces for the [EvmYul](https://github.com/nethermindEth/EVMYulLean/) and [KEVM](https://github.com/runtimeverification/evm-semantics) models
 
 This folder contains interfaces to reason with the EvmYul and KEVM models.
 
