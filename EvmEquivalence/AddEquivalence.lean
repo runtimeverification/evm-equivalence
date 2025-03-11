@@ -415,7 +415,7 @@ theorem X_add_equiv
   · aesop (add simp [GasInterface.cancun_def, «_-Int_», chop_def, plusInt_def, intMap_add_dist])
       (add safe (by rw [intMap_sub_dist])) (add safe (by apply le_of_lt))
   · aesop (add simp [GasConstants.Gverylow, intMap, UInt256.toSigned])
-      (add simp [intMap_toNat_small, UInt256.ofNat_toNat])
+      (add simp [intMap_toNat, UInt256.ofNat_toNat])
       (add safe (by contradiction))
   · simp_all [sizeWordStack_def]
     simp [LT.lt, Option.lt, OfNat.ofNat, (@Int.ofNat_eq_coe 1024)] at wordStackOk

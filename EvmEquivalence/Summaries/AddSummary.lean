@@ -75,10 +75,6 @@ theorem EVM.step_add_summary (gpos : 0 < gas) (symState : EVM.State):
           execLength := symExecLength + 1} := by
   rw [EVM.step_add_to_step_add]; rfl; assumption
 
-theorem ofNat_toNat_eq {n : ℕ} (n_le_size : n < UInt256.size) :
-  (UInt256.ofNat n).toNat = n := by
-  aesop (add simp [UInt256.ofNat, UInt256.toNat, Id.run, dbgTrace, Fin.ofNat])
-
 ----
 -- For having symbolic programs instead of singleton ones
 /- abbrev addBytecode (preCode postCode : Array UInt8) : ByteArray :=
