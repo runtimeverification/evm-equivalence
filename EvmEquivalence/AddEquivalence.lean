@@ -1,4 +1,4 @@
-import EvmEquivalence.Summaries
+import EvmEquivalence.Summaries.AddSummary
 import EvmEquivalence.StateMap
 import EvmEquivalence.Interfaces.FuncInterface
 import EvmEquivalence.Interfaces.GasInterface
