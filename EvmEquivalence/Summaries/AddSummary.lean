@@ -1,10 +1,14 @@
 import EvmYul.EVM.Semantics
 import EvmYul.EVM.GasConstants
+import EvmEquivalence.Summaries.StopSummary
 
 open EvmYul
 open EVM
+open StopSummary
 
 namespace AddSummary
+
+section
 
 variable (word₁ word₂ : UInt256)
 variable (gas gasCost : ℕ)
@@ -15,6 +19,7 @@ variable (symExecLength : ℕ)
 variable (symReturnData symCode : ByteArray)
 
 abbrev addEVM := @Operation.ADD .EVM
+
 abbrev add_instr : Option (Operation .EVM × Option (UInt256 × Nat)) :=
   some ⟨addEVM, none⟩
 
@@ -180,5 +185,7 @@ theorem X_add_summary (enoughGas : GasConstants.Gverylow < symGasAvailable.toNat
   simp [bad_opcode, δ, α, stack_ok_rw]; split <;> try contradiction
   case h_2 _ _ stateOk =>
   cases stateOk; aesop (add simp [EVM.step_stop_summary_simple])
+
+end
 
 end AddSummary
