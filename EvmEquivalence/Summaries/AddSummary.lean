@@ -116,10 +116,6 @@ theorem memoryExpansionCost_add (symState : EVM.State) :
 theorem C'_add (symState : EVM.State) :
   C' symState addEVM = GasConstants.Gverylow := rfl
 
-@[simp]
-theorem C'_stop (symState : EVM.State) :
-  C' symState .STOP = 0 := rfl
-
 theorem X_add_summary (enoughGas : GasConstants.Gverylow < symGasAvailable.toNat)
                       (symStack_ok : symStack.length < 1024)
                       (symState : EVM.State):

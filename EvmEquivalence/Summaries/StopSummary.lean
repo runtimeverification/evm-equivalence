@@ -15,6 +15,15 @@ variable (symGasAvailable : UInt256)
 variable (symExecLength : ℕ)
 variable (symReturnData symCode : ByteArray)
 
+@[simp]
+theorem C'_stop (symState : EVM.State) :
+  C' symState .STOP = 0 := rfl
+
+@[simp]
+theorem memoryExpansionCost_stop (symState : EVM.State) :
+  memoryExpansionCost symState .STOP = 0 := by
+  simp [memoryExpansionCost, memoryExpansionCost.μᵢ']
+
 theorem EvmYul.step_stop_summary_simple (symState : EVM.State) :
   EvmYul.step false (@Operation.STOP .EVM) symState =
   .ok {symState with returnData := ByteArray.empty} := rfl
