@@ -1,6 +1,8 @@
 import EvmEquivalence.KEVM2Lean.Sorts
 
-def SortSchedule.toNat (s : SortSchedule) : Nat :=
+namespace SortSchedule
+
+def toNat (s : SortSchedule) : Nat :=
   match s with
   | DEFAULT_EVM           => 0
   | FRONTIER_EVM          => 1
@@ -17,7 +19,11 @@ def SortSchedule.toNat (s : SortSchedule) : Nat :=
   | SHANGHAI_EVM          => 12
   | CANCUN_EVM            => 13
 
-def SortScheduleConst.toNat (sc : SortScheduleConst) : Nat :=
+end SortSchedule
+
+namespace SortScheduleConst
+
+def toNat (sc : SortScheduleConst) : Nat :=
   match sc with
   | Gaccesslistaddress_SCHEDULE_ScheduleConst     => 4
   | Gaccessliststoragekey_SCHEDULE_ScheduleConst  => 2
@@ -74,3 +80,5 @@ def SortScheduleConst.toNat (sc : SortScheduleConst) : Nat :=
   | maxCodeSize_SCHEDULE_ScheduleConst            => 2
   | maxInitCodeSize_SCHEDULE_ScheduleConst        => 4
   | Gpointeval_SCHEDULE_ScheduleConst             => 4
+
+end SortScheduleConst
