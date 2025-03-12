@@ -16,6 +16,10 @@ variable (symExecLength : ℕ)
 variable (symReturnData symCode : ByteArray)
 
 @[simp]
+theorem decode_singleton_stop {n : UInt8} :
+  decode ⟨#[n]⟩ (.ofNat 1) = none := rfl
+
+@[simp]
 theorem C'_stop (symState : EVM.State) :
   C' symState .STOP = 0 := rfl
 
