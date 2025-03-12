@@ -1,6 +1,7 @@
 import EvmYul.EVM.Semantics
 import EvmYul.EVM.GasConstants
 import EvmEquivalence.Summaries.StopSummary
+import EvmEquivalence.Interfaces.EvmYulInterface
 
 open EvmYul
 open EVM
@@ -111,11 +112,6 @@ theorem memoryExpansionCost_add (symState : EVM.State) :
   memoryExpansionCost symState addEVM = 0 := by
   simp [memoryExpansionCost, memoryExpansionCost.μᵢ']
 
-theorem isCreate_false {τ : OperationType} (opcode : Operation τ) (noCreate : opcode ≠ Operation.CREATE) (noCreate2 : opcode ≠ Operation.CREATE2):
-  opcode.isCreate = false := by
-  cases opc: opcode <;> rw [Operation.isCreate]; next op =>
-  cases op <;> aesop
-
 @[simp]
 theorem C'_add (symState : EVM.State) :
   C' symState addEVM = GasConstants.Gverylow := rfl
@@ -123,18 +119,6 @@ theorem C'_add (symState : EVM.State) :
 @[simp]
 theorem C'_stop (symState : EVM.State) :
   C' symState .STOP = 0 := rfl
-
-@[simp]
-theorem UInt256.sub_0 (n : UInt256) : n - .ofNat 0 = n := by
-  cases n with
-  | mk val => cases val with
-  | mk val isLt =>
-  simp [UInt256.ofNat, Id.run, HSub.hSub, Sub.sub, UInt256.sub]
-  simp [UInt256.size, Fin.ofNat, Fin.sub]; assumption
-  -- Alternatively:
-  /- simp [UInt256.ofNat]; split; try contradiction
-  simp [Id.run, HSub.hSub, Sub.sub, UInt256.sub]
-  simp [Fin.sub]; rw [Nat.mod_eq_iff_lt]; assumption; simp [UInt256.size] -/
 
 theorem X_add_summary (enoughGas : GasConstants.Gverylow < symGasAvailable.toNat)
                       (symStack_ok : symStack.length < 1024)
