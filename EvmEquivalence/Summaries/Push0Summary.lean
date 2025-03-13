@@ -18,6 +18,7 @@ variable {symExecLength : ℕ}
 variable {symReturnData symCode : ByteArray}
 
 abbrev push0EVM := @Operation.PUSH0
+
 abbrev push0_instr : Option (Operation .EVM × Option (UInt256 × Nat)) :=
   some ⟨push0EVM, none⟩
 
@@ -72,9 +73,12 @@ theorem memoryExpansionCost_push0 (symState : EVM.State) :
 theorem C'_push0 (symState : EVM.State) :
   C' symState push0EVM = GasConstants.Gbase := by rfl
 
+/--
+Execution result of `X` for a single-opcode program when `pc` is set to 1
+ -/
 theorem X_bad_pc {opcode : UInt8}
                  {symState : EVM.State}
-                 (gpos : 2 <= gas)
+                 (gpos : 1 < gas)
                  (pc1 : symState.pc = .ofNat 1)
                  (opcode_single : symState.executionEnv.code = ⟨#[opcode]⟩)
                  (stack_ok : symState.stack.length < 1024)
@@ -83,18 +87,11 @@ theorem X_bad_pc {opcode : UInt8}
   Except.ok (.success {symState with
       execLength := symState.execLength + 1} ByteArray.empty) := by
   cases cgas: gas; rw [cgas] at gpos; contradiction
-  simp_all [X, δ, α]
-  have stack_ok_rw : (1024 < List.length symState.stack) = False :=
-    by aesop (add safe (by omega))
-  split; aesop (add safe (by contradiction)) (add safe (by linarith))
-  dsimp [Except.instMonad, Except.bind]
-  rename_i n _ _ _ heq
+  simp_all [X, δ, α]; split; aesop (add safe (by contradiction)) (add safe (by linarith))
+  dsimp [Except.instMonad, Except.bind]; rename_i n _ _ _ heq
   revert heq; split; aesop (add safe (by contradiction)) (add safe (by linarith))
-  intro heq
-  simp [pure, Except.pure] at heq; cases heq; case intro evm_eq cost =>
-  subst cost evm_eq
-  have npos : 0 < n := by omega
-  cases cn : n; rw [cn] at npos; contradiction
+  simp [pure, Except.pure]; intro evm_eq cost; subst evm_eq cost
+  cases n; contradiction
   simp [StopSummary.EVM.step_stop_summary_simple]; congr; simp [empty_output]
 
 theorem X_push0_summary (enoughGas : GasConstants.Gbase < symGasAvailable.toNat)
@@ -115,8 +112,7 @@ theorem X_push0_summary (enoughGas : GasConstants.Gbase < symGasAvailable.toNat)
         executionEnv := {symState.executionEnv with code := ⟨#[(0x5F : UInt8)]⟩},
         returnData := ByteArray.empty,
         execLength := symExecLength + 2} ByteArray.empty):= by
-  cases g_case: symGasAvailable.toNat
-  case zero => rw [g_case] at enoughGas; contradiction
+  cases g_case: symGasAvailable.toNat; rw [g_case] at enoughGas; contradiction
   case succ g_pos =>
   have enough_gas_rw : (symGasAvailable.toNat < GasConstants.Gbase) = False :=
     by aesop (add safe (by omega))
@@ -124,9 +120,8 @@ theorem X_push0_summary (enoughGas : GasConstants.Gbase < symGasAvailable.toNat)
     by simp [α]; omega
   have gPos : (0 < g_pos) := by aesop (add simp [GasConstants.Gbase]) (add safe (by omega))
   simp [X, δ, enough_gas_rw, stack_ok_rw]; split; contradiction
-  case h_2 evm _ stateOk =>
-  simp [pure, Except.pure] at stateOk; cases stateOk; case intro evm_eq cost=>
-  subst cost evm_eq
+  rename_i evm _ stateOk; revert stateOk
+  simp [pure, Except.pure]; intro evm_eq cost; subst cost evm_eq
   dsimp [Except.instMonad, Except.bind]
   have step_rw := (@EVM.step_push0_summary g_pos GasConstants.Gbase symStack (.ofNat 0) symGasAvailable symExecLength ByteArray.empty ⟨#[(0x5F : UInt8)]⟩ gPos)
   rw [EVM.step_push0, push0_instr] at step_rw; simp [step_rw]
