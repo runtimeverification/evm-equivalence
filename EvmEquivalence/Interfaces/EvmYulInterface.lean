@@ -1,7 +1,9 @@
 import EvmYul.EVM.Semantics
+import EvmEquivalence.Summaries.StopSummary
 
 
 open EvmYul
+open EVM
 
 namespace UInt256
 
@@ -47,3 +49,30 @@ theorem isCreate_false {τ : OperationType} (opcode : Operation τ) (noCreate : 
   opcode.isCreate = false := by
   cases opc: opcode <;> rw [Operation.isCreate]; next op =>
   cases op <;> aesop
+
+section
+
+variable {gas gasCost : ℕ}
+
+/--
+Execution result of `X` for a single-opcode program when `pc` is set to 1
+ -/
+theorem X_bad_pc {opcode : UInt8}
+                 {symState : EVM.State}
+                 (gpos : 1 < gas)
+                 (pc1 : symState.pc = .ofNat 1)
+                 (opcode_single : symState.executionEnv.code = ⟨#[opcode]⟩)
+                 (stack_ok : symState.stack.length < 1024):
+  X false gas symState =
+  Except.ok (.success {symState with
+      returnData := ByteArray.empty,
+      execLength := symState.execLength + 1} ByteArray.empty) := by
+  cases cgas: gas; rw [cgas] at gpos; contradiction
+  simp_all [X, δ, α]; split; aesop (add safe (by contradiction)) (add safe (by linarith))
+  dsimp [Except.instMonad, Except.bind]; rename_i n _ _ _ heq
+  revert heq; split; aesop (add safe (by contradiction)) (add safe (by linarith))
+  simp [pure, Except.pure]; intro evm_eq cost; subst evm_eq cost
+  cases n; contradiction
+  simp [StopSummary.EVM.step_stop_summary_simple]
+
+end

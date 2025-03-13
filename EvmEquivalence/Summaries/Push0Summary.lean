@@ -73,27 +73,6 @@ theorem memoryExpansionCost_push0 (symState : EVM.State) :
 theorem C'_push0 (symState : EVM.State) :
   C' symState push0EVM = GasConstants.Gbase := by rfl
 
-/--
-Execution result of `X` for a single-opcode program when `pc` is set to 1
- -/
-theorem X_bad_pc {opcode : UInt8}
-                 {symState : EVM.State}
-                 (gpos : 1 < gas)
-                 (pc1 : symState.pc = .ofNat 1)
-                 (opcode_single : symState.executionEnv.code = ⟨#[opcode]⟩)
-                 (stack_ok : symState.stack.length < 1024)
-                 (empty_output : symState.returnData = ByteArray.empty):
-  X false gas symState =
-  Except.ok (.success {symState with
-      execLength := symState.execLength + 1} ByteArray.empty) := by
-  cases cgas: gas; rw [cgas] at gpos; contradiction
-  simp_all [X, δ, α]; split; aesop (add safe (by contradiction)) (add safe (by linarith))
-  dsimp [Except.instMonad, Except.bind]; rename_i n _ _ _ heq
-  revert heq; split; aesop (add safe (by contradiction)) (add safe (by linarith))
-  simp [pure, Except.pure]; intro evm_eq cost; subst evm_eq cost
-  cases n; contradiction
-  simp [StopSummary.EVM.step_stop_summary_simple]; congr; simp [empty_output]
-
 theorem X_push0_summary (enoughGas : GasConstants.Gbase < symGasAvailable.toNat)
                       (symStack_ok : symStack.length < 1023)
                       (symState : EVM.State):
