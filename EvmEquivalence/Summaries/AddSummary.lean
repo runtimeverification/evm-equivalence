@@ -134,8 +134,7 @@ theorem X_add_summary (enoughGas : GasConstants.Gverylow < symGasAvailable.toNat
         executionEnv := {symState.executionEnv with code := ⟨#[(0x1 : UInt8)]⟩},
         returnData := ByteArray.empty,
         execLength := symExecLength + 2} ByteArray.empty):= by
-  cases g_case: symGasAvailable.toNat
-  case zero => rw [g_case] at enoughGas; contradiction
+  cases g_case : symGasAvailable.toNat; rw [g_case] at enoughGas; contradiction
   case succ g_pos =>
   have ss_lt2_f  (n : ℕ) : (n + 1 + 1 < 2) = False := by simp
   simp [X, δ, ss_lt2_f]
@@ -146,21 +145,10 @@ theorem X_add_summary (enoughGas : GasConstants.Gverylow < symGasAvailable.toNat
   simp [α, stack_ok_rw, enough_gas_rw]
   split; contradiction
   case h_2 evm _ stateOk =>
-  have g_pos_gt_1 : (1 < g_pos) := by
-    aesop (add simp [GasConstants.Gverylow]) (add safe (by omega))
-  have gPos : (0 < g_pos) := by aesop (add safe (by omega))
+  have gPos : (0 < g_pos) := by aesop (add simp [GasConstants.Gverylow]) (add safe (by omega))
   have step_rw := (EVM.step_add_summary word₁ word₂ g_pos GasConstants.Gverylow symStack (.ofNat 0) symGasAvailable symExecLength symReturnData ⟨#[(0x1 : UInt8)]⟩ gPos evm)
-  cases stateOk; rw [←EVM.step_add, step_rw]
-  dsimp [Except.instMonad, Except.bind]; rw [X.eq_def]
-  cases cgp: g_pos; rw [cgp] at gPos; contradiction
-  case succ n =>
-  -- part of this could be a lemma
-  simp [memoryExpansionCost, Cₘ, memoryExpansionCost.μᵢ', decode, ByteArray.get?]
-  have bad_opcode : (((UInt256.ofNat 0).add (UInt256.ofNat 1)).toNat < ({data := #[1] } : ByteArray).size) = False :=
-    by aesop
-  simp [bad_opcode, δ, α, stack_ok_rw]; split <;> try contradiction
-  case h_2 _ _ stateOk =>
-  cases stateOk; aesop (add simp [EVM.step_stop_summary_simple])
+  cases stateOk; rw [←EVM.step_add, step_rw]; simp [Except.instMonad, Except.bind]
+  rw [X_bad_pc] <;> aesop (add simp [GasConstants.Gverylow]) (add safe (by omega))
 
 end
 
