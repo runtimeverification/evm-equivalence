@@ -82,8 +82,8 @@ theorem X_push0_summary (enoughGas : GasConstants.Gbase < symGasAvailable.toNat)
     pc := .ofNat 0,
     execLength := symExecLength,
     gasAvailable := symGasAvailable,
-    executionEnv := {symState.executionEnv with code := ⟨#[(0x5f : UInt8)]⟩}
-    returnData := ByteArray.empty} =
+    executionEnv := {symState.executionEnv with code := ⟨#[(0x5F : UInt8)]⟩}
+    returnData := symReturnData} =
   Except.ok (.success {symState with
         stack := (.ofNat 0) :: symStack,
         pc := .ofNat 1,
@@ -102,7 +102,7 @@ theorem X_push0_summary (enoughGas : GasConstants.Gbase < symGasAvailable.toNat)
   rename_i evm _ stateOk; revert stateOk
   simp [pure, Except.pure]; intro evm_eq cost; subst cost evm_eq
   dsimp [Except.instMonad, Except.bind]
-  have step_rw := (@EVM.step_push0_summary g_pos GasConstants.Gbase symStack (.ofNat 0) symGasAvailable symExecLength ByteArray.empty ⟨#[(0x5F : UInt8)]⟩ gPos)
+  have step_rw := (@EVM.step_push0_summary g_pos GasConstants.Gbase symStack (.ofNat 0) symGasAvailable symExecLength symReturnData ⟨#[(0x5F : UInt8)]⟩ gPos)
   rw [EVM.step_push0, push0_instr] at step_rw; simp [step_rw]
   rw [X_bad_pc] <;> aesop (add simp [GasConstants.Gbase]) (add safe (by omega))
 
