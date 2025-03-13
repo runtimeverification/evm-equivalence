@@ -74,7 +74,7 @@ theorem C'_push0 (symState : EVM.State) :
   C' symState push0EVM = GasConstants.Gbase := by rfl
 
 theorem X_push0_summary (enoughGas : GasConstants.Gbase < symGasAvailable.toNat)
-                      (symStack_ok : symStack.length < 1023)
+                      (symStack_ok : symStack.length < 1024)
                       (symState : EVM.State):
   X false symGasAvailable.toNat
   {symState with
