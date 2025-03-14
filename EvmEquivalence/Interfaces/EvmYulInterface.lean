@@ -1,5 +1,6 @@
 import EvmYul.EVM.Semantics
 import EvmEquivalence.Summaries.StopSummary
+import EvmEquivalence.Utils.IntUtils
 
 
 open EvmYul
@@ -12,6 +13,7 @@ section
 set_option linter.deprecated false
 
 variable {n : ℕ}
+variable {p : ℤ}
 
 theorem val_eq (h : n < UInt256.size): ↑(UInt256.ofNat n).1 = n := by
   aesop (add simp [UInt256.ofNat, Id.run, Fin.ofNat])
@@ -39,6 +41,9 @@ theorem sub_0 {n : UInt256} : n - .ofNat 0 = n := by
 theorem zero_add: .ofNat 0 + .ofNat n = UInt256.ofNat n := by
   simp [UInt256.ofNat, Id.run, dbgTrace, Fin.ofNat, HAdd.hAdd]
   simp [Add.add, UInt256.add, Fin.add_def]
+
+theorem add_succ_mod_size (pos : 0 ≤ p) (size_ok : p + 1 < UInt256.size) : (p + 1) % UInt256.size = p + 1 := by
+        rw [Int.mod_cast, Int.toNat_ofNat, Nat.mod_eq_of_lt] <;> aesop (add safe (by omega))
 
 end
 
