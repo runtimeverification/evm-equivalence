@@ -10,21 +10,25 @@ namespace Push0Summary
 
 section
 
-variable {gas gasCost : ℕ}
-variable {symStack : Stack UInt256}
-variable {symPc : UInt256}
-variable {symGasAvailable : UInt256}
-variable {symExecLength : ℕ}
-variable {symReturnData symCode : ByteArray}
+variable (gas gasCost : ℕ)
+variable (symStack : Stack UInt256)
+variable (symPc : UInt256)
+variable (symGasAvailable : UInt256)
+variable (symExecLength : ℕ)
+variable (symReturnData symCode : ByteArray)
 
+@[simp]
 abbrev push0EVM := @Operation.PUSH0
 
+@[simp]
 abbrev push0_instr : Option (Operation .EVM × Option (UInt256 × Nat)) :=
   some ⟨push0EVM, none⟩
 
+@[simp]
 def EVM.step_push0 : Transformer :=
   EVM.step false gas gasCost push0_instr
 
+@[simp]
 def EvmYul.step_push0 : Transformer :=
   @EvmYul.step OperationType.EVM false push0EVM
 
