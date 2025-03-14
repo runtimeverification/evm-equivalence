@@ -82,7 +82,7 @@ def addLHS
     generatedCounter := _DotVar0 }
 
 def addRHS
-  {_Val0 _Val1 _Val2 _Val3 _Val4 : SortInt}
+  {_Val0 _Val1 _Val2 _Val4 : SortInt}
   {K_CELL : SortK}
   {SCHEDULE_CELL : SortSchedule}
   {WS : SortWordStack}
@@ -190,7 +190,7 @@ theorem rw_addLHS_addRHS
   (req : USEGAS_CELL = true):
   Rewrites
     (@addLHS GAS_CELL PC_CELL W0 W1 K_CELL SCHEDULE_CELL USEGAS_CELL WS _DotVar0 _DotVar2 _Gen0 _Gen1 _Gen10 _Gen11 _Gen12 _Gen13 _Gen14 _Gen15 _Gen16 _Gen17 _Gen18 _Gen19 _Gen2 _Gen20 _Gen21 _Gen22 _Gen23 _Gen3 _Gen4 _Gen5 _Gen6 _Gen7 _Gen8 _Gen9)
-    (@addRHS _Val0 _Val1 _Val2 _Val3 _Val4 K_CELL SCHEDULE_CELL WS _DotVar0 _DotVar2 _Gen0 _Gen1 _Gen10 _Gen11 _Gen12 _Gen13 _Gen14 _Gen15 _Gen16 _Gen17 _Gen18 _Gen19 _Gen2 _Gen20 _Gen21 _Gen22 _Gen23 _Gen3 _Gen4 _Gen5 _Gen6 _Gen7 _Gen8 _Gen9) := by
+    (@addRHS _Val0 _Val1 _Val2 _Val4 K_CELL SCHEDULE_CELL WS _DotVar0 _DotVar2 _Gen0 _Gen1 _Gen10 _Gen11 _Gen12 _Gen13 _Gen14 _Gen15 _Gen16 _Gen17 _Gen18 _Gen19 _Gen2 _Gen20 _Gen21 _Gen22 _Gen23 _Gen3 _Gen4 _Gen5 _Gen6 _Gen7 _Gen8 _Gen9) := by
   apply Rewrites.SUMMARY_ADD_2_SPEC_BASIC_BLOCK_8_TO_6 <;> try assumption
 
 theorem add_prestate_equiv
@@ -270,7 +270,7 @@ theorem add_poststate_equiv
   (defn_Val1 : chop _Val0 = some _Val1)
   (defn_Val2 : «_+Int_» PC_CELL 1 = some _Val2)
   (symState : EVM.State):
-  stateMap symState (@addRHS _Val0 _Val1 _Val2 _Val3 _Val4 K_CELL SCHEDULE_CELL WS _DotVar0 _DotVar2 _Gen0 _Gen1 _Gen10 _Gen11 _Gen12 _Gen13 _Gen14 _Gen15 _Gen16 _Gen17 _Gen18 _Gen19 _Gen2 _Gen20 _Gen21 _Gen22 _Gen23 _Gen3 _Gen4 _Gen5 _Gen6 _Gen7 _Gen8 _Gen9) =
+  stateMap symState (@addRHS _Val0 _Val1 _Val2 _Val4 K_CELL SCHEDULE_CELL WS _DotVar0 _DotVar2 _Gen0 _Gen1 _Gen10 _Gen11 _Gen12 _Gen13 _Gen14 _Gen15 _Gen16 _Gen17 _Gen18 _Gen19 _Gen2 _Gen20 _Gen21 _Gen22 _Gen23 _Gen3 _Gen4 _Gen5 _Gen6 _Gen7 _Gen8 _Gen9) =
   {symState with
     stack := (intMap (chop' («_+Int'_» W0 W1))) :: wordStackMap WS
     pc := intMap («_+Int'_» PC_CELL 1)
@@ -334,7 +334,7 @@ theorem step_add_equiv
   (W0ge0 : 0 ≤ W0)
   (W1ge0 : 0 ≤ W1):
   EVM.step_add gas gasCost (stateMap symState (@addLHS GAS_CELL PC_CELL W0 W1 K_CELL SCHEDULE_CELL USEGAS_CELL WS _DotVar0 _DotVar2 _Gen0 _Gen1 _Gen10 _Gen11 _Gen12 _Gen13 _Gen14 _Gen15 _Gen16 _Gen17 _Gen18 _Gen19 _Gen2 _Gen20 _Gen21 _Gen22 _Gen23 _Gen3 _Gen4 _Gen5 _Gen6 _Gen7 _Gen8 _Gen9)) =
-  .ok (stateMap {symState with execLength := symState.execLength + 1} (@addRHS _Val0 _Val1 _Val2 _Val3 _Val4 K_CELL SCHEDULE_CELL WS _DotVar0 _DotVar2 _Gen0 _Gen1 _Gen10 _Gen11 _Gen12 _Gen13 _Gen14 _Gen15 _Gen16 _Gen17 _Gen18 _Gen19 _Gen2 _Gen20 _Gen21 _Gen22 _Gen23 _Gen3 _Gen4 _Gen5 _Gen6 _Gen7 _Gen8 _Gen9)) := by
+  .ok (stateMap {symState with execLength := symState.execLength + 1} (@addRHS _Val0 _Val1 _Val2 _Val4 K_CELL SCHEDULE_CELL WS _DotVar0 _DotVar2 _Gen0 _Gen1 _Gen10 _Gen11 _Gen12 _Gen13 _Gen14 _Gen15 _Gen16 _Gen17 _Gen18 _Gen19 _Gen2 _Gen20 _Gen21 _Gen22 _Gen23 _Gen3 _Gen4 _Gen5 _Gen6 _Gen7 _Gen8 _Gen9)) := by
   rw [add_prestate_equiv, add_poststate_equiv] <;> try assumption
   cases gas; contradiction
   case succ gas =>
@@ -401,7 +401,7 @@ theorem X_add_equiv
   -- There's no #sizeWordStack
   (wordStackOk : sizeWordStackAux WS 0 < some 1024):
   EVM.X false (UInt256.toNat (intMap GAS_CELL)) (stateMap symState (@addLHS GAS_CELL PC_CELL W0 W1 K_CELL SCHEDULE_CELL USEGAS_CELL WS _DotVar0 _DotVar2 _Gen0 _Gen1 _Gen10 _Gen11 _Gen12 _Gen13 _Gen14 _Gen15 _Gen16 _Gen17 _Gen18 _Gen19 _Gen2 _Gen20 _Gen21 _Gen22 _Gen23 _Gen3 _Gen4 _Gen5 _Gen6 _Gen7 _Gen8 _Gen9)) =
-  .ok (.success (stateMap {symState with execLength := symState.execLength + 2} (@addRHS _Val0 _Val1 _Val2 _Val3 _Val4 K_CELL SCHEDULE_CELL WS _DotVar0 _DotVar2 _Gen0 _Gen1 _Gen10 ⟨ByteArray.empty⟩ _Gen12 _Gen13 _Gen14 _Gen15 _Gen16 _Gen17 _Gen18 _Gen19 _Gen2 _Gen20 _Gen21 _Gen22 _Gen23 _Gen3 _Gen4 _Gen5 _Gen6 _Gen7 _Gen8 _Gen9)) ByteArray.empty) := by
+  .ok (.success (stateMap {symState with execLength := symState.execLength + 2} (@addRHS _Val0 _Val1 _Val2 _Val4 K_CELL SCHEDULE_CELL WS _DotVar0 _DotVar2 _Gen0 _Gen1 _Gen10 ⟨ByteArray.empty⟩ _Gen12 _Gen13 _Gen14 _Gen15 _Gen16 _Gen17 _Gen18 _Gen19 _Gen2 _Gen20 _Gen21 _Gen22 _Gen23 _Gen3 _Gen4 _Gen5 _Gen6 _Gen7 _Gen8 _Gen9)) ByteArray.empty) := by
   -- With `simp` doesn't work
   rw [codeAdd, pcZero, add_prestate_equiv, add_poststate_equiv] <;> try assumption
   -- If we don't apply this lemma we cannot rewrite X_add_summary
