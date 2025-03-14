@@ -340,13 +340,8 @@ theorem step_add_equiv
   case succ gas =>
     rw [EVM.step_add_summary] <;> try assumption
     congr
-    . aesop (add simp [GasInterface.cancun_def, «_-Int_»])
-            (add simp [intMap_sub_dist])
-    . have mod_rw : (PC_CELL + 1) % UInt256.size = PC_CELL + 1 := by
-        rw [Int.mod_cast, Int.toNat_ofNat, Nat.mod_eq_of_lt] <;> try linarith
-        . aesop (add safe (by linarith))
-        . rw [Int.toNat_lt] <;> linarith
-      rw [plusInt_def, ←mod_rw, intMap_add_dist] <;> aesop
+    . aesop (add simp [GasInterface.cancun_def, «_-Int_», intMap_sub_dist])
+    . rw [plusInt_def, ←UInt256.add_succ_mod_size, intMap_add_dist] <;> aesop
     . aesop (add simp [intMap, chop_def, plusInt_def, intMap_add_dist])
 
 /- Deviations from the KEVM produced specifications:
