@@ -120,4 +120,3 @@ macro_rules
               (try simp [SCHEDULE_maxCodeSizeDragon]);
               (try simp [SCHEDULE_maxInitCodeSizeDefault]);
               (try simp [SCHEDULE_maxInitCodeSizeShanghai]))
---              try simp [_fc2d477])

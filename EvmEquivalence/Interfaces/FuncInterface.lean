@@ -87,6 +87,9 @@ axiom orBool_def (b₁ b₂ : SortBool) : _orBool_ b₁ b₂ = some (b₁ || b�
 axiom andBool_def (b₁ b₂ : SortBool) : _andBool_ b₁ b₂ = some (b₁ && b₂)
 axiom notBool_def (b : SortBool) : notBool_ b = some (!b)
 
+-- Behavior of arithmetical comparisons
+axiom ltInt_def (n m : SortInt) : «_<Int_» n m = some (decide (n < m))
+
 -- Behavior of `«#sizeWordStack»`
 -- Reasoning-friendly #sizeWordStack
 def wsLength (ws : SortWordStack) : ℕ :=

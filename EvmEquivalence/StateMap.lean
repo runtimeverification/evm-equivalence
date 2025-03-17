@@ -110,7 +110,7 @@ theorem intMap_add_dist {n m : SortInt} (nh : 0 ≤ n) (mh : 0 ≤ m) :
       rw [Int.mod_def']; apply Int.emod_nonneg; simp [UInt256.size]
     simp_all
 
-theorem intMap_toNat_small {n : SortInt} (nh : 0 ≤ n) (size : n < UInt256.size) :
+theorem intMap_toNat {n : SortInt} (nh : 0 ≤ n) (size : n < UInt256.size) :
   (intMap n).toNat = n.toNat := by
   aesop (add simp [intMap, Int.toNat, UInt256.toSigned, Int.toNat_ofNat, UInt256.ofNat_toNat])
 

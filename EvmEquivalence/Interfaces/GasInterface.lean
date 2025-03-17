@@ -244,6 +244,7 @@ theorem sched_cancun_def :
   simp_schedule1; cases const <;> simp_schedule2
   simp_schedule1; simp_schedule2
 
+@[simp]
 theorem cancun_def :
   «_<_>_SCHEDULE_Int_ScheduleConst_Schedule» const .CANCUN_EVM =
   match const with
