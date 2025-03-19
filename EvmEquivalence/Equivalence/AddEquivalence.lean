@@ -41,50 +41,49 @@ def addLHS
   {_Gen6 : SortLocalMemCell}
   {_Gen7 : SortMemoryUsedCell}
   {_Gen8 : SortCallGasCell}
-  {_Gen9 : SortStaticCell}
-  : SortGeneratedTopCell :=
+  {_Gen9 : SortStaticCell} : SortGeneratedTopCell :=
   { kevm := {
-      k := { val := SortK.kseq ((@inj SortInternalOp SortKItem) (SortInternalOp.«#next[_]_EVM_InternalOp_MaybeOpCode» ((@inj SortBinStackOp   SortMaybeOpCode) SortBinStackOp.ADD_EVM_BinStackOp))) K_CELL },
+      k := { val := SortK.kseq ((@inj SortInternalOp SortKItem) (SortInternalOp.«#next[_]_EVM_InternalOp_MaybeOpCode» ((@inj SortBinStackOp SortMaybeOpCode) SortBinStackOp.ADD_EVM_BinStackOp))) K_CELL },
       exitCode := _Gen22,
       mode := _Gen23,
       schedule := { val := SCHEDULE_CELL },
       useGas := { val := USEGAS_CELL },
       ethereum := {
-      evm := {
-        output := _Gen11,
-        statusCode := _Gen12,
-        callStack := _Gen13,
-        interimStates := _Gen14,
-        touchedAccounts := _Gen15,
-        callState := {
-          program := _Gen0,
-          jumpDests := _Gen1,
-          id := _Gen2,
-          caller := _Gen3,
-          callData := _Gen4,
-          callValue := _Gen5,
-          wordStack := { val :=
-            SortWordStack.«_:__EVM-TYPES_WordStack_Int_WordStack» W0        (SortWordStack.«_:__EVM-TYPES_WordStack_Int_WordStack» W1 WS) },
-          localMem := _Gen6,
-          pc := { val := PC_CELL },
-          gas := { val := (@inj SortInt SortGas) GAS_CELL },
-          memoryUsed := _Gen7,
-          callGas := _Gen8,
-          static := _Gen9,
-          callDepth := _Gen10 },
-        versionedHashes := _Gen16,
-        substate := _Gen17,
-        gasPrice := _Gen18,
-        origin := _Gen19,
-        blockhashes := _Gen20,
-        block := _Gen21 },
-      network := _DotVar2 } },
+        evm := {
+          output := _Gen11,
+          statusCode := _Gen12,
+          callStack := _Gen13,
+          interimStates := _Gen14,
+          touchedAccounts := _Gen15,
+          callState := {
+            program := _Gen0,
+            jumpDests := _Gen1,
+            id := _Gen2,
+            caller := _Gen3,
+            callData := _Gen4,
+            callValue := _Gen5,
+            wordStack := { val := SortWordStack.«_:__EVM-TYPES_WordStack_Int_WordStack» W0 (SortWordStack.«_:__EVM-TYPES_WordStack_Int_WordStack» W1 WS) },
+            localMem := _Gen6,
+            pc := { val := PC_CELL },
+            gas := { val := (@inj SortInt SortGas) GAS_CELL },
+            memoryUsed := _Gen7,
+            callGas := _Gen8,
+            static := _Gen9,
+            callDepth := _Gen10 },
+          versionedHashes := _Gen16,
+          substate := _Gen17,
+          gasPrice := _Gen18,
+          origin := _Gen19,
+          blockhashes := _Gen20,
+          block := _Gen21 },
+        network := _DotVar2 } },
     generatedCounter := _DotVar0 }
 
 def addRHS
-  {_Val0 _Val1 _Val2 _Val4 : SortInt}
+  {_Val0 _Val3 _Val4 _Val5 _Val6 _Val7 : SortInt}
   {K_CELL : SortK}
   {SCHEDULE_CELL : SortSchedule}
+  {_Val1 _Val2 : SortBool}
   {WS : SortWordStack}
   {_DotVar0 : SortGeneratedCounterCell}
   {_DotVar2 : SortNetworkCell}
@@ -111,50 +110,49 @@ def addRHS
   {_Gen6 : SortLocalMemCell}
   {_Gen7 : SortMemoryUsedCell}
   {_Gen8 : SortCallGasCell}
-  {_Gen9 : SortStaticCell}
-  : SortGeneratedTopCell :=
+  {_Gen9 : SortStaticCell}: SortGeneratedTopCell :=
   { kevm := {
-    k := { val := K_CELL },
-    exitCode := _Gen22,
-    mode := _Gen23,
-    schedule := { val := SCHEDULE_CELL },
-    useGas := { val := true },
-    ethereum := {
-      evm := {
-        output := _Gen11,
-        statusCode := _Gen12,
-        callStack := _Gen13,
-        interimStates := _Gen14,
-        touchedAccounts := _Gen15,
-        callState := {
-          program := _Gen0,
-          jumpDests := _Gen1,
-          id := _Gen2,
-          caller := _Gen3,
-          callData := _Gen4,
-          callValue := _Gen5,
-          wordStack := { val := SortWordStack.«_:__EVM-TYPES_WordStack_Int_WordStack» _Val1 WS },
-          localMem := _Gen6,
-          pc := { val := _Val2 },
-          gas := { val := (@inj SortInt SortGas) _Val4 },
-          memoryUsed := _Gen7,
-          callGas := _Gen8,
-          static := _Gen9,
-          callDepth := _Gen10 },
-        versionedHashes := _Gen16,
-        substate := _Gen17,
-        gasPrice := _Gen18,
-        origin := _Gen19,
-        blockhashes := _Gen20,
-        block := _Gen21 },
-      network := _DotVar2 } },
+      k := { val := K_CELL },
+      exitCode := _Gen22,
+      mode := _Gen23,
+      schedule := { val := SCHEDULE_CELL },
+      useGas := { val := true },
+      ethereum := {
+        evm := {
+          output := _Gen11,
+          statusCode := _Gen12,
+          callStack := _Gen13,
+          interimStates := _Gen14,
+          touchedAccounts := _Gen15,
+          callState := {
+            program := _Gen0,
+            jumpDests := _Gen1,
+            id := _Gen2,
+            caller := _Gen3,
+            callData := _Gen4,
+            callValue := _Gen5,
+            wordStack := { val := SortWordStack.«_:__EVM-TYPES_WordStack_Int_WordStack» _Val4 WS },
+            localMem := _Gen6,
+            pc := { val := _Val5 },
+            gas := { val := (@inj SortInt SortGas) _Val7 },
+            memoryUsed := _Gen7,
+            callGas := _Gen8,
+            static := _Gen9,
+            callDepth := _Gen10 },
+          versionedHashes := _Gen16,
+          substate := _Gen17,
+          gasPrice := _Gen18,
+          origin := _Gen19,
+          blockhashes := _Gen20,
+          block := _Gen21 },
+        network := _DotVar2 } },
     generatedCounter := _DotVar0 }
 
 theorem rw_addLHS_addRHS
-  {GAS_CELL PC_CELL W0 W1 _Val0 _Val1 _Val2 _Val3 _Val4 : SortInt}
+  {GAS_CELL PC_CELL W0 W1 _Val0 _Val3 _Val4 _Val5 _Val6 _Val7 : SortInt}
   {K_CELL : SortK}
   {SCHEDULE_CELL : SortSchedule}
-  {USEGAS_CELL : SortBool}
+  {USEGAS_CELL _Val1 _Val2 : SortBool}
   {WS : SortWordStack}
   {_DotVar0 : SortGeneratedCounterCell}
   {_DotVar2 : SortNetworkCell}
@@ -182,19 +180,23 @@ theorem rw_addLHS_addRHS
   {_Gen7 : SortMemoryUsedCell}
   {_Gen8 : SortCallGasCell}
   {_Gen9 : SortStaticCell}
-  (defn_Val0 : «_+Int_» W0 W1 = some _Val0)
-  (defn_Val1 : chop _Val0 = some _Val1)
-  (defn_Val2 : «_+Int_» PC_CELL 1 = some _Val2)
-  (defn_Val3 : «_<_>_SCHEDULE_Int_ScheduleConst_Schedule» SortScheduleConst.Gverylow_SCHEDULE_ScheduleConst SCHEDULE_CELL = some _Val3)
-  (defn_Val4 : «_-Int_» GAS_CELL _Val3 = some _Val4)
-  (req : USEGAS_CELL = true):
+  (defn_Val0 : «_<_>_SCHEDULE_Int_ScheduleConst_Schedule» SortScheduleConst.Gverylow_SCHEDULE_ScheduleConst SCHEDULE_CELL = some _Val0)
+  (defn_Val1 : «_<=Int_» _Val0 GAS_CELL = some _Val1)
+  (defn_Val2 : _andBool_ USEGAS_CELL _Val1 = some _Val2)
+  (defn_Val3 : «_+Int_» W0 W1 = some _Val3)
+  (defn_Val4 : chop _Val3 = some _Val4)
+  (defn_Val5 : «_+Int_» PC_CELL 1 = some _Val5)
+  (defn_Val6 : «_<_>_SCHEDULE_Int_ScheduleConst_Schedule» SortScheduleConst.Gverylow_SCHEDULE_ScheduleConst SCHEDULE_CELL = some _Val6)
+  (defn_Val7 : «_-Int_» GAS_CELL _Val6 = some _Val7)
+  (req : _Val2 = true):
   Rewrites
-    (@addLHS GAS_CELL PC_CELL W0 W1 K_CELL SCHEDULE_CELL USEGAS_CELL WS _DotVar0 _DotVar2 _Gen0 _Gen1 _Gen10 _Gen11 _Gen12 _Gen13 _Gen14 _Gen15 _Gen16 _Gen17 _Gen18 _Gen19 _Gen2 _Gen20 _Gen21 _Gen22 _Gen23 _Gen3 _Gen4 _Gen5 _Gen6 _Gen7 _Gen8 _Gen9)
-    (@addRHS _Val0 _Val1 _Val2 _Val4 K_CELL SCHEDULE_CELL WS _DotVar0 _DotVar2 _Gen0 _Gen1 _Gen10 _Gen11 _Gen12 _Gen13 _Gen14 _Gen15 _Gen16 _Gen17 _Gen18 _Gen19 _Gen2 _Gen20 _Gen21 _Gen22 _Gen23 _Gen3 _Gen4 _Gen5 _Gen6 _Gen7 _Gen8 _Gen9) := by
-  apply Rewrites.SUMMARY_ADD_2_SPEC_BASIC_BLOCK_8_TO_6 <;> try assumption
+  (@addLHS GAS_CELL PC_CELL W0 W1 K_CELL SCHEDULE_CELL USEGAS_CELL WS _DotVar0 _DotVar2 _Gen0 _Gen1 _Gen10 _Gen11 _Gen12 _Gen13 _Gen14 _Gen15 _Gen16 _Gen17 _Gen18 _Gen19 _Gen2 _Gen20 _Gen21 _Gen22 _Gen23 _Gen3 _Gen4 _Gen5 _Gen6 _Gen7 _Gen8 _Gen9)
+  (@addRHS _Val0 _Val3 _Val4 _Val5 _Val6 _Val7 K_CELL SCHEDULE_CELL _Val1 _Val2 WS _DotVar0 _DotVar2 _Gen0 _Gen1 _Gen10 _Gen11 _Gen12 _Gen13 _Gen14 _Gen15 _Gen16 _Gen17 _Gen18 _Gen19 _Gen2 _Gen20 _Gen21 _Gen22 _Gen23 _Gen3 _Gen4 _Gen5 _Gen6 _Gen7 _Gen8 _Gen9) := by
+  apply Rewrites.SUMMARY_ADD_2_SPEC_BASIC_BLOCK_21_TO_20 <;> try assumption
+  simp_all
 
 theorem add_prestate_equiv
-  {GAS_CELL PC_CELL W0 W1 _Val0 _Val1 _Val2 _Val3 _Val4 : SortInt}
+  {GAS_CELL PC_CELL W0 W1 : SortInt}
   {K_CELL : SortK}
   {SCHEDULE_CELL : SortSchedule}
   {USEGAS_CELL : SortBool}
@@ -236,9 +238,10 @@ theorem add_prestate_equiv
     } := rfl
 
 theorem add_poststate_equiv
-  {PC_CELL W0 W1 _Val0 _Val1 _Val2 _Val3 _Val4 : SortInt}
+  {PC_CELL W0 W1 _Val0 _Val3 _Val4 _Val5 _Val6 _Val7 : SortInt}
   {K_CELL : SortK}
   {SCHEDULE_CELL : SortSchedule}
+  {_Val1 _Val2 : SortBool}
   {WS : SortWordStack}
   {_DotVar0 : SortGeneratedCounterCell}
   {_DotVar2 : SortNetworkCell}
@@ -266,15 +269,15 @@ theorem add_poststate_equiv
   {_Gen7 : SortMemoryUsedCell}
   {_Gen8 : SortCallGasCell}
   {_Gen9 : SortStaticCell}
-  (defn_Val0 : «_+Int_» W0 W1 = some _Val0)
-  (defn_Val1 : chop _Val0 = some _Val1)
-  (defn_Val2 : «_+Int_» PC_CELL 1 = some _Val2)
+  (defn_Val3 : «_+Int_» W0 W1 = some _Val3)
+  (defn_Val4 : chop _Val3 = some _Val4)
+  (defn_Val5 : «_+Int_» PC_CELL 1 = some _Val5)
   (symState : EVM.State):
-  stateMap symState (@addRHS _Val0 _Val1 _Val2 _Val4 K_CELL SCHEDULE_CELL WS _DotVar0 _DotVar2 _Gen0 _Gen1 _Gen10 _Gen11 _Gen12 _Gen13 _Gen14 _Gen15 _Gen16 _Gen17 _Gen18 _Gen19 _Gen2 _Gen20 _Gen21 _Gen22 _Gen23 _Gen3 _Gen4 _Gen5 _Gen6 _Gen7 _Gen8 _Gen9) =
+  stateMap symState (@addRHS _Val0 _Val3 _Val4 _Val5 _Val6 _Val7 K_CELL SCHEDULE_CELL _Val1 _Val2 WS _DotVar0 _DotVar2 _Gen0 _Gen1 _Gen10 _Gen11 _Gen12 _Gen13 _Gen14 _Gen15 _Gen16 _Gen17 _Gen18 _Gen19 _Gen2 _Gen20 _Gen21 _Gen22 _Gen23 _Gen3 _Gen4 _Gen5 _Gen6 _Gen7 _Gen8 _Gen9) =
   {symState with
     stack := (intMap (chop' («_+Int'_» W0 W1))) :: wordStackMap WS
     pc := intMap («_+Int'_» PC_CELL 1)
-    gasAvailable := intMap _Val4
+    gasAvailable := intMap _Val7
     executionEnv := {symState.executionEnv with code := _Gen0.val}
     returnData := _Gen11.val
     } := by aesop (add simp [«_+Int'_», chop'])
@@ -284,10 +287,10 @@ open AddSummary
 -- We cannot prove full equivalence for the `EVM.step` function
 -- This is because it doesn't include all semantics such as gas computation
 theorem step_add_equiv
-  {GAS_CELL PC_CELL W0 W1 _Val0 _Val1 _Val2 _Val3 _Val4 : SortInt}
+  {GAS_CELL PC_CELL W0 W1 _Val0 _Val3 _Val4 _Val5 _Val6 _Val7 : SortInt}
   {K_CELL : SortK}
   {SCHEDULE_CELL : SortSchedule}
-  {USEGAS_CELL : SortBool}
+  {USEGAS_CELL _Val1 _Val2 : SortBool}
   {WS : SortWordStack}
   {_DotVar0 : SortGeneratedCounterCell}
   {_DotVar2 : SortNetworkCell}
@@ -315,11 +318,15 @@ theorem step_add_equiv
   {_Gen7 : SortMemoryUsedCell}
   {_Gen8 : SortCallGasCell}
   {_Gen9 : SortStaticCell}
-  (defn_Val0 : «_+Int_» W0 W1 = some _Val0)
-  (defn_Val1 : chop _Val0 = some _Val1)
-  (defn_Val2 : «_+Int_» PC_CELL 1 = some _Val2)
-  (defn_Val3 : «_<_>_SCHEDULE_Int_ScheduleConst_Schedule» SortScheduleConst.Gverylow_SCHEDULE_ScheduleConst SCHEDULE_CELL = some _Val3)
-  (defn_Val4 : «_-Int_» GAS_CELL _Val3 = some _Val4)
+  (defn_Val0 : «_<_>_SCHEDULE_Int_ScheduleConst_Schedule» SortScheduleConst.Gverylow_SCHEDULE_ScheduleConst SCHEDULE_CELL = some _Val0)
+  (defn_Val1 : «_<=Int_» _Val0 GAS_CELL = some _Val1)
+  (defn_Val2 : _andBool_ USEGAS_CELL _Val1 = some _Val2)
+  (defn_Val3 : «_+Int_» W0 W1 = some _Val3)
+  (defn_Val4 : chop _Val3 = some _Val4)
+  (defn_Val5 : «_+Int_» PC_CELL 1 = some _Val5)
+  (defn_Val6 : «_<_>_SCHEDULE_Int_ScheduleConst_Schedule» SortScheduleConst.Gverylow_SCHEDULE_ScheduleConst SCHEDULE_CELL = some _Val6)
+  (defn_Val7 : «_-Int_» GAS_CELL _Val6 = some _Val7)
+  (req : _Val2 = true)
   (symState : EVM.State)
   -- needed for EVM.step
   (gas gasCost : ℕ)
@@ -334,7 +341,7 @@ theorem step_add_equiv
   (W0ge0 : 0 ≤ W0)
   (W1ge0 : 0 ≤ W1):
   EVM.step_add gas gasCost (stateMap symState (@addLHS GAS_CELL PC_CELL W0 W1 K_CELL SCHEDULE_CELL USEGAS_CELL WS _DotVar0 _DotVar2 _Gen0 _Gen1 _Gen10 _Gen11 _Gen12 _Gen13 _Gen14 _Gen15 _Gen16 _Gen17 _Gen18 _Gen19 _Gen2 _Gen20 _Gen21 _Gen22 _Gen23 _Gen3 _Gen4 _Gen5 _Gen6 _Gen7 _Gen8 _Gen9)) =
-  .ok (stateMap {symState with execLength := symState.execLength + 1} (@addRHS _Val0 _Val1 _Val2 _Val4 K_CELL SCHEDULE_CELL WS _DotVar0 _DotVar2 _Gen0 _Gen1 _Gen10 _Gen11 _Gen12 _Gen13 _Gen14 _Gen15 _Gen16 _Gen17 _Gen18 _Gen19 _Gen2 _Gen20 _Gen21 _Gen22 _Gen23 _Gen3 _Gen4 _Gen5 _Gen6 _Gen7 _Gen8 _Gen9)) := by
+  .ok (stateMap {symState with execLength := symState.execLength + 1} (@addRHS _Val0 _Val3 _Val4 _Val5 _Val6 _Val7 K_CELL SCHEDULE_CELL _Val1 _Val2 WS _DotVar0 _DotVar2 _Gen0 _Gen1 _Gen10 _Gen11 _Gen12 _Gen13 _Gen14 _Gen15 _Gen16 _Gen17 _Gen18 _Gen19 _Gen2 _Gen20 _Gen21 _Gen22 _Gen23 _Gen3 _Gen4 _Gen5 _Gen6 _Gen7 _Gen8 _Gen9)) := by
   rw [add_prestate_equiv, add_poststate_equiv] <;> try assumption
   cases gas; contradiction
   case succ gas =>
@@ -353,10 +360,10 @@ theorem step_add_equiv
  6. `W0` and `W1` are nonnegative
  -/
 theorem X_add_equiv
-  {GAS_CELL PC_CELL W0 W1 _Val0 _Val1 _Val2 _Val3 _Val4 : SortInt}
+  {GAS_CELL PC_CELL W0 W1 _Val0 _Val3 _Val4 _Val5 _Val6 _Val7 : SortInt}
   {K_CELL : SortK}
   {SCHEDULE_CELL : SortSchedule}
-  {USEGAS_CELL : SortBool}
+  {USEGAS_CELL _Val1 _Val2 : SortBool}
   {WS : SortWordStack}
   {_DotVar0 : SortGeneratedCounterCell}
   {_DotVar2 : SortNetworkCell}
@@ -384,11 +391,15 @@ theorem X_add_equiv
   {_Gen7 : SortMemoryUsedCell}
   {_Gen8 : SortCallGasCell}
   {_Gen9 : SortStaticCell}
-  (defn_Val0 : «_+Int_» W0 W1 = some _Val0)
-  (defn_Val1 : chop _Val0 = some _Val1)
-  (defn_Val2 : «_+Int_» PC_CELL 1 = some _Val2)
-  (defn_Val3 : «_<_>_SCHEDULE_Int_ScheduleConst_Schedule» SortScheduleConst.Gverylow_SCHEDULE_ScheduleConst SCHEDULE_CELL = some _Val3)
-  (defn_Val4 : «_-Int_» GAS_CELL _Val3 = some _Val4)
+  (defn_Val0 : «_<_>_SCHEDULE_Int_ScheduleConst_Schedule» SortScheduleConst.Gverylow_SCHEDULE_ScheduleConst SCHEDULE_CELL = some _Val0)
+  (defn_Val1 : «_<=Int_» _Val0 GAS_CELL = some _Val1)
+  (defn_Val2 : _andBool_ USEGAS_CELL _Val1 = some _Val2)
+  (defn_Val3 : «_+Int_» W0 W1 = some _Val3)
+  (defn_Val4 : chop _Val3 = some _Val4)
+  (defn_Val5 : «_+Int_» PC_CELL 1 = some _Val5)
+  (defn_Val6 : «_<_>_SCHEDULE_Int_ScheduleConst_Schedule» SortScheduleConst.Gverylow_SCHEDULE_ScheduleConst SCHEDULE_CELL = some _Val6)
+  (defn_Val7 : «_-Int_» GAS_CELL _Val6 = some _Val7)
+  (req : _Val2 = true)
   (symState : EVM.State)
   -- Necessary assumptions for equivalence
   (cancun : SCHEDULE_CELL = .CANCUN_EVM)
@@ -401,7 +412,7 @@ theorem X_add_equiv
   -- There's no #sizeWordStack
   (wordStackOk : sizeWordStackAux WS 0 < some 1024):
   EVM.X false (UInt256.toNat (intMap GAS_CELL)) (stateMap symState (@addLHS GAS_CELL PC_CELL W0 W1 K_CELL SCHEDULE_CELL USEGAS_CELL WS _DotVar0 _DotVar2 _Gen0 _Gen1 _Gen10 _Gen11 _Gen12 _Gen13 _Gen14 _Gen15 _Gen16 _Gen17 _Gen18 _Gen19 _Gen2 _Gen20 _Gen21 _Gen22 _Gen23 _Gen3 _Gen4 _Gen5 _Gen6 _Gen7 _Gen8 _Gen9)) =
-  .ok (.success (stateMap {symState with execLength := symState.execLength + 2} (@addRHS _Val0 _Val1 _Val2 _Val4 K_CELL SCHEDULE_CELL WS _DotVar0 _DotVar2 _Gen0 _Gen1 _Gen10 ⟨ByteArray.empty⟩ _Gen12 _Gen13 _Gen14 _Gen15 _Gen16 _Gen17 _Gen18 _Gen19 _Gen2 _Gen20 _Gen21 _Gen22 _Gen23 _Gen3 _Gen4 _Gen5 _Gen6 _Gen7 _Gen8 _Gen9)) ByteArray.empty) := by
+  .ok (.success (stateMap {symState with execLength := symState.execLength + 2} (@addRHS _Val0 _Val3 _Val4 _Val5 _Val6 _Val7 K_CELL SCHEDULE_CELL _Val1 _Val2 WS _DotVar0 _DotVar2 _Gen0 _Gen1 _Gen10 ⟨ByteArray.empty⟩ _Gen12 _Gen13 _Gen14 _Gen15 _Gen16 _Gen17 _Gen18 _Gen19 _Gen2 _Gen20 _Gen21 _Gen22 _Gen23 _Gen3 _Gen4 _Gen5 _Gen6 _Gen7 _Gen8 _Gen9)) ByteArray.empty) := by
   -- With `simp` doesn't work
   rw [codeAdd, pcZero, add_prestate_equiv, add_poststate_equiv] <;> try assumption
   -- If we don't apply this lemma we cannot rewrite X_add_summary
