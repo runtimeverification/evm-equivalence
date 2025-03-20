@@ -1,7 +1,11 @@
 import EvmEquivalence.KEVM2Lean.Func
 
 inductive Rewrites : SortGeneratedTopCell → SortGeneratedTopCell → Prop where
-  | tran {s1 s2 s3 : SortGeneratedTopCell} (t1 : Rewrites s1 s2) (t2 : Rewrites s2 s3) : Rewrites s1 s3
+  | tran
+    {s1 s2 s3 : SortGeneratedTopCell}
+    (t1 : Rewrites s1 s2)
+    (t2 : Rewrites s2 s3)
+    : Rewrites s1 s3
   | SUMMARY_ADD_2_SPEC_BASIC_BLOCK_21_TO_20
     {GAS_CELL PC_CELL W0 W1 _Val0 _Val3 _Val4 _Val5 _Val6 _Val7 : SortInt}
     {K_CELL : SortK}
@@ -42,92 +46,79 @@ inductive Rewrites : SortGeneratedTopCell → SortGeneratedTopCell → Prop wher
     (defn_Val5 : «_+Int_» PC_CELL 1 = some _Val5)
     (defn_Val6 : «_<_>_SCHEDULE_Int_ScheduleConst_Schedule» SortScheduleConst.Gverylow_SCHEDULE_ScheduleConst SCHEDULE_CELL = some _Val6)
     (defn_Val7 : «_-Int_» GAS_CELL _Val6 = some _Val7)
-    (req : _Val2 = true) : Rewrites
-    {
-     kevm := {
-     k := {
-     val := SortK.kseq ((@inj SortInternalOp SortKItem) (SortInternalOp.«#next[_]_EVM_InternalOp_MaybeOpCode» ((@inj SortBinStackOp SortMaybeOpCode) SortBinStackOp.ADD_EVM_BinStackOp))) K_CELL },
-      exitCode := _Gen22,
-      mode := _Gen23,
-      schedule := {
-     val := SCHEDULE_CELL },
-      useGas := {
-     val := USEGAS_CELL },
-      ethereum := {
-     evm := {
-     output := _Gen11,
-      statusCode := _Gen12,
-      callStack := _Gen13,
-      interimStates := _Gen14,
-      touchedAccounts := _Gen15,
-      callState := {
-     program := _Gen0,
-      jumpDests := _Gen1,
-      id := _Gen2,
-      caller := _Gen3,
-      callData := _Gen4,
-      callValue := _Gen5,
-      wordStack := {
-     val := SortWordStack.«_:__EVM-TYPES_WordStack_Int_WordStack» W0 (SortWordStack.«_:__EVM-TYPES_WordStack_Int_WordStack» W1 WS) },
-      localMem := _Gen6,
-      pc := {
-     val := PC_CELL },
-      gas := {
-     val := (@inj SortInt SortGas) GAS_CELL },
-      memoryUsed := _Gen7,
-      callGas := _Gen8,
-      static := _Gen9,
-      callDepth := _Gen10 },
-      versionedHashes := _Gen16,
-      substate := _Gen17,
-      gasPrice := _Gen18,
-      origin := _Gen19,
-      blockhashes := _Gen20,
-      block := _Gen21 },
-      network := _DotVar2 } },
-      generatedCounter := _DotVar0 }
-    {
-     kevm := {
-     k := {
-     val := K_CELL },
-      exitCode := _Gen22,
-      mode := _Gen23,
-      schedule := {
-     val := SCHEDULE_CELL },
-      useGas := {
-     val := true },
-      ethereum := {
-     evm := {
-     output := _Gen11,
-      statusCode := _Gen12,
-      callStack := _Gen13,
-      interimStates := _Gen14,
-      touchedAccounts := _Gen15,
-      callState := {
-     program := _Gen0,
-      jumpDests := _Gen1,
-      id := _Gen2,
-      caller := _Gen3,
-      callData := _Gen4,
-      callValue := _Gen5,
-      wordStack := {
-     val := SortWordStack.«_:__EVM-TYPES_WordStack_Int_WordStack» _Val4 WS },
-      localMem := _Gen6,
-      pc := {
-     val := _Val5 },
-      gas := {
-     val := (@inj SortInt SortGas) _Val7 },
-      memoryUsed := _Gen7,
-      callGas := _Gen8,
-      static := _Gen9,
-      callDepth := _Gen10 },
-      versionedHashes := _Gen16,
-      substate := _Gen17,
-      gasPrice := _Gen18,
-      origin := _Gen19,
-      blockhashes := _Gen20,
-      block := _Gen21 },
-      network := _DotVar2 } },
+    (req : _Val2 = true)
+    : Rewrites {
+      kevm := {
+        k := { val := SortK.kseq ((@inj SortInternalOp SortKItem) (SortInternalOp.«#next[_]_EVM_InternalOp_MaybeOpCode» ((@inj SortBinStackOp SortMaybeOpCode) SortBinStackOp.ADD_EVM_BinStackOp))) K_CELL },
+        exitCode := _Gen22,
+        mode := _Gen23,
+        schedule := { val := SCHEDULE_CELL },
+        useGas := { val := USEGAS_CELL },
+        ethereum := {
+          evm := {
+            output := _Gen11,
+            statusCode := _Gen12,
+            callStack := _Gen13,
+            interimStates := _Gen14,
+            touchedAccounts := _Gen15,
+            callState := {
+              program := _Gen0,
+              jumpDests := _Gen1,
+              id := _Gen2,
+              caller := _Gen3,
+              callData := _Gen4,
+              callValue := _Gen5,
+              wordStack := { val := SortWordStack.«_:__EVM-TYPES_WordStack_Int_WordStack» W0 (SortWordStack.«_:__EVM-TYPES_WordStack_Int_WordStack» W1 WS) },
+              localMem := _Gen6,
+              pc := { val := PC_CELL },
+              gas := { val := (@inj SortInt SortGas) GAS_CELL },
+              memoryUsed := _Gen7,
+              callGas := _Gen8,
+              static := _Gen9,
+              callDepth := _Gen10 },
+            versionedHashes := _Gen16,
+            substate := _Gen17,
+            gasPrice := _Gen18,
+            origin := _Gen19,
+            blockhashes := _Gen20,
+            block := _Gen21 },
+          network := _DotVar2 } },
+      generatedCounter := _DotVar0 } {
+      kevm := {
+        k := { val := K_CELL },
+        exitCode := _Gen22,
+        mode := _Gen23,
+        schedule := { val := SCHEDULE_CELL },
+        useGas := { val := true },
+        ethereum := {
+          evm := {
+            output := _Gen11,
+            statusCode := _Gen12,
+            callStack := _Gen13,
+            interimStates := _Gen14,
+            touchedAccounts := _Gen15,
+            callState := {
+              program := _Gen0,
+              jumpDests := _Gen1,
+              id := _Gen2,
+              caller := _Gen3,
+              callData := _Gen4,
+              callValue := _Gen5,
+              wordStack := { val := SortWordStack.«_:__EVM-TYPES_WordStack_Int_WordStack» _Val4 WS },
+              localMem := _Gen6,
+              pc := { val := _Val5 },
+              gas := { val := (@inj SortInt SortGas) _Val7 },
+              memoryUsed := _Gen7,
+              callGas := _Gen8,
+              static := _Gen9,
+              callDepth := _Gen10 },
+            versionedHashes := _Gen16,
+            substate := _Gen17,
+            gasPrice := _Gen18,
+            origin := _Gen19,
+            blockhashes := _Gen20,
+            block := _Gen21 },
+          network := _DotVar2 } },
       generatedCounter := _DotVar0 }
   | SUMMARY_PUSHZERO_0_SPEC_BASIC_BLOCK_25_TO_24
     {GAS_CELL PC_CELL _Val0 _Val11 _Val12 _Val13 _Val3 _Val6 : SortInt}
@@ -175,90 +166,77 @@ inductive Rewrites : SortGeneratedTopCell → SortGeneratedTopCell → Prop wher
     (defn_Val11 : «_+Int_» PC_CELL 1 = some _Val11)
     (defn_Val12 : «_<_>_SCHEDULE_Int_ScheduleConst_Schedule» SortScheduleConst.Gbase_SCHEDULE_ScheduleConst SCHEDULE_CELL = some _Val12)
     (defn_Val13 : «_-Int_» GAS_CELL _Val12 = some _Val13)
-    (req : _Val10 = true) : Rewrites
-    {
-     kevm := {
-     k := {
-     val := SortK.kseq ((@inj SortInternalOp SortKItem) (SortInternalOp.«#next[_]_EVM_InternalOp_MaybeOpCode» ((@inj SortPushOp SortMaybeOpCode) SortPushOp.PUSHZERO_EVM_PushOp))) K_CELL },
-      exitCode := _Gen22,
-      mode := _Gen23,
-      schedule := {
-     val := SCHEDULE_CELL },
-      useGas := {
-     val := USEGAS_CELL },
-      ethereum := {
-     evm := {
-     output := _Gen11,
-      statusCode := _Gen12,
-      callStack := _Gen13,
-      interimStates := _Gen14,
-      touchedAccounts := _Gen15,
-      callState := {
-     program := _Gen0,
-      jumpDests := _Gen1,
-      id := _Gen2,
-      caller := _Gen3,
-      callData := _Gen4,
-      callValue := _Gen5,
-      wordStack := {
-     val := WS },
-      localMem := _Gen6,
-      pc := {
-     val := PC_CELL },
-      gas := {
-     val := (@inj SortInt SortGas) GAS_CELL },
-      memoryUsed := _Gen7,
-      callGas := _Gen8,
-      static := _Gen9,
-      callDepth := _Gen10 },
-      versionedHashes := _Gen16,
-      substate := _Gen17,
-      gasPrice := _Gen18,
-      origin := _Gen19,
-      blockhashes := _Gen20,
-      block := _Gen21 },
-      network := _DotVar2 } },
-      generatedCounter := _DotVar0 }
-    {
-     kevm := {
-     k := {
-     val := K_CELL },
-      exitCode := _Gen22,
-      mode := _Gen23,
-      schedule := {
-     val := SCHEDULE_CELL },
-      useGas := {
-     val := true },
-      ethereum := {
-     evm := {
-     output := _Gen11,
-      statusCode := _Gen12,
-      callStack := _Gen13,
-      interimStates := _Gen14,
-      touchedAccounts := _Gen15,
-      callState := {
-     program := _Gen0,
-      jumpDests := _Gen1,
-      id := _Gen2,
-      caller := _Gen3,
-      callData := _Gen4,
-      callValue := _Gen5,
-      wordStack := {
-     val := SortWordStack.«_:__EVM-TYPES_WordStack_Int_WordStack» 0 WS },
-      localMem := _Gen6,
-      pc := {
-     val := _Val11 },
-      gas := {
-     val := (@inj SortInt SortGas) _Val13 },
-      memoryUsed := _Gen7,
-      callGas := _Gen8,
-      static := _Gen9,
-      callDepth := _Gen10 },
-      versionedHashes := _Gen16,
-      substate := _Gen17,
-      gasPrice := _Gen18,
-      origin := _Gen19,
-      blockhashes := _Gen20,
-      block := _Gen21 },
-      network := _DotVar2 } },
+    (req : _Val10 = true)
+    : Rewrites {
+      kevm := {
+        k := { val := SortK.kseq ((@inj SortInternalOp SortKItem) (SortInternalOp.«#next[_]_EVM_InternalOp_MaybeOpCode» ((@inj SortPushOp SortMaybeOpCode) SortPushOp.PUSHZERO_EVM_PushOp))) K_CELL },
+        exitCode := _Gen22,
+        mode := _Gen23,
+        schedule := { val := SCHEDULE_CELL },
+        useGas := { val := USEGAS_CELL },
+        ethereum := {
+          evm := {
+            output := _Gen11,
+            statusCode := _Gen12,
+            callStack := _Gen13,
+            interimStates := _Gen14,
+            touchedAccounts := _Gen15,
+            callState := {
+              program := _Gen0,
+              jumpDests := _Gen1,
+              id := _Gen2,
+              caller := _Gen3,
+              callData := _Gen4,
+              callValue := _Gen5,
+              wordStack := { val := WS },
+              localMem := _Gen6,
+              pc := { val := PC_CELL },
+              gas := { val := (@inj SortInt SortGas) GAS_CELL },
+              memoryUsed := _Gen7,
+              callGas := _Gen8,
+              static := _Gen9,
+              callDepth := _Gen10 },
+            versionedHashes := _Gen16,
+            substate := _Gen17,
+            gasPrice := _Gen18,
+            origin := _Gen19,
+            blockhashes := _Gen20,
+            block := _Gen21 },
+          network := _DotVar2 } },
+      generatedCounter := _DotVar0 } {
+      kevm := {
+        k := { val := K_CELL },
+        exitCode := _Gen22,
+        mode := _Gen23,
+        schedule := { val := SCHEDULE_CELL },
+        useGas := { val := true },
+        ethereum := {
+          evm := {
+            output := _Gen11,
+            statusCode := _Gen12,
+            callStack := _Gen13,
+            interimStates := _Gen14,
+            touchedAccounts := _Gen15,
+            callState := {
+              program := _Gen0,
+              jumpDests := _Gen1,
+              id := _Gen2,
+              caller := _Gen3,
+              callData := _Gen4,
+              callValue := _Gen5,
+              wordStack := { val := SortWordStack.«_:__EVM-TYPES_WordStack_Int_WordStack» 0 WS },
+              localMem := _Gen6,
+              pc := { val := _Val11 },
+              gas := { val := (@inj SortInt SortGas) _Val13 },
+              memoryUsed := _Gen7,
+              callGas := _Gen8,
+              static := _Gen9,
+              callDepth := _Gen10 },
+            versionedHashes := _Gen16,
+            substate := _Gen17,
+            gasPrice := _Gen18,
+            origin := _Gen19,
+            blockhashes := _Gen20,
+            block := _Gen21 },
+          network := _DotVar2 } },
       generatedCounter := _DotVar0 }
