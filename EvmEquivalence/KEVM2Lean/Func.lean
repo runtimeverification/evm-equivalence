@@ -1,403 +1,421 @@
 import EvmEquivalence.KEVM2Lean.Inj
 import EvmEquivalence.KEVM2Lean.ScheduleOrdering
 
-axiom _modInt_ (x0 : SortInt) (x1 : SortInt) : Option SortInt
+axiom «.WithdrawalCellMap» : Option SortWithdrawalCellMap
 
-def SCHEDULE_maxCodeSizeDragon : SortScheduleConst → SortSchedule → Option SortInt
-  | SortScheduleConst.maxCodeSize_SCHEDULE_ScheduleConst, SortSchedule.SPURIOUS_DRAGON_EVM => some 24576
-  | _, _ => none
-
-def SCHEDULE_GblockhashDefault : SortScheduleConst → SortSchedule → Option SortInt
-  | SortScheduleConst.Gblockhash_SCHEDULE_ScheduleConst, SortSchedule.DEFAULT_EVM => some 20
-  | _, _ => none
-
-axiom ListItem (x0 : SortKItem) : Option SortList
-
-def SCHEDULE_GlowDefault : SortScheduleConst → SortSchedule → Option SortInt
-  | SortScheduleConst.Glow_SCHEDULE_ScheduleConst, SortSchedule.DEFAULT_EVM => some 5
-  | _, _ => none
-
-def _75897fa : SortWordStack → SortInt → Option SortInt
-  | SortWordStack.«.WordStack_EVM-TYPES_WordStack», SIZE => some SIZE
-  | _, _ => none
-
-def SCHEDULE_RbMerge : SortScheduleConst → SortSchedule → Option SortInt
-  | SortScheduleConst.Rb_SCHEDULE_ScheduleConst, SortSchedule.MERGE_EVM => some 0
-  | _, _ => none
-
-def SCHEDULE_GselfdestructDefault : SortScheduleConst → SortSchedule → Option SortInt
-  | SortScheduleConst.Gselfdestruct_SCHEDULE_ScheduleConst, SortSchedule.DEFAULT_EVM => some 0
+def SCHEDULE_GaccesslistaddressBerlin : SortScheduleConst → SortSchedule → Option SortInt
+  | SortScheduleConst.Gaccesslistaddress_SCHEDULE_ScheduleConst, SortSchedule.BERLIN_EVM => some 2400
   | _, _ => none
 
 def SCHEDULE_GcoldsloadDefault : SortScheduleConst → SortSchedule → Option SortInt
   | SortScheduleConst.Gcoldsload_SCHEDULE_ScheduleConst, SortSchedule.DEFAULT_EVM => some 0
   | _, _ => none
 
-def SCHEDULE_GbalanceDefault : SortScheduleConst → SortSchedule → Option SortInt
-  | SortScheduleConst.Gbalance_SCHEDULE_ScheduleConst, SortSchedule.DEFAULT_EVM => some 20
+def SCHEDULE_GecpairconstIstanbul : SortScheduleConst → SortSchedule → Option SortInt
+  | SortScheduleConst.Gecpairconst_SCHEDULE_ScheduleConst, SortSchedule.ISTANBUL_EVM => some 45000
   | _, _ => none
-
-def SCHEDULE_GsstoreresetDefault : SortScheduleConst → SortSchedule → Option SortInt
-  | SortScheduleConst.Gsstorereset_SCHEDULE_ScheduleConst, SortSchedule.DEFAULT_EVM => some 5000
-  | _, _ => none
-
-def SCHEDULE_GsloadIstanbul : SortScheduleConst → SortSchedule → Option SortInt
-  | SortScheduleConst.Gsload_SCHEDULE_ScheduleConst, SortSchedule.ISTANBUL_EVM => some 800
-  | _, _ => none
-
-def SCHEDULE_GecaddDefault : SortScheduleConst → SortSchedule → Option SortInt
-  | SortScheduleConst.Gecadd_SCHEDULE_ScheduleConst, SortSchedule.DEFAULT_EVM => some 500
-  | _, _ => none
-
-def SCHEDULE_GecmulIstanbul : SortScheduleConst → SortSchedule → Option SortInt
-  | SortScheduleConst.Gecmul_SCHEDULE_ScheduleConst, SortSchedule.ISTANBUL_EVM => some 6000
-  | _, _ => none
-
-def SCHEDULE_GquaddivisorDefault : SortScheduleConst → SortSchedule → Option SortInt
-  | SortScheduleConst.Gquaddivisor_SCHEDULE_ScheduleConst, SortSchedule.DEFAULT_EVM => some 20
-  | _, _ => none
-
-def SCHEDULE_GcallTangerine : SortScheduleConst → SortSchedule → Option SortInt
-  | SortScheduleConst.Gcall_SCHEDULE_ScheduleConst, SortSchedule.TANGERINE_WHISTLE_EVM => some 700
-  | _, _ => none
-
-def SCHEDULE_GcallDefault : SortScheduleConst → SortSchedule → Option SortInt
-  | SortScheduleConst.Gcall_SCHEDULE_ScheduleConst, SortSchedule.DEFAULT_EVM => some 40
-  | _, _ => none
-
-def SCHEDULE_Gsha3wordDefault : SortScheduleConst → SortSchedule → Option SortInt
-  | SortScheduleConst.Gsha3word_SCHEDULE_ScheduleConst, SortSchedule.DEFAULT_EVM => some 6
-  | _, _ => none
-
-def SCHEDULE_GlogDefault : SortScheduleConst → SortSchedule → Option SortInt
-  | SortScheduleConst.Glog_SCHEDULE_ScheduleConst, SortSchedule.DEFAULT_EVM => some 375
-  | _, _ => none
-
-def SCHEDULE_GecmulDefault : SortScheduleConst → SortSchedule → Option SortInt
-  | SortScheduleConst.Gecmul_SCHEDULE_ScheduleConst, SortSchedule.DEFAULT_EVM => some 40000
-  | _, _ => none
-
-def SCHEDULE_GexpbyteDefault : SortScheduleConst → SortSchedule → Option SortInt
-  | SortScheduleConst.Gexpbyte_SCHEDULE_ScheduleConst, SortSchedule.DEFAULT_EVM => some 10
-  | _, _ => none
-
-def SCHEDULE_GcallstipendDefault : SortScheduleConst → SortSchedule → Option SortInt
-  | SortScheduleConst.Gcallstipend_SCHEDULE_ScheduleConst, SortSchedule.DEFAULT_EVM => some 2300
-  | _, _ => none
-
-def SCHEDULE_Gsha3Default : SortScheduleConst → SortSchedule → Option SortInt
-  | SortScheduleConst.Gsha3_SCHEDULE_ScheduleConst, SortSchedule.DEFAULT_EVM => some 30
-  | _, _ => none
-
-def SCHEDULE_GwarmstoragedirtystoreDefault : SortScheduleConst → SortSchedule → Option SortInt
-  | SortScheduleConst.Gwarmstoragedirtystore_SCHEDULE_ScheduleConst, SortSchedule.DEFAULT_EVM => some 0
-  | _, _ => none
-
-def SCHEDULE_GaccesslistaddressBerlin : SortScheduleConst → SortSchedule → Option SortInt
-  | SortScheduleConst.Gaccesslistaddress_SCHEDULE_ScheduleConst, SortSchedule.BERLIN_EVM => some 2400
-  | _, _ => none
-
-def SCHEDULE_GtxdatanonzeroIstanbul : SortScheduleConst → SortSchedule → Option SortInt
-  | SortScheduleConst.Gtxdatanonzero_SCHEDULE_ScheduleConst, SortSchedule.ISTANBUL_EVM => some 16
-  | _, _ => none
-
-def SCHEDULE_GtxcreateFrontier : SortScheduleConst → SortSchedule → Option SortInt
-  | SortScheduleConst.Gtxcreate_SCHEDULE_ScheduleConst, SortSchedule.FRONTIER_EVM => some 21000
-  | _, _ => none
-
-def SCHEDULE_GaccessliststoragekeyBerlin : SortScheduleConst → SortSchedule → Option SortInt
-  | SortScheduleConst.Gaccessliststoragekey_SCHEDULE_ScheduleConst, SortSchedule.BERLIN_EVM => some 1900
-  | _, _ => none
-
-def _991a329 : SortBool → SortBool → Option SortBool
-  | false, B => some B
-  | _, _ => none
-
-def SCHEDULE_GinitcodewordcostShanghai : SortScheduleConst → SortSchedule → Option SortInt
-  | SortScheduleConst.Ginitcodewordcost_SCHEDULE_ScheduleConst, SortSchedule.SHANGHAI_EVM => some 2
-  | _, _ => none
-
-def SCHEDULE_GcoldaccountaccessBerlin : SortScheduleConst → SortSchedule → Option SortInt
-  | SortScheduleConst.Gcoldaccountaccess_SCHEDULE_ScheduleConst, SortSchedule.BERLIN_EVM => some 2600
-  | _, _ => none
-
-def SCHEDULE_GcoldaccountaccessDefault : SortScheduleConst → SortSchedule → Option SortInt
-  | SortScheduleConst.Gcoldaccountaccess_SCHEDULE_ScheduleConst, SortSchedule.DEFAULT_EVM => some 0
-  | _, _ => none
-
-def SCHEDULE_GinitcodewordcostDefault : SortScheduleConst → SortSchedule → Option SortInt
-  | SortScheduleConst.Ginitcodewordcost_SCHEDULE_ScheduleConst, SortSchedule.DEFAULT_EVM => some 0
-  | _, _ => none
-
-def SCHEDULE_GextcodecopyDefault : SortScheduleConst → SortSchedule → Option SortInt
-  | SortScheduleConst.Gextcodecopy_SCHEDULE_ScheduleConst, SortSchedule.DEFAULT_EVM => some 20
-  | _, _ => none
-
-def SCHEDULE_GcreateDefault : SortScheduleConst → SortSchedule → Option SortInt
-  | SortScheduleConst.Gcreate_SCHEDULE_ScheduleConst, SortSchedule.DEFAULT_EVM => some 32000
-  | _, _ => none
-
-def SCHEDULE_RselfdestructLondon : SortScheduleConst → SortSchedule → Option SortInt
-  | SortScheduleConst.Rselfdestruct_SCHEDULE_ScheduleConst, SortSchedule.LONDON_EVM => some 0
-  | _, _ => none
-
-def _17ebc68 : SortBool → Option SortBool
-  | false => some true
-  | _ => none
 
 def SCHEDULE_GaccesslistaddressDefault : SortScheduleConst → SortSchedule → Option SortInt
   | SortScheduleConst.Gaccesslistaddress_SCHEDULE_ScheduleConst, SortSchedule.DEFAULT_EVM => some 0
-  | _, _ => none
-
-def SCHEDULE_GexpDefault : SortScheduleConst → SortSchedule → Option SortInt
-  | SortScheduleConst.Gexp_SCHEDULE_ScheduleConst, SortSchedule.DEFAULT_EVM => some 10
-  | _, _ => none
-
-def SCHEDULE_GpointevalDefault : SortScheduleConst → SortSchedule → Option SortInt
-  | SortScheduleConst.Gpointeval_SCHEDULE_ScheduleConst, SortSchedule.DEFAULT_EVM => some 0
-  | _, _ => none
-
-def SCHEDULE_GecaddIstanbul : SortScheduleConst → SortSchedule → Option SortInt
-  | SortScheduleConst.Gecadd_SCHEDULE_ScheduleConst, SortSchedule.ISTANBUL_EVM => some 150
-  | _, _ => none
-
-def SCHEDULE_GcallvalueDefault : SortScheduleConst → SortSchedule → Option SortInt
-  | SortScheduleConst.Gcallvalue_SCHEDULE_ScheduleConst, SortSchedule.DEFAULT_EVM => some 9000
-  | _, _ => none
-
-def SCHEDULE_GtxcreateDefault : SortScheduleConst → SortSchedule → Option SortInt
-  | SortScheduleConst.Gtxcreate_SCHEDULE_ScheduleConst, SortSchedule.DEFAULT_EVM => some 53000
-  | _, _ => none
-
-def SCHEDULE_GcopyDefault : SortScheduleConst → SortSchedule → Option SortInt
-  | SortScheduleConst.Gcopy_SCHEDULE_ScheduleConst, SortSchedule.DEFAULT_EVM => some 3
-  | _, _ => none
-
-def _7174452 : SortBool → SortBool → Option SortBool
-  | true, _Gen0 => some true
-  | _, _ => none
-
-def SCHEDULE_GquadcoeffDefault : SortScheduleConst → SortSchedule → Option SortInt
-  | SortScheduleConst.Gquadcoeff_SCHEDULE_ScheduleConst, SortSchedule.DEFAULT_EVM => some 512
-  | _, _ => none
-
-def SCHEDULE_GbalanceTangerine : SortScheduleConst → SortSchedule → Option SortInt
-  | SortScheduleConst.Gbalance_SCHEDULE_ScheduleConst, SortSchedule.TANGERINE_WHISTLE_EVM => some 400
-  | _, _ => none
-
-def SCHEDULE_GsloadDefault : SortScheduleConst → SortSchedule → Option SortInt
-  | SortScheduleConst.Gsload_SCHEDULE_ScheduleConst, SortSchedule.DEFAULT_EVM => some 50
-  | _, _ => none
-
-def SCHEDULE_GmemoryDefault : SortScheduleConst → SortSchedule → Option SortInt
-  | SortScheduleConst.Gmemory_SCHEDULE_ScheduleConst, SortSchedule.DEFAULT_EVM => some 3
-  | _, _ => none
-
-def SCHEDULE_maxInitCodeSizeDefault : SortScheduleConst → SortSchedule → Option SortInt
-  | SortScheduleConst.maxInitCodeSize_SCHEDULE_ScheduleConst, SortSchedule.DEFAULT_EVM => some 0
-  | _, _ => none
-
-def SCHEDULE_GquaddivisorBerlin : SortScheduleConst → SortSchedule → Option SortInt
-  | SortScheduleConst.Gquaddivisor_SCHEDULE_ScheduleConst, SortSchedule.BERLIN_EVM => some 3
-  | _, _ => none
-
-def SCHEDULE_RbDefault : SortScheduleConst → SortSchedule → Option SortInt
-  | SortScheduleConst.Rb_SCHEDULE_ScheduleConst, SortSchedule.DEFAULT_EVM => some 5000000000000000000
-  | _, _ => none
-
-def SCHEDULE_RmaxquotientDefault : SortScheduleConst → SortSchedule → Option SortInt
-  | SortScheduleConst.Rmaxquotient_SCHEDULE_ScheduleConst, SortSchedule.DEFAULT_EVM => some 2
-  | _, _ => none
-
-def SCHEDULE_GecpaircoeffIstanbul : SortScheduleConst → SortSchedule → Option SortInt
-  | SortScheduleConst.Gecpaircoeff_SCHEDULE_ScheduleConst, SortSchedule.ISTANBUL_EVM => some 34000
-  | _, _ => none
-
-def SCHEDULE_GexpbyteDragon : SortScheduleConst → SortSchedule → Option SortInt
-  | SortScheduleConst.Gexpbyte_SCHEDULE_ScheduleConst, SortSchedule.SPURIOUS_DRAGON_EVM => some 50
-  | _, _ => none
-
-def SCHEDULE_GcodedepositDefault : SortScheduleConst → SortSchedule → Option SortInt
-  | SortScheduleConst.Gcodedeposit_SCHEDULE_ScheduleConst, SortSchedule.DEFAULT_EVM => some 200
-  | _, _ => none
-
-def SCHEDULE_GmidDefault : SortScheduleConst → SortSchedule → Option SortInt
-  | SortScheduleConst.Gmid_SCHEDULE_ScheduleConst, SortSchedule.DEFAULT_EVM => some 8
-  | _, _ => none
-
-def SCHEDULE_maxCodeSizeDefault : SortScheduleConst → SortSchedule → Option SortInt
-  | SortScheduleConst.maxCodeSize_SCHEDULE_ScheduleConst, SortSchedule.DEFAULT_EVM => some 4294967295
-  | _, _ => none
-
-def SCHEDULE_GselfdestructTangerine : SortScheduleConst → SortSchedule → Option SortInt
-  | SortScheduleConst.Gselfdestruct_SCHEDULE_ScheduleConst, SortSchedule.TANGERINE_WHISTLE_EVM => some 5000
-  | _, _ => none
-
-def SCHEDULE_GsstoresetDefault : SortScheduleConst → SortSchedule → Option SortInt
-  | SortScheduleConst.Gsstoreset_SCHEDULE_ScheduleConst, SortSchedule.DEFAULT_EVM => some 20000
-  | _, _ => none
-
-def SCHEDULE_GwarmstoragereadBerlin : SortScheduleConst → SortSchedule → Option SortInt
-  | SortScheduleConst.Gwarmstorageread_SCHEDULE_ScheduleConst, SortSchedule.BERLIN_EVM => some 100
-  | _, _ => none
-
-def SCHEDULE_RsstoreclearDefault : SortScheduleConst → SortSchedule → Option SortInt
-  | SortScheduleConst.Rsstoreclear_SCHEDULE_ScheduleConst, SortSchedule.DEFAULT_EVM => some 15000
-  | _, _ => none
-
-def SCHEDULE_RselfdestructDefault : SortScheduleConst → SortSchedule → Option SortInt
-  | SortScheduleConst.Rselfdestruct_SCHEDULE_ScheduleConst, SortSchedule.DEFAULT_EVM => some 24000
-  | _, _ => none
-
-def SCHEDULE_RmaxquotientLondon : SortScheduleConst → SortSchedule → Option SortInt
-  | SortScheduleConst.Rmaxquotient_SCHEDULE_ScheduleConst, SortSchedule.LONDON_EVM => some 5
-  | _, _ => none
-
-def SCHEDULE_GjumpdestDefault : SortScheduleConst → SortSchedule → Option SortInt
-  | SortScheduleConst.Gjumpdest_SCHEDULE_ScheduleConst, SortSchedule.DEFAULT_EVM => some 1
-  | _, _ => none
-
-def SCHEDULE_GhighDefault : SortScheduleConst → SortSchedule → Option SortInt
-  | SortScheduleConst.Ghigh_SCHEDULE_ScheduleConst, SortSchedule.DEFAULT_EVM => some 10
-  | _, _ => none
-
-def _53fc758 : SortBool → Option SortBool
-  | true => some false
-  | _ => none
-
-def SCHEDULE_GbaseDefault : SortScheduleConst → SortSchedule → Option SortInt
-  | SortScheduleConst.Gbase_SCHEDULE_ScheduleConst, SortSchedule.DEFAULT_EVM => some 2
-  | _, _ => none
-
-def SCHEDULE_GtxdatazeroDefault : SortScheduleConst → SortSchedule → Option SortInt
-  | SortScheduleConst.Gtxdatazero_SCHEDULE_ScheduleConst, SortSchedule.DEFAULT_EVM => some 4
-  | _, _ => none
-
-def SCHEDULE_GfroundDefault : SortScheduleConst → SortSchedule → Option SortInt
-  | SortScheduleConst.Gfround_SCHEDULE_ScheduleConst, SortSchedule.DEFAULT_EVM => some 1
-  | _, _ => none
-
-def SCHEDULE_GzeroDefault : SortScheduleConst → SortSchedule → Option SortInt
-  | SortScheduleConst.Gzero_SCHEDULE_ScheduleConst, SortSchedule.DEFAULT_EVM => some 0
-  | _, _ => none
-
-def SCHEDULE_GnewaccountDefault : SortScheduleConst → SortSchedule → Option SortInt
-  | SortScheduleConst.Gnewaccount_SCHEDULE_ScheduleConst, SortSchedule.DEFAULT_EVM => some 25000
-  | _, _ => none
-
-def SCHEDULE_GtransactionDefault : SortScheduleConst → SortSchedule → Option SortInt
-  | SortScheduleConst.Gtransaction_SCHEDULE_ScheduleConst, SortSchedule.DEFAULT_EVM => some 21000
   | _, _ => none
 
 def SCHEDULE_GaccessliststoragekeyDefault : SortScheduleConst → SortSchedule → Option SortInt
   | SortScheduleConst.Gaccessliststoragekey_SCHEDULE_ScheduleConst, SortSchedule.DEFAULT_EVM => some 0
   | _, _ => none
 
-def SCHEDULE_GbalanceIstanbul : SortScheduleConst → SortSchedule → Option SortInt
-  | SortScheduleConst.Gbalance_SCHEDULE_ScheduleConst, SortSchedule.ISTANBUL_EVM => some 700
+def SCHEDULE_GsloadIstanbul : SortScheduleConst → SortSchedule → Option SortInt
+  | SortScheduleConst.Gsload_SCHEDULE_ScheduleConst, SortSchedule.ISTANBUL_EVM => some 800
   | _, _ => none
 
-def SCHEDULE_GsloadTangerine : SortScheduleConst → SortSchedule → Option SortInt
-  | SortScheduleConst.Gsload_SCHEDULE_ScheduleConst, SortSchedule.TANGERINE_WHISTLE_EVM => some 200
+def SCHEDULE_maxCodeSizeDragon : SortScheduleConst → SortSchedule → Option SortInt
+  | SortScheduleConst.maxCodeSize_SCHEDULE_ScheduleConst, SortSchedule.SPURIOUS_DRAGON_EVM => some 24576
   | _, _ => none
 
-def SCHEDULE_GextcodesizeTangerine : SortScheduleConst → SortSchedule → Option SortInt
-  | SortScheduleConst.Gextcodesize_SCHEDULE_ScheduleConst, SortSchedule.TANGERINE_WHISTLE_EVM => some 700
+def SCHEDULE_GtxdatanonzeroIstanbul : SortScheduleConst → SortSchedule → Option SortInt
+  | SortScheduleConst.Gtxdatanonzero_SCHEDULE_ScheduleConst, SortSchedule.ISTANBUL_EVM => some 16
   | _, _ => none
 
-def SCHEDULE_GextcodesizeDefault : SortScheduleConst → SortSchedule → Option SortInt
-  | SortScheduleConst.Gextcodesize_SCHEDULE_ScheduleConst, SortSchedule.DEFAULT_EVM => some 20
+def SCHEDULE_RbMerge : SortScheduleConst → SortSchedule → Option SortInt
+  | SortScheduleConst.Rb_SCHEDULE_ScheduleConst, SortSchedule.MERGE_EVM => some 0
+  | _, _ => none
+
+def SCHEDULE_GhighDefault : SortScheduleConst → SortSchedule → Option SortInt
+  | SortScheduleConst.Ghigh_SCHEDULE_ScheduleConst, SortSchedule.DEFAULT_EVM => some 10
+  | _, _ => none
+
+def SCHEDULE_RmaxquotientDefault : SortScheduleConst → SortSchedule → Option SortInt
+  | SortScheduleConst.Rmaxquotient_SCHEDULE_ScheduleConst, SortSchedule.DEFAULT_EVM => some 2
+  | _, _ => none
+
+def _17ebc68 : SortBool → Option SortBool
+  | false => some true
+  | _ => none
+
+def SCHEDULE_GinitcodewordcostDefault : SortScheduleConst → SortSchedule → Option SortInt
+  | SortScheduleConst.Ginitcodewordcost_SCHEDULE_ScheduleConst, SortSchedule.DEFAULT_EVM => some 0
+  | _, _ => none
+
+def SCHEDULE_GsstoreresetDefault : SortScheduleConst → SortSchedule → Option SortInt
+  | SortScheduleConst.Gsstorereset_SCHEDULE_ScheduleConst, SortSchedule.DEFAULT_EVM => some 5000
+  | _, _ => none
+
+def SCHEDULE_GtxcreateFrontier : SortScheduleConst → SortSchedule → Option SortInt
+  | SortScheduleConst.Gtxcreate_SCHEDULE_ScheduleConst, SortSchedule.FRONTIER_EVM => some 21000
+  | _, _ => none
+
+def SCHEDULE_GecaddIstanbul : SortScheduleConst → SortSchedule → Option SortInt
+  | SortScheduleConst.Gecadd_SCHEDULE_ScheduleConst, SortSchedule.ISTANBUL_EVM => some 150
+  | _, _ => none
+
+def SCHEDULE_GcallTangerine : SortScheduleConst → SortSchedule → Option SortInt
+  | SortScheduleConst.Gcall_SCHEDULE_ScheduleConst, SortSchedule.TANGERINE_WHISTLE_EVM => some 700
+  | _, _ => none
+
+def SCHEDULE_RsstoreclearDefault : SortScheduleConst → SortSchedule → Option SortInt
+  | SortScheduleConst.Rsstoreclear_SCHEDULE_ScheduleConst, SortSchedule.DEFAULT_EVM => some 15000
+  | _, _ => none
+
+def SCHEDULE_Gsha3Default : SortScheduleConst → SortSchedule → Option SortInt
+  | SortScheduleConst.Gsha3_SCHEDULE_ScheduleConst, SortSchedule.DEFAULT_EVM => some 30
+  | _, _ => none
+
+def SCHEDULE_GexpbyteDragon : SortScheduleConst → SortSchedule → Option SortInt
+  | SortScheduleConst.Gexpbyte_SCHEDULE_ScheduleConst, SortSchedule.SPURIOUS_DRAGON_EVM => some 50
+  | _, _ => none
+
+def SCHEDULE_GecaddDefault : SortScheduleConst → SortSchedule → Option SortInt
+  | SortScheduleConst.Gecadd_SCHEDULE_ScheduleConst, SortSchedule.DEFAULT_EVM => some 500
+  | _, _ => none
+
+def SCHEDULE_GblockhashDefault : SortScheduleConst → SortSchedule → Option SortInt
+  | SortScheduleConst.Gblockhash_SCHEDULE_ScheduleConst, SortSchedule.DEFAULT_EVM => some 20
+  | _, _ => none
+
+def SCHEDULE_GbalanceDefault : SortScheduleConst → SortSchedule → Option SortInt
+  | SortScheduleConst.Gbalance_SCHEDULE_ScheduleConst, SortSchedule.DEFAULT_EVM => some 20
+  | _, _ => none
+
+def SCHEDULE_GcopyDefault : SortScheduleConst → SortSchedule → Option SortInt
+  | SortScheduleConst.Gcopy_SCHEDULE_ScheduleConst, SortSchedule.DEFAULT_EVM => some 3
+  | _, _ => none
+
+def SCHEDULE_RbDefault : SortScheduleConst → SortSchedule → Option SortInt
+  | SortScheduleConst.Rb_SCHEDULE_ScheduleConst, SortSchedule.DEFAULT_EVM => some 5000000000000000000
+  | _, _ => none
+
+def SCHEDULE_GcoldaccountaccessDefault : SortScheduleConst → SortSchedule → Option SortInt
+  | SortScheduleConst.Gcoldaccountaccess_SCHEDULE_ScheduleConst, SortSchedule.DEFAULT_EVM => some 0
   | _, _ => none
 
 def SCHEDULE_GecpairconstDefault : SortScheduleConst → SortSchedule → Option SortInt
   | SortScheduleConst.Gecpairconst_SCHEDULE_ScheduleConst, SortSchedule.DEFAULT_EVM => some 100000
   | _, _ => none
 
-def SCHEDULE_GtxdatanonzeroDefault : SortScheduleConst → SortSchedule → Option SortInt
-  | SortScheduleConst.Gtxdatanonzero_SCHEDULE_ScheduleConst, SortSchedule.DEFAULT_EVM => some 68
+def SCHEDULE_GquadcoeffDefault : SortScheduleConst → SortSchedule → Option SortInt
+  | SortScheduleConst.Gquadcoeff_SCHEDULE_ScheduleConst, SortSchedule.DEFAULT_EVM => some 512
   | _, _ => none
 
-def SCHEDULE_GcoldsloadBerlin : SortScheduleConst → SortSchedule → Option SortInt
-  | SortScheduleConst.Gcoldsload_SCHEDULE_ScheduleConst, SortSchedule.BERLIN_EVM => some 2100
-  | _, _ => none
-
-def SCHEDULE_GlogdataDefault : SortScheduleConst → SortSchedule → Option SortInt
-  | SortScheduleConst.Glogdata_SCHEDULE_ScheduleConst, SortSchedule.DEFAULT_EVM => some 8
+def SCHEDULE_GsloadDefault : SortScheduleConst → SortSchedule → Option SortInt
+  | SortScheduleConst.Gsload_SCHEDULE_ScheduleConst, SortSchedule.DEFAULT_EVM => some 50
   | _, _ => none
 
 def SCHEDULE_GverylowDefault : SortScheduleConst → SortSchedule → Option SortInt
   | SortScheduleConst.Gverylow_SCHEDULE_ScheduleConst, SortSchedule.DEFAULT_EVM => some 3
   | _, _ => none
 
-def SCHEDULE_GextcodecopyTangerine : SortScheduleConst → SortSchedule → Option SortInt
-  | SortScheduleConst.Gextcodecopy_SCHEDULE_ScheduleConst, SortSchedule.TANGERINE_WHISTLE_EVM => some 700
-  | _, _ => none
-
-def SCHEDULE_GwarmstoragereadDefault : SortScheduleConst → SortSchedule → Option SortInt
-  | SortScheduleConst.Gwarmstorageread_SCHEDULE_ScheduleConst, SortSchedule.DEFAULT_EVM => some 0
-  | _, _ => none
-
-def SCHEDULE_GecpaircoeffDefault : SortScheduleConst → SortSchedule → Option SortInt
-  | SortScheduleConst.Gecpaircoeff_SCHEDULE_ScheduleConst, SortSchedule.DEFAULT_EVM => some 80000
-  | _, _ => none
-
-def _61fbef3 : SortBool → SortBool → Option SortBool
-  | false, _Gen0 => some false
-  | _, _ => none
-
-axiom «_==K_» (x0 : SortK) (x1 : SortK) : Option SortBool
-
-def SCHEDULE_GpointevalCancun : SortScheduleConst → SortSchedule → Option SortInt
-  | SortScheduleConst.Gpointeval_SCHEDULE_ScheduleConst, SortSchedule.CANCUN_EVM => some 50000
-  | _, _ => none
-
-def SCHEDULE_GecpairconstIstanbul : SortScheduleConst → SortSchedule → Option SortInt
-  | SortScheduleConst.Gecpairconst_SCHEDULE_ScheduleConst, SortSchedule.ISTANBUL_EVM => some 45000
-  | _, _ => none
-
-def SCHEDULE_GlogtopicDefault : SortScheduleConst → SortSchedule → Option SortInt
-  | SortScheduleConst.Glogtopic_SCHEDULE_ScheduleConst, SortSchedule.DEFAULT_EVM => some 375
+def SCHEDULE_GcallstipendDefault : SortScheduleConst → SortSchedule → Option SortInt
+  | SortScheduleConst.Gcallstipend_SCHEDULE_ScheduleConst, SortSchedule.DEFAULT_EVM => some 2300
   | _, _ => none
 
 def _5b9db8d : SortBool → SortBool → Option SortBool
   | true, B => some B
   | _, _ => none
 
-axiom _Map_ (x0 : SortMap) (x1 : SortMap) : Option SortMap
+axiom «_==K_» (x0 : SortK) (x1 : SortK) : Option SortBool
+
+def SCHEDULE_maxInitCodeSizeDefault : SortScheduleConst → SortSchedule → Option SortInt
+  | SortScheduleConst.maxInitCodeSize_SCHEDULE_ScheduleConst, SortSchedule.DEFAULT_EVM => some 0
+  | _, _ => none
+
+def SCHEDULE_Gsha3wordDefault : SortScheduleConst → SortSchedule → Option SortInt
+  | SortScheduleConst.Gsha3word_SCHEDULE_ScheduleConst, SortSchedule.DEFAULT_EVM => some 6
+  | _, _ => none
+
+def SCHEDULE_GaccessliststoragekeyBerlin : SortScheduleConst → SortSchedule → Option SortInt
+  | SortScheduleConst.Gaccessliststoragekey_SCHEDULE_ScheduleConst, SortSchedule.BERLIN_EVM => some 1900
+  | _, _ => none
+
+def SCHEDULE_GbalanceTangerine : SortScheduleConst → SortSchedule → Option SortInt
+  | SortScheduleConst.Gbalance_SCHEDULE_ScheduleConst, SortSchedule.TANGERINE_WHISTLE_EVM => some 400
+  | _, _ => none
+
+def SCHEDULE_GsstoresetDefault : SortScheduleConst → SortSchedule → Option SortInt
+  | SortScheduleConst.Gsstoreset_SCHEDULE_ScheduleConst, SortSchedule.DEFAULT_EVM => some 20000
+  | _, _ => none
+
+def SCHEDULE_GinitcodewordcostShanghai : SortScheduleConst → SortSchedule → Option SortInt
+  | SortScheduleConst.Ginitcodewordcost_SCHEDULE_ScheduleConst, SortSchedule.SHANGHAI_EVM => some 2
+  | _, _ => none
+
+def SCHEDULE_GcodedepositDefault : SortScheduleConst → SortSchedule → Option SortInt
+  | SortScheduleConst.Gcodedeposit_SCHEDULE_ScheduleConst, SortSchedule.DEFAULT_EVM => some 200
+  | _, _ => none
+
+def SCHEDULE_GtxdatazeroDefault : SortScheduleConst → SortSchedule → Option SortInt
+  | SortScheduleConst.Gtxdatazero_SCHEDULE_ScheduleConst, SortSchedule.DEFAULT_EVM => some 4
+  | _, _ => none
+
+def SCHEDULE_GbalanceIstanbul : SortScheduleConst → SortSchedule → Option SortInt
+  | SortScheduleConst.Gbalance_SCHEDULE_ScheduleConst, SortSchedule.ISTANBUL_EVM => some 700
+  | _, _ => none
+
+def SCHEDULE_GselfdestructTangerine : SortScheduleConst → SortSchedule → Option SortInt
+  | SortScheduleConst.Gselfdestruct_SCHEDULE_ScheduleConst, SortSchedule.TANGERINE_WHISTLE_EVM => some 5000
+  | _, _ => none
+
+def SCHEDULE_GwarmstoragereadBerlin : SortScheduleConst → SortSchedule → Option SortInt
+  | SortScheduleConst.Gwarmstorageread_SCHEDULE_ScheduleConst, SortSchedule.BERLIN_EVM => some 100
+  | _, _ => none
+
+def SCHEDULE_GmemoryDefault : SortScheduleConst → SortSchedule → Option SortInt
+  | SortScheduleConst.Gmemory_SCHEDULE_ScheduleConst, SortSchedule.DEFAULT_EVM => some 3
+  | _, _ => none
+
+def SCHEDULE_GnewaccountDefault : SortScheduleConst → SortSchedule → Option SortInt
+  | SortScheduleConst.Gnewaccount_SCHEDULE_ScheduleConst, SortSchedule.DEFAULT_EVM => some 25000
+  | _, _ => none
+
+def SCHEDULE_GtxcreateDefault : SortScheduleConst → SortSchedule → Option SortInt
+  | SortScheduleConst.Gtxcreate_SCHEDULE_ScheduleConst, SortSchedule.DEFAULT_EVM => some 53000
+  | _, _ => none
+
+def SCHEDULE_GlogdataDefault : SortScheduleConst → SortSchedule → Option SortInt
+  | SortScheduleConst.Glogdata_SCHEDULE_ScheduleConst, SortSchedule.DEFAULT_EVM => some 8
+  | _, _ => none
+
+def _53fc758 : SortBool → Option SortBool
+  | true => some false
+  | _ => none
+
+def _991a329 : SortBool → SortBool → Option SortBool
+  | false, B => some B
+  | _, _ => none
+
+def SCHEDULE_GexpDefault : SortScheduleConst → SortSchedule → Option SortInt
+  | SortScheduleConst.Gexp_SCHEDULE_ScheduleConst, SortSchedule.DEFAULT_EVM => some 10
+  | _, _ => none
+
+def SCHEDULE_maxCodeSizeDefault : SortScheduleConst → SortSchedule → Option SortInt
+  | SortScheduleConst.maxCodeSize_SCHEDULE_ScheduleConst, SortSchedule.DEFAULT_EVM => some 4294967295
+  | _, _ => none
+
+def SCHEDULE_GfroundDefault : SortScheduleConst → SortSchedule → Option SortInt
+  | SortScheduleConst.Gfround_SCHEDULE_ScheduleConst, SortSchedule.DEFAULT_EVM => some 1
+  | _, _ => none
+
+def SCHEDULE_GextcodecopyDefault : SortScheduleConst → SortSchedule → Option SortInt
+  | SortScheduleConst.Gextcodecopy_SCHEDULE_ScheduleConst, SortSchedule.DEFAULT_EVM => some 20
+  | _, _ => none
+
+def SCHEDULE_GextcodesizeTangerine : SortScheduleConst → SortSchedule → Option SortInt
+  | SortScheduleConst.Gextcodesize_SCHEDULE_ScheduleConst, SortSchedule.TANGERINE_WHISTLE_EVM => some 700
+  | _, _ => none
+
+def SCHEDULE_GsloadTangerine : SortScheduleConst → SortSchedule → Option SortInt
+  | SortScheduleConst.Gsload_SCHEDULE_ScheduleConst, SortSchedule.TANGERINE_WHISTLE_EVM => some 200
+  | _, _ => none
+
+def SCHEDULE_GlogDefault : SortScheduleConst → SortSchedule → Option SortInt
+  | SortScheduleConst.Glog_SCHEDULE_ScheduleConst, SortSchedule.DEFAULT_EVM => some 375
+  | _, _ => none
+
+def SCHEDULE_GecpaircoeffDefault : SortScheduleConst → SortSchedule → Option SortInt
+  | SortScheduleConst.Gecpaircoeff_SCHEDULE_ScheduleConst, SortSchedule.DEFAULT_EVM => some 80000
+  | _, _ => none
+
+def SCHEDULE_RselfdestructDefault : SortScheduleConst → SortSchedule → Option SortInt
+  | SortScheduleConst.Rselfdestruct_SCHEDULE_ScheduleConst, SortSchedule.DEFAULT_EVM => some 24000
+  | _, _ => none
+
+def SCHEDULE_GcallDefault : SortScheduleConst → SortSchedule → Option SortInt
+  | SortScheduleConst.Gcall_SCHEDULE_ScheduleConst, SortSchedule.DEFAULT_EVM => some 40
+  | _, _ => none
+
+def SCHEDULE_GexpbyteDefault : SortScheduleConst → SortSchedule → Option SortInt
+  | SortScheduleConst.Gexpbyte_SCHEDULE_ScheduleConst, SortSchedule.DEFAULT_EVM => some 10
+  | _, _ => none
+
+def SCHEDULE_RselfdestructLondon : SortScheduleConst → SortSchedule → Option SortInt
+  | SortScheduleConst.Rselfdestruct_SCHEDULE_ScheduleConst, SortSchedule.LONDON_EVM => some 0
+  | _, _ => none
+
+def SCHEDULE_GcoldaccountaccessBerlin : SortScheduleConst → SortSchedule → Option SortInt
+  | SortScheduleConst.Gcoldaccountaccess_SCHEDULE_ScheduleConst, SortSchedule.BERLIN_EVM => some 2600
+  | _, _ => none
+
+def SCHEDULE_GtxdatanonzeroDefault : SortScheduleConst → SortSchedule → Option SortInt
+  | SortScheduleConst.Gtxdatanonzero_SCHEDULE_ScheduleConst, SortSchedule.DEFAULT_EVM => some 68
+  | _, _ => none
+
+def SCHEDULE_GzeroDefault : SortScheduleConst → SortSchedule → Option SortInt
+  | SortScheduleConst.Gzero_SCHEDULE_ScheduleConst, SortSchedule.DEFAULT_EVM => some 0
+  | _, _ => none
+
+def SCHEDULE_GextcodecopyTangerine : SortScheduleConst → SortSchedule → Option SortInt
+  | SortScheduleConst.Gextcodecopy_SCHEDULE_ScheduleConst, SortSchedule.TANGERINE_WHISTLE_EVM => some 700
+  | _, _ => none
+
+def SCHEDULE_GlowDefault : SortScheduleConst → SortSchedule → Option SortInt
+  | SortScheduleConst.Glow_SCHEDULE_ScheduleConst, SortSchedule.DEFAULT_EVM => some 5
+  | _, _ => none
+
+def SCHEDULE_GcreateDefault : SortScheduleConst → SortSchedule → Option SortInt
+  | SortScheduleConst.Gcreate_SCHEDULE_ScheduleConst, SortSchedule.DEFAULT_EVM => some 32000
+  | _, _ => none
+
+def SCHEDULE_GjumpdestDefault : SortScheduleConst → SortSchedule → Option SortInt
+  | SortScheduleConst.Gjumpdest_SCHEDULE_ScheduleConst, SortSchedule.DEFAULT_EVM => some 1
+  | _, _ => none
+
+def _7174452 : SortBool → SortBool → Option SortBool
+  | true, _Gen0 => some true
+  | _, _ => none
+
+def SCHEDULE_GcallvalueDefault : SortScheduleConst → SortSchedule → Option SortInt
+  | SortScheduleConst.Gcallvalue_SCHEDULE_ScheduleConst, SortSchedule.DEFAULT_EVM => some 9000
+  | _, _ => none
+
+def SCHEDULE_GselfdestructDefault : SortScheduleConst → SortSchedule → Option SortInt
+  | SortScheduleConst.Gselfdestruct_SCHEDULE_ScheduleConst, SortSchedule.DEFAULT_EVM => some 0
+  | _, _ => none
+
+def SCHEDULE_GecmulDefault : SortScheduleConst → SortSchedule → Option SortInt
+  | SortScheduleConst.Gecmul_SCHEDULE_ScheduleConst, SortSchedule.DEFAULT_EVM => some 40000
+  | _, _ => none
+
+def SCHEDULE_RmaxquotientLondon : SortScheduleConst → SortSchedule → Option SortInt
+  | SortScheduleConst.Rmaxquotient_SCHEDULE_ScheduleConst, SortSchedule.LONDON_EVM => some 5
+  | _, _ => none
+
+def SCHEDULE_GtransactionDefault : SortScheduleConst → SortSchedule → Option SortInt
+  | SortScheduleConst.Gtransaction_SCHEDULE_ScheduleConst, SortSchedule.DEFAULT_EVM => some 21000
+  | _, _ => none
+
+def _61fbef3 : SortBool → SortBool → Option SortBool
+  | false, _Gen0 => some false
+  | _, _ => none
+
+def SCHEDULE_GecmulIstanbul : SortScheduleConst → SortSchedule → Option SortInt
+  | SortScheduleConst.Gecmul_SCHEDULE_ScheduleConst, SortSchedule.ISTANBUL_EVM => some 6000
+  | _, _ => none
+
+def SCHEDULE_GecpaircoeffIstanbul : SortScheduleConst → SortSchedule → Option SortInt
+  | SortScheduleConst.Gecpaircoeff_SCHEDULE_ScheduleConst, SortSchedule.ISTANBUL_EVM => some 34000
+  | _, _ => none
+
+def SCHEDULE_GquaddivisorBerlin : SortScheduleConst → SortSchedule → Option SortInt
+  | SortScheduleConst.Gquaddivisor_SCHEDULE_ScheduleConst, SortSchedule.BERLIN_EVM => some 3
+  | _, _ => none
+
+def SCHEDULE_GwarmstoragedirtystoreDefault : SortScheduleConst → SortSchedule → Option SortInt
+  | SortScheduleConst.Gwarmstoragedirtystore_SCHEDULE_ScheduleConst, SortSchedule.DEFAULT_EVM => some 0
+  | _, _ => none
+
+def SCHEDULE_GcoldsloadBerlin : SortScheduleConst → SortSchedule → Option SortInt
+  | SortScheduleConst.Gcoldsload_SCHEDULE_ScheduleConst, SortSchedule.BERLIN_EVM => some 2100
+  | _, _ => none
+
+def SCHEDULE_GbaseDefault : SortScheduleConst → SortSchedule → Option SortInt
+  | SortScheduleConst.Gbase_SCHEDULE_ScheduleConst, SortSchedule.DEFAULT_EVM => some 2
+  | _, _ => none
+
+def SCHEDULE_GmidDefault : SortScheduleConst → SortSchedule → Option SortInt
+  | SortScheduleConst.Gmid_SCHEDULE_ScheduleConst, SortSchedule.DEFAULT_EVM => some 8
+  | _, _ => none
+
+def SCHEDULE_GwarmstoragereadDefault : SortScheduleConst → SortSchedule → Option SortInt
+  | SortScheduleConst.Gwarmstorageread_SCHEDULE_ScheduleConst, SortSchedule.DEFAULT_EVM => some 0
+  | _, _ => none
+
+def SCHEDULE_GquaddivisorDefault : SortScheduleConst → SortSchedule → Option SortInt
+  | SortScheduleConst.Gquaddivisor_SCHEDULE_ScheduleConst, SortSchedule.DEFAULT_EVM => some 20
+  | _, _ => none
+
+def SCHEDULE_GpointevalDefault : SortScheduleConst → SortSchedule → Option SortInt
+  | SortScheduleConst.Gpointeval_SCHEDULE_ScheduleConst, SortSchedule.DEFAULT_EVM => some 0
+  | _, _ => none
+
+def SCHEDULE_GpointevalCancun : SortScheduleConst → SortSchedule → Option SortInt
+  | SortScheduleConst.Gpointeval_SCHEDULE_ScheduleConst, SortSchedule.CANCUN_EVM => some 50000
+  | _, _ => none
+
+def SCHEDULE_GextcodesizeDefault : SortScheduleConst → SortSchedule → Option SortInt
+  | SortScheduleConst.Gextcodesize_SCHEDULE_ScheduleConst, SortSchedule.DEFAULT_EVM => some 20
+  | _, _ => none
+
+def SCHEDULE_GlogtopicDefault : SortScheduleConst → SortSchedule → Option SortInt
+  | SortScheduleConst.Glogtopic_SCHEDULE_ScheduleConst, SortSchedule.DEFAULT_EVM => some 375
+  | _, _ => none
+
+axiom «_|->_» (x0 : SortKItem) (x1 : SortKItem) : Option SortMap
 
 axiom «.AccountCellMap» : Option SortAccountCellMap
 
-axiom _List_ (x0 : SortList) (x1 : SortList) : Option SortList
-
-axiom «.MessageCellMap» : Option SortMessageCellMap
-
-axiom «.Set» : Option SortSet
+axiom _Map_ (x0 : SortMap) (x1 : SortMap) : Option SortMap
 
 axiom WithdrawalCellMapItem (x0 : SortWithdrawalIDCell) (x1 : SortWithdrawalCell) : Option SortWithdrawalCellMap
 
+axiom ListItem (x0 : SortKItem) : Option SortList
+
 axiom «.Map» : Option SortMap
 
+axiom _WithdrawalCellMap_ (x0 : SortWithdrawalCellMap) (x1 : SortWithdrawalCellMap) : Option SortWithdrawalCellMap
+
 axiom «_<Int_» (x0 : SortInt) (x1 : SortInt) : Option SortBool
+
+axiom _modInt_ (x0 : SortInt) (x1 : SortInt) : Option SortInt
 
 axiom SetItem (x0 : SortKItem) : Option SortSet
 
 axiom «.List» : Option SortList
 
-axiom _AccountCellMap_ (x0 : SortAccountCellMap) (x1 : SortAccountCellMap) : Option SortAccountCellMap
+def _75897fa : SortWordStack → SortInt → Option SortInt
+  | SortWordStack.«.WordStack_EVM-TYPES_WordStack», SIZE => some SIZE
+  | _, _ => none
 
-axiom _MessageCellMap_ (x0 : SortMessageCellMap) (x1 : SortMessageCellMap) : Option SortMessageCellMap
-
-axiom _WithdrawalCellMap_ (x0 : SortWithdrawalCellMap) (x1 : SortWithdrawalCellMap) : Option SortWithdrawalCellMap
-
-axiom «_|->_» (x0 : SortKItem) (x1 : SortKItem) : Option SortMap
-
-axiom AccountCellMapItem (x0 : SortAcctIDCell) (x1 : SortAccountCell) : Option SortAccountCellMap
-
-axiom «.WithdrawalCellMap» : Option SortWithdrawalCellMap
+axiom «.MessageCellMap» : Option SortMessageCellMap
 
 axiom _Set_ (x0 : SortSet) (x1 : SortSet) : Option SortSet
 
+axiom _AccountCellMap_ (x0 : SortAccountCellMap) (x1 : SortAccountCellMap) : Option SortAccountCellMap
+
 axiom MessageCellMapItem (x0 : SortMsgIDCell) (x1 : SortMessageCell) : Option SortMessageCellMap
+
+axiom _List_ (x0 : SortList) (x1 : SortList) : Option SortList
+
+axiom «.Set» : Option SortSet
+
+axiom AccountCellMapItem (x0 : SortAcctIDCell) (x1 : SortAccountCell) : Option SortAccountCellMap
+
+axiom _MessageCellMap_ (x0 : SortMessageCellMap) (x1 : SortMessageCellMap) : Option SortMessageCellMap
+
+def SCHEDULE_RbConstantinople : SortScheduleConst → SortSchedule → Option SortInt
+  | SortScheduleConst.Rb_SCHEDULE_ScheduleConst, SortSchedule.CONSTANTINOPLE_EVM => do
+    let _Val0 <- «_*Int_» 2 1000000000000000000
+    return _Val0
+  | _, _ => none
+
+def SCHEDULE_RbByzantium : SortScheduleConst → SortSchedule → Option SortInt
+  | SortScheduleConst.Rb_SCHEDULE_ScheduleConst, SortSchedule.BYZANTIUM_EVM => do
+    let _Val0 <- «_*Int_» 3 1000000000000000000
+    return _Val0
+  | _, _ => none
+
+def notBool_ (x0 : SortBool) : Option SortBool := (_17ebc68 x0) <|> (_53fc758 x0)
+
+def _orBool_ (x0 : SortBool) (x1 : SortBool) : Option SortBool := (_7174452 x0 x1) <|> (_991a329 x0 x1)
+
+def _andBool_ (x0 : SortBool) (x1 : SortBool) : Option SortBool := (_5b9db8d x0 x1) <|> (_61fbef3 x0 x1)
 
 noncomputable def _85aa67b : SortInt → Option SortInt
   | I => do
@@ -415,31 +433,13 @@ mutual
   def sizeWordStackAux (x0 : SortWordStack) (x1 : SortInt) : Option SortInt := (_432555e x0 x1) <|> (_75897fa x0 x1)
 end
 
-def _orBool_ (x0 : SortBool) (x1 : SortBool) : Option SortBool := (_7174452 x0 x1) <|> (_991a329 x0 x1)
-
-def SCHEDULE_RbConstantinople : SortScheduleConst → SortSchedule → Option SortInt
-  | SortScheduleConst.Rb_SCHEDULE_ScheduleConst, SortSchedule.CONSTANTINOPLE_EVM => do
-    let _Val0 <- «_*Int_» 2 1000000000000000000
-    return _Val0
-  | _, _ => none
-
-def SCHEDULE_RbByzantium : SortScheduleConst → SortSchedule → Option SortInt
-  | SortScheduleConst.Rb_SCHEDULE_ScheduleConst, SortSchedule.BYZANTIUM_EVM => do
-    let _Val0 <- «_*Int_» 3 1000000000000000000
-    return _Val0
-  | _, _ => none
-
-def notBool_ (x0 : SortBool) : Option SortBool := (_17ebc68 x0) <|> (_53fc758 x0)
-
-def _andBool_ (x0 : SortBool) (x1 : SortBool) : Option SortBool := (_5b9db8d x0 x1) <|> (_61fbef3 x0 x1)
-
-noncomputable def chop (x0 : SortInt) : Option SortInt := _85aa67b x0
-
 noncomputable def _bccaba7 : SortK → SortK → Option SortBool
   | K1, K2 => do
     let _Val0 <- «_==K_» K1 K2
     let _Val1 <- notBool_ _Val0
     return _Val1
+
+noncomputable def chop (x0 : SortInt) : Option SortInt := _85aa67b x0
 
 noncomputable def «_=/=K_» (x0 : SortK) (x1 : SortK) : Option SortBool := _bccaba7 x0 x1
 

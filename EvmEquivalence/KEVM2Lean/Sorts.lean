@@ -4,7 +4,7 @@ inductive SortStatusCode : Type where
   | «.StatusCode_NETWORK_StatusCode» : SortStatusCode
   | EVMC_INTERNAL_ERROR_NETWORK_StatusCode : SortStatusCode
   | EVMC_REJECTED_NETWORK_StatusCode : SortStatusCode
-deriving BEq, DecidableEq
+  deriving BEq, DecidableEq
 
 inductive SortScheduleConst : Type where
   | Gaccesslistaddress_SCHEDULE_ScheduleConst : SortScheduleConst
@@ -62,11 +62,11 @@ inductive SortScheduleConst : Type where
   | Rsstoreclear_SCHEDULE_ScheduleConst : SortScheduleConst
   | maxCodeSize_SCHEDULE_ScheduleConst : SortScheduleConst
   | maxInitCodeSize_SCHEDULE_ScheduleConst : SortScheduleConst
-deriving BEq, DecidableEq
+  deriving BEq, DecidableEq
 
 inductive SortPushOp : Type where
   | PUSHZERO_EVM_PushOp : SortPushOp
-deriving BEq, DecidableEq
+  deriving BEq, DecidableEq
 
 inductive SortSchedule : Type where
   | BERLIN_EVM : SortSchedule
@@ -83,7 +83,7 @@ inductive SortSchedule : Type where
   | SHANGHAI_EVM : SortSchedule
   | SPURIOUS_DRAGON_EVM : SortSchedule
   | TANGERINE_WHISTLE_EVM : SortSchedule
-deriving BEq, DecidableEq
+  deriving BEq, DecidableEq
 
 inductive SortTxType : Type where
   | «.TxType_EVM-TYPES_TxType» : SortTxType
@@ -91,328 +91,327 @@ inductive SortTxType : Type where
   | «Blob_EVM-TYPES_TxType» : SortTxType
   | «DynamicFee_EVM-TYPES_TxType» : SortTxType
   | «Legacy_EVM-TYPES_TxType» : SortTxType
-deriving BEq, DecidableEq
+  deriving BEq, DecidableEq
 
 inductive SortBinStackOp : Type where
   | ADD_EVM_BinStackOp : SortBinStackOp
-deriving BEq, DecidableEq
+  deriving BEq, DecidableEq
 
 inductive SortMode : Type where
   | NORMAL : SortMode
   | «SUCCESS_ETHEREUM-SIMULATION-PURE_Mode» : SortMode
   | VMTESTS : SortMode
-deriving BEq, DecidableEq
+  deriving BEq, DecidableEq
 
 structure SortStatusCodeCell : Type where
   val : SortStatusCode
-deriving BEq, DecidableEq
+  deriving BEq, DecidableEq
 
 structure SortScheduleCell : Type where
   val : SortSchedule
-deriving BEq, DecidableEq
+  deriving BEq, DecidableEq
 
 structure SortTxTypeCell : Type where
   val : SortTxType
-deriving BEq, DecidableEq
+  deriving BEq, DecidableEq
 
 structure SortBalanceCell : Type where
   val : SortInt
-deriving BEq, DecidableEq
+  deriving BEq, DecidableEq
 
 structure SortCoinbaseCell : Type where
   val : SortInt
-deriving BEq, DecidableEq
+  deriving BEq, DecidableEq
 
 structure SortBlockNonceCell : Type where
   val : SortInt
-deriving BEq, DecidableEq
+  deriving BEq, DecidableEq
 
 structure SortTimestampCell : Type where
   val : SortInt
-deriving BEq, DecidableEq
+  deriving BEq, DecidableEq
 
 structure SortPreviousHashCell : Type where
   val : SortInt
-deriving BEq, DecidableEq
+  deriving BEq, DecidableEq
 
 structure SortValueCell : Type where
   val : SortInt
-deriving BEq, DecidableEq
+  deriving BEq, DecidableEq
 
 structure SortRefundCell : Type where
   val : SortInt
-deriving BEq, DecidableEq
+  deriving BEq, DecidableEq
 
 structure SortCallDepthCell : Type where
   val : SortInt
-deriving BEq, DecidableEq
+  deriving BEq, DecidableEq
 
 structure SortBlobGasUsedCell : Type where
   val : SortInt
-deriving BEq, DecidableEq
+  deriving BEq, DecidableEq
 
 inductive SortJSONKey : Type where
   | inj_SortInt (x : SortInt) : SortJSONKey
-deriving BEq, DecidableEq
+  deriving BEq, DecidableEq
 
 structure SortTxChainIDCell : Type where
   val : SortInt
-deriving BEq, DecidableEq
+  deriving BEq, DecidableEq
 
 structure SortAcctIDCell : Type where
   val : SortInt
-deriving BEq, DecidableEq
+  deriving BEq, DecidableEq
 
 inductive SortWordStack : Type where
   | «.WordStack_EVM-TYPES_WordStack» : SortWordStack
   | «_:__EVM-TYPES_WordStack_Int_WordStack» (x0 : SortInt) (x1 : SortWordStack) : SortWordStack
-deriving BEq, DecidableEq
+  deriving BEq, DecidableEq
 
 structure SortGeneratedCounterCell : Type where
   val : SortInt
-deriving BEq, DecidableEq
+  deriving BEq, DecidableEq
 
 structure SortNumberCell : Type where
   val : SortInt
-deriving BEq, DecidableEq
+  deriving BEq, DecidableEq
 
 structure SortTxMaxFeeCell : Type where
   val : SortInt
-deriving BEq, DecidableEq
+  deriving BEq, DecidableEq
 
 structure SortTxGasLimitCell : Type where
   val : SortInt
-deriving BEq, DecidableEq
+  deriving BEq, DecidableEq
 
 inductive SortGas : Type where
   | inj_SortInt (x : SortInt) : SortGas
-deriving BEq, DecidableEq
+  deriving BEq, DecidableEq
 
 structure SortExcessBlobGasCell : Type where
   val : SortInt
-deriving BEq, DecidableEq
+  deriving BEq, DecidableEq
 
 structure SortTxNonceCell : Type where
   val : SortInt
-deriving BEq, DecidableEq
+  deriving BEq, DecidableEq
 
 structure SortPcCell : Type where
   val : SortInt
-deriving BEq, DecidableEq
+  deriving BEq, DecidableEq
 
 structure SortAmountCell : Type where
   val : SortInt
-deriving BEq, DecidableEq
+  deriving BEq, DecidableEq
 
 structure SortGasLimitCell : Type where
   val : SortInt
-deriving BEq, DecidableEq
+  deriving BEq, DecidableEq
 
 structure SortTxGasPriceCell : Type where
   val : SortInt
-deriving BEq, DecidableEq
+  deriving BEq, DecidableEq
 
 structure SortGasPriceCell : Type where
   val : SortInt
-deriving BEq, DecidableEq
+  deriving BEq, DecidableEq
 
 structure SortMemoryUsedCell : Type where
   val : SortInt
-deriving BEq, DecidableEq
+  deriving BEq, DecidableEq
 
 structure SortMsgIDCell : Type where
   val : SortInt
-deriving BEq, DecidableEq
+  deriving BEq, DecidableEq
 
 structure SortWithdrawalIDCell : Type where
   val : SortInt
-deriving BEq, DecidableEq
+  deriving BEq, DecidableEq
 
 structure SortBeaconRootCell : Type where
   val : SortInt
-deriving BEq, DecidableEq
+  deriving BEq, DecidableEq
 
 structure SortBaseFeeCell : Type where
   val : SortInt
-deriving BEq, DecidableEq
+  deriving BEq, DecidableEq
 
 inductive SortAccount : Type where
   | inj_SortInt (x : SortInt) : SortAccount
   | «.Account_EVM-TYPES_Account» : SortAccount
-deriving BEq, DecidableEq
+  deriving BEq, DecidableEq
 
 structure SortIndexCell : Type where
   val : SortInt
-deriving BEq, DecidableEq
+  deriving BEq, DecidableEq
 
 structure SortTransactionsRootCell : Type where
   val : SortInt
-deriving BEq, DecidableEq
+  deriving BEq, DecidableEq
 
 structure SortOmmersHashCell : Type where
   val : SortInt
-deriving BEq, DecidableEq
+  deriving BEq, DecidableEq
 
 structure SortMixHashCell : Type where
   val : SortInt
-deriving BEq, DecidableEq
+  deriving BEq, DecidableEq
 
 structure SortCallValueCell : Type where
   val : SortInt
-deriving BEq, DecidableEq
+  deriving BEq, DecidableEq
 
 structure SortNonceCell : Type where
   val : SortInt
-deriving BEq, DecidableEq
+  deriving BEq, DecidableEq
 
 structure SortWithdrawalsRootCell : Type where
   val : SortInt
-deriving BEq, DecidableEq
+  deriving BEq, DecidableEq
 
 structure SortStateRootCell : Type where
   val : SortInt
-deriving BEq, DecidableEq
+  deriving BEq, DecidableEq
 
 structure SortSigVCell : Type where
   val : SortInt
-deriving BEq, DecidableEq
+  deriving BEq, DecidableEq
 
 structure SortExitCodeCell : Type where
   val : SortInt
-deriving BEq, DecidableEq
+  deriving BEq, DecidableEq
 
 structure SortValidatorIndexCell : Type where
   val : SortInt
-deriving BEq, DecidableEq
+  deriving BEq, DecidableEq
 
 structure SortTxMaxBlobFeeCell : Type where
   val : SortInt
-deriving BEq, DecidableEq
+  deriving BEq, DecidableEq
 
 structure SortReceiptsRootCell : Type where
   val : SortInt
-deriving BEq, DecidableEq
+  deriving BEq, DecidableEq
 
 structure SortTxPriorityFeeCell : Type where
   val : SortInt
-deriving BEq, DecidableEq
+  deriving BEq, DecidableEq
 
 structure SortDifficultyCell : Type where
   val : SortInt
-deriving BEq, DecidableEq
+  deriving BEq, DecidableEq
 
 structure SortChainIDCell : Type where
   val : SortInt
-deriving BEq, DecidableEq
+  deriving BEq, DecidableEq
 
 inductive SortAccountCode : Type where
   | inj_SortBytes (x : SortBytes) : SortAccountCode
-deriving BEq, DecidableEq
+  deriving BEq, DecidableEq
 
 structure SortExtraDataCell : Type where
   val : SortBytes
-deriving BEq, DecidableEq
+  deriving BEq, DecidableEq
 
 structure SortProgramCell : Type where
   val : SortBytes
-deriving BEq, DecidableEq
+  deriving BEq, DecidableEq
 
 structure SortJumpDestsCell : Type where
   val : SortBytes
-deriving BEq, DecidableEq
+  deriving BEq, DecidableEq
 
 structure SortSigSCell : Type where
   val : SortBytes
-deriving BEq, DecidableEq
+  deriving BEq, DecidableEq
 
 structure SortOutputCell : Type where
   val : SortBytes
-deriving BEq, DecidableEq
+  deriving BEq, DecidableEq
 
 structure SortDataCell : Type where
   val : SortBytes
-deriving BEq, DecidableEq
+  deriving BEq, DecidableEq
 
 structure SortCallDataCell : Type where
   val : SortBytes
-deriving BEq, DecidableEq
+  deriving BEq, DecidableEq
 
 structure SortSigRCell : Type where
   val : SortBytes
-deriving BEq, DecidableEq
+  deriving BEq, DecidableEq
 
 structure SortLocalMemCell : Type where
   val : SortBytes
-deriving BEq, DecidableEq
+  deriving BEq, DecidableEq
 
 structure SortLogsBloomCell : Type where
   val : SortBytes
-deriving BEq, DecidableEq
+  deriving BEq, DecidableEq
 
 mutual
   inductive SortInternalOp : Type where
     | «#next[_]_EVM_InternalOp_MaybeOpCode» (x0 : SortMaybeOpCode) : SortInternalOp
-  deriving BEq, DecidableEq
+    deriving BEq, DecidableEq
 
   inductive SortMaybeOpCode : Type where
     | inj_SortBinStackOp (x : SortBinStackOp) : SortMaybeOpCode
     | inj_SortInternalOp (x : SortInternalOp) : SortMaybeOpCode
     | inj_SortPushOp (x : SortPushOp) : SortMaybeOpCode
-  deriving BEq, DecidableEq
+    deriving BEq, DecidableEq
 end
-
 
 structure SortStaticCell : Type where
   val : SortBool
-deriving BEq, DecidableEq
+  deriving BEq, DecidableEq
 
 structure SortUseGasCell : Type where
   val : SortBool
-deriving BEq, DecidableEq
+  deriving BEq, DecidableEq
 
 structure SortModeCell : Type where
   val : SortMode
-deriving BEq, DecidableEq
+  deriving BEq, DecidableEq
 
 structure SortWordStackCell : Type where
   val : SortWordStack
-deriving BEq, DecidableEq
+  deriving BEq, DecidableEq
 
 structure SortGasCell : Type where
   val : SortGas
-deriving BEq, DecidableEq
+  deriving BEq, DecidableEq
 
 structure SortCallGasCell : Type where
   val : SortGas
-deriving BEq, DecidableEq
+  deriving BEq, DecidableEq
 
 structure SortGasUsedCell : Type where
   val : SortGas
-deriving BEq, DecidableEq
+  deriving BEq, DecidableEq
 
 structure SortIdCell : Type where
   val : SortAccount
-deriving BEq, DecidableEq
+  deriving BEq, DecidableEq
 
 structure SortToCell : Type where
   val : SortAccount
-deriving BEq, DecidableEq
+  deriving BEq, DecidableEq
 
 structure SortAddressCell : Type where
   val : SortAccount
-deriving BEq, DecidableEq
+  deriving BEq, DecidableEq
 
 structure SortOriginCell : Type where
   val : SortAccount
-deriving BEq, DecidableEq
+  deriving BEq, DecidableEq
 
 structure SortCallerCell : Type where
   val : SortAccount
-deriving BEq, DecidableEq
+  deriving BEq, DecidableEq
 
 structure SortCodeCell : Type where
   val : SortAccountCode
-deriving BEq, DecidableEq
+  deriving BEq, DecidableEq
 
 structure SortWithdrawalCell : Type where
   withdrawalID : SortWithdrawalIDCell
@@ -420,7 +419,7 @@ structure SortWithdrawalCell : Type where
   validatorIndex : SortValidatorIndexCell
   address : SortAddressCell
   amount : SortAmountCell
-deriving BEq, DecidableEq
+  deriving BEq, DecidableEq
 
 structure SortCallStateCell : Type where
   program : SortProgramCell
@@ -437,24 +436,24 @@ structure SortCallStateCell : Type where
   callGas : SortCallGasCell
   static : SortStaticCell
   callDepth : SortCallDepthCell
-deriving BEq, DecidableEq
+  deriving BEq, DecidableEq
 
 structure SortWithdrawalCellMap : Type where
   coll : List (SortWithdrawalIDCell × SortWithdrawalCell)
-deriving BEq, DecidableEq
+  deriving BEq, DecidableEq
 
 structure SortWithdrawalsCell : Type where
   val : SortWithdrawalCellMap
-deriving BEq, DecidableEq
+  deriving BEq, DecidableEq
 
 mutual
   structure SortAccessedAccountsCell : Type where
     val : SortSet
-  deriving BEq
+    deriving BEq
 
   structure SortAccessedStorageCell : Type where
     val : SortMap
-  deriving BEq
+    deriving BEq
 
   structure SortAccountCell : Type where
     acctID : SortAcctIDCell
@@ -464,15 +463,15 @@ mutual
     origStorage : SortOrigStorageCell
     transientStorage : SortTransientStorageCell
     nonce : SortNonceCell
-  deriving BEq
+    deriving BEq
 
   structure SortAccountCellMap : Type where
     coll : List (SortAcctIDCell × SortAccountCell)
-  deriving BEq
+    deriving BEq
 
   structure SortAccountsCell : Type where
     val : SortAccountCellMap
-  deriving BEq
+    deriving BEq
 
   structure SortBlockCell : Type where
     previousHash : SortPreviousHashCell
@@ -496,24 +495,24 @@ mutual
     excessBlobGas : SortExcessBlobGasCell
     beaconRoot : SortBeaconRootCell
     ommerBlockHeaders : SortOmmerBlockHeadersCell
-  deriving BEq
+    deriving BEq
 
   structure SortBlockhashesCell : Type where
     val : SortList
-  deriving BEq
+    deriving BEq
 
   structure SortCallStackCell : Type where
     val : SortList
-  deriving BEq
+    deriving BEq
 
   structure SortCreatedAccountsCell : Type where
     val : SortSet
-  deriving BEq
+    deriving BEq
 
   structure SortEthereumCell : Type where
     evm : SortEvmCell
     network : SortNetworkCell
-  deriving BEq
+    deriving BEq
 
   structure SortEvmCell : Type where
     output : SortOutputCell
@@ -528,16 +527,16 @@ mutual
     origin : SortOriginCell
     blockhashes : SortBlockhashesCell
     block : SortBlockCell
-  deriving BEq
+    deriving BEq
 
   structure SortGeneratedTopCell : Type where
     kevm : SortKevmCell
     generatedCounter : SortGeneratedCounterCell
-  deriving BEq
+    deriving BEq
 
   structure SortInterimStatesCell : Type where
     val : SortList
-  deriving BEq
+    deriving BEq
 
   inductive SortJSON : Type where
     | inj_SortAccount (x : SortAccount) : SortJSON
@@ -550,21 +549,21 @@ mutual
     | JSONList (x0 : SortJSONs) : SortJSON
     | JSONObject (x0 : SortJSONs) : SortJSON
     | JSONnull : SortJSON
-  deriving BEq
+    deriving BEq
 
   inductive SortJSONs : Type where
     | «.List{"JSONs"}» : SortJSONs
     | JSONs (x0 : SortJSON) (x1 : SortJSONs) : SortJSONs
-  deriving BEq
+    deriving BEq
 
   inductive SortK : Type where
     | dotk : SortK
     | kseq (x0 : SortKItem) (x1 : SortK) : SortK
-  deriving BEq
+    deriving BEq
 
   structure SortKCell : Type where
     val : SortK
-  deriving BEq
+    deriving BEq
 
   inductive SortKItem : Type where
     | inj_SortAccessedAccountsCell (x : SortAccessedAccountsCell) : SortKItem
@@ -716,7 +715,7 @@ mutual
     | halt : SortKItem
     | «loadCallState__STATE-UTILS_KItem_JSON» (x0 : SortJSON) : SortKItem
     | loadProgram (x0 : SortBytes) : SortKItem
-  deriving BEq
+    deriving BEq
 
   structure SortKevmCell : Type where
     k : SortKCell
@@ -725,19 +724,19 @@ mutual
     schedule : SortScheduleCell
     useGas : SortUseGasCell
     ethereum : SortEthereumCell
-  deriving BEq
+    deriving BEq
 
   structure SortList : Type where
     coll : List SortKItem
-  deriving BEq
+    deriving BEq
 
   structure SortLogCell : Type where
     val : SortList
-  deriving BEq
+    deriving BEq
 
   structure SortMap : Type where
     coll : List (SortKItem × SortKItem)
-  deriving BEq
+    deriving BEq
 
   structure SortMessageCell : Type where
     msgID : SortMsgIDCell
@@ -757,15 +756,15 @@ mutual
     txType : SortTxTypeCell
     txMaxBlobFee : SortTxMaxBlobFeeCell
     txVersionedHashes : SortTxVersionedHashesCell
-  deriving BEq
+    deriving BEq
 
   structure SortMessageCellMap : Type where
     coll : List (SortMsgIDCell × SortMessageCell)
-  deriving BEq
+    deriving BEq
 
   structure SortMessagesCell : Type where
     val : SortMessageCellMap
-  deriving BEq
+    deriving BEq
 
   structure SortNetworkCell : Type where
     chainID : SortChainIDCell
@@ -776,27 +775,27 @@ mutual
     withdrawalsPending : SortWithdrawalsPendingCell
     withdrawalsOrder : SortWithdrawalsOrderCell
     withdrawals : SortWithdrawalsCell
-  deriving BEq
+    deriving BEq
 
   structure SortOmmerBlockHeadersCell : Type where
     val : SortJSON
-  deriving BEq
+    deriving BEq
 
   structure SortOrigStorageCell : Type where
     val : SortMap
-  deriving BEq
+    deriving BEq
 
   structure SortSelfDestructCell : Type where
     val : SortSet
-  deriving BEq
+    deriving BEq
 
   structure SortSet : Type where
     coll : List SortKItem
-  deriving BEq
+    deriving BEq
 
   structure SortStorageCell : Type where
     val : SortMap
-  deriving BEq
+    deriving BEq
 
   structure SortSubstateCell : Type where
     selfDestruct : SortSelfDestructCell
@@ -805,41 +804,41 @@ mutual
     accessedAccounts : SortAccessedAccountsCell
     accessedStorage : SortAccessedStorageCell
     createdAccounts : SortCreatedAccountsCell
-  deriving BEq
+    deriving BEq
 
   structure SortTouchedAccountsCell : Type where
     val : SortSet
-  deriving BEq
+    deriving BEq
 
   structure SortTransientStorageCell : Type where
     val : SortMap
-  deriving BEq
+    deriving BEq
 
   structure SortTxAccessCell : Type where
     val : SortJSON
-  deriving BEq
+    deriving BEq
 
   structure SortTxOrderCell : Type where
     val : SortList
-  deriving BEq
+    deriving BEq
 
   structure SortTxPendingCell : Type where
     val : SortList
-  deriving BEq
+    deriving BEq
 
   structure SortTxVersionedHashesCell : Type where
     val : SortList
-  deriving BEq
+    deriving BEq
 
   structure SortVersionedHashesCell : Type where
     val : SortList
-  deriving BEq
+    deriving BEq
 
   structure SortWithdrawalsOrderCell : Type where
     val : SortList
-  deriving BEq
+    deriving BEq
 
   structure SortWithdrawalsPendingCell : Type where
     val : SortList
-  deriving BEq
+    deriving BEq
 end
