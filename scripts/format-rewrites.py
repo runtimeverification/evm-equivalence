@@ -19,8 +19,11 @@ def _process_line(line: str) -> str:
 def _tokenize(text: str) -> list[str]:
     import re
 
-    pattern = r"{|}|\(|\)|\||:=|:|,|«[^»]+»|[^{}()|:,«»\s]+"
-    return re.findall(pattern, text)
+    special = '|'.join(['{', '}', r'\(', r'\)', r'\|', ':=', ':', ','])
+    segment = r'(«[^»]+»|[^{}()|:,«»\.\s]+)'
+    other = fr'{segment}(\.{segment})*'
+    pattern = '|'.join([special, other])
+    return list(m.group() for m in re.finditer(pattern, text))
 
 
 class CtorWriter:
