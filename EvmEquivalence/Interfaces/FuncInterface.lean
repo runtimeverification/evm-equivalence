@@ -133,4 +133,15 @@ theorem sizeWordStack_def {ws : SortWordStack} :
   sizeWordStackAux ws 0 = some (List.length (wordStackMap ws)) :=
   wsLength_eq_length_wordStackMap ▸ sizeWordStackIsSome
 
+
+-- Behavior of `AccountCellMapItem`
+/--
+Note that this function is dependent on the current implementation of `SortAccountCellMap`
+
+The current implementation is `List (SortAcctIDCell × SortAccountCell)` but
+this might change in the future
+-/
+def accountCellMapItem_def (x0 : SortAcctIDCell) (x1 : SortAccountCell) : Option SortAccountCellMap :=
+  some (⟨[(x0, x1)]⟩)
+
 end KEVMInterface
