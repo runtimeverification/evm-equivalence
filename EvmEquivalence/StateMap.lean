@@ -133,16 +133,31 @@ noncomputable def accountMap (acc : SortAccountCell) : Account where
 
 --def mapMap (key value : Type) : Batteries.RBSet
 
-/- State Mapping: Mapping KEVM states to EvmYul states -/
+/--
+State Mapping: Mapping KEVM states to EvmYul states
 
--- We temporarely require the `symState` argument since we don't map the entire KEVM state yet
-def stateMap (symState : EVM.State) (tc : SortGeneratedTopCell) : EVM.State :=
+We temporarely require the `symState` argument since we don't map the entire KEVM state yet
+
+The following data structures are axiomatically mapped:
+1. `Substate.accessedStorageKeys`:
+  The `EvmYul` data representation for this is an `RBSet`, which is hard to reason about.
+  The mapping will remain an axiom until a better reasoning interface is provided or we have time to implement it
+2. `State.accountMap`: Similar reasons as above
+-/
+noncomputable def stateMap (symState : EVM.State) (tc : SortGeneratedTopCell) : EVM.State :=
   {symState with
-  stack := wordStackCellMap (wordStackCellOfGTC tc)
-  pc := pcCellMap (pcOfGTC tc)
-  gasAvailable := gasCellMap (gasOfGTC tc)
-  executionEnv := {symState.executionEnv with code := (programOfGTC tc).val}
-  returnData := (outputOfGTC tc).val
+  stack := wordStackCellMap tc.wordStackCell
+  pc := pcCellMap tc.pc
+  gasAvailable := gasCellMap tc.gas
+  executionEnv := {symState.executionEnv with
+                code := tc.program.val,
+                codeOwner := idMap tc.Iₐ}
+  accountMap := Axioms.SortAccountsCellMap tc.accounts
+  substate := {symState.substate with
+            accessedStorageKeys :=  Axioms.SortAccessedStorageCellMap tc.accessedStorage
+            refundBalance := intMap tc.refund.val
+           }
+  returnData := tc.output.val
   }
 
 /- State Mapping Results -/
