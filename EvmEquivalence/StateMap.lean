@@ -10,6 +10,47 @@ import EvmEquivalence.Utils.IntUtils
 open EvmYul
 open EVM
 
+/- Getters for accessing cells from the Generated Top Cell -/
+
+namespace SortGeneratedTopCell
+
+variable (tc : SortGeneratedTopCell)
+
+@[simp]
+def evm :SortEvmCell := tc.kevm.ethereum.evm
+
+@[simp]
+def callState : SortCallStateCell := tc.kevm.ethereum.evm.callState
+
+@[simp]
+def wordStackCell : SortWordStackCell := tc.kevm.ethereum.evm.callState.wordStack
+
+@[simp]
+def pc : SortPcCell := tc.kevm.ethereum.evm.callState.pc
+
+@[simp]
+def gas : SortGasCell := tc.kevm.ethereum.evm.callState.gas
+
+@[simp]
+def program : SortProgramCell := tc.kevm.ethereum.evm.callState.program
+
+@[simp]
+def output : SortOutputCell := tc.kevm.ethereum.evm.output
+
+@[simp]
+def accessedStorage : SortAccessedStorageCell := tc.kevm.ethereum.evm.substate.accessedStorage
+
+@[simp]
+def refund : SortRefundCell := tc.kevm.ethereum.evm.substate.refund
+
+@[simp]
+def accounts : SortAccountsCell := tc.kevm.ethereum.network.accounts
+
+@[simp]
+def Iₐ : SortIdCell := tc.kevm.ethereum.evm.callState.id
+
+end SortGeneratedTopCell
+
 namespace StateMap
 
 /- Maps from K types to EvmYul types -/
@@ -37,33 +78,17 @@ def gasMap (gs : SortGas) : UInt256 :=
 def gasCellMap (gc : SortGasCell) : UInt256 :=
   gasMap gc.val
 
-/- Getters for accessing cells from the Generated Top Cell -/
+@[simp]
 
 @[simp]
-def evmOfGTC (tc : SortGeneratedTopCell) :SortEvmCell :=
-  tc.kevm.ethereum.evm
 
 @[simp]
-def callStateOfGTC (tc : SortGeneratedTopCell) : SortCallStateCell :=
-  tc.kevm.ethereum.evm.callState
 
 @[simp]
-def wordStackCellOfGTC (tc : SortGeneratedTopCell) : SortWordStackCell :=
-  tc.kevm.ethereum.evm.callState.wordStack
 
 @[simp]
-def pcOfGTC (tc : SortGeneratedTopCell) : SortPcCell :=
-  tc.kevm.ethereum.evm.callState.pc
-
 @[simp]
-def gasOfGTC (tc : SortGeneratedTopCell) : SortGasCell :=
-  tc.kevm.ethereum.evm.callState.gas
 @[simp]
-def programOfGTC (tc : SortGeneratedTopCell) : SortProgramCell :=
-  tc.kevm.ethereum.evm.callState.program
-@[simp]
-def outputOfGTC (tc : SortGeneratedTopCell) : SortOutputCell :=
-  tc.kevm.ethereum.evm.output
 
 /- State Mapping: Mapping KEVM states to EvmYul states -/
 
