@@ -97,16 +97,41 @@ def gasCellMap (gc : SortGasCell) : UInt256 :=
   gasMap gc.val
 
 @[simp]
+def accountAddressMap (acc : SortAccount) : AccountAddress :=
+  match acc with
+  | .«.Account_EVM-TYPES_Account» => 0
+  | .inj_SortInt n => AccountAddress.ofNat (Int.toNat n)
 
 @[simp]
+def idMap (idc : SortIdCell) : AccountAddress :=
+  accountAddressMap idc.val
 
 @[simp]
+def acctIDMap (aid : SortAcctIDCell) : AccountAddress :=
+  AccountAddress.ofNat (Int.toNat aid.val)
 
 @[simp]
+noncomputable def storageMap (stor : SortStorageCell) : Storage :=
+  Axioms.SortStorageCellMap stor
 
 @[simp]
+noncomputable def transStorageMap (tstor : SortTransientStorageCell) : Storage :=
+  Axioms.SortTransientStorageCellMap tstor
+
 @[simp]
+def accCodeMap (code : SortAccountCode) : ByteArray :=
+  match code with | SortAccountCode.inj_SortBytes code => code
+
+/- Note that Origin Storage Cell (`origStorage`) is not needed from `SortAccountCell` -/
 @[simp]
+noncomputable def accountMap (acc : SortAccountCell) : Account where
+  nonce := intMap acc.nonce.val
+  balance := intMap acc.balance.val
+  storage := storageMap acc.storage
+  code := accCodeMap acc.code.val
+  tstorage := transStorageMap acc.transientStorage
+
+--def mapMap (key value : Type) : Batteries.RBSet
 
 /- State Mapping: Mapping KEVM states to EvmYul states -/
 
