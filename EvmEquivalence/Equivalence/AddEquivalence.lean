@@ -228,12 +228,17 @@ theorem add_prestate_equiv
   {_Gen8 : SortCallGasCell}
   {_Gen9 : SortStaticCell}
   (symState : EVM.State):
-  stateMap symState (@addLHS GAS_CELL PC_CELL W0 W1 K_CELL SCHEDULE_CELL USEGAS_CELL WS _DotVar0 _DotVar2 _Gen0 _Gen1 _Gen10 _Gen11 _Gen12 _Gen13 _Gen14 _Gen15 _Gen16 _Gen17 _Gen18 _Gen19 _Gen2 _Gen20 _Gen21 _Gen22 _Gen23 _Gen3 _Gen4 _Gen5 _Gen6 _Gen7 _Gen8 _Gen9) =
+  let lhs := (@addLHS GAS_CELL PC_CELL W0 W1 K_CELL SCHEDULE_CELL USEGAS_CELL WS _DotVar0 _DotVar2 _Gen0 _Gen1 _Gen10 _Gen11 _Gen12 _Gen13 _Gen14 _Gen15 _Gen16 _Gen17 _Gen18 _Gen19 _Gen2 _Gen20 _Gen21 _Gen22 _Gen23 _Gen3 _Gen4 _Gen5 _Gen6 _Gen7 _Gen8 _Gen9)
+  stateMap symState lhs =
   {symState with
     stack := (intMap W0) :: (intMap W1) :: wordStackMap WS
     pc := intMap PC_CELL
     gasAvailable := intMap GAS_CELL
     executionEnv := {symState.executionEnv with code := _Gen0.val}
+    substate := {symState.substate with
+            accessedStorageKeys :=  Axioms.mapAccessStorageCell (accessedStorageOfGTC lhs)
+            refundBalance := intMap _Gen17.refund.val
+           }
     returnData := _Gen11.val
     } := rfl
 
@@ -273,12 +278,17 @@ theorem add_poststate_equiv
   (defn_Val4 : chop _Val3 = some _Val4)
   (defn_Val5 : «_+Int_» PC_CELL 1 = some _Val5)
   (symState : EVM.State):
-  stateMap symState (@addRHS _Val0 _Val3 _Val4 _Val5 _Val6 _Val7 K_CELL SCHEDULE_CELL _Val1 _Val2 WS _DotVar0 _DotVar2 _Gen0 _Gen1 _Gen10 _Gen11 _Gen12 _Gen13 _Gen14 _Gen15 _Gen16 _Gen17 _Gen18 _Gen19 _Gen2 _Gen20 _Gen21 _Gen22 _Gen23 _Gen3 _Gen4 _Gen5 _Gen6 _Gen7 _Gen8 _Gen9) =
+  let rhs := (@addRHS _Val0 _Val3 _Val4 _Val5 _Val6 _Val7 K_CELL SCHEDULE_CELL _Val1 _Val2 WS _DotVar0 _DotVar2 _Gen0 _Gen1 _Gen10 _Gen11 _Gen12 _Gen13 _Gen14 _Gen15 _Gen16 _Gen17 _Gen18 _Gen19 _Gen2 _Gen20 _Gen21 _Gen22 _Gen23 _Gen3 _Gen4 _Gen5 _Gen6 _Gen7 _Gen8 _Gen9)
+  stateMap symState rhs =
   {symState with
     stack := (intMap (chop' («_+Int'_» W0 W1))) :: wordStackMap WS
     pc := intMap («_+Int'_» PC_CELL 1)
     gasAvailable := intMap _Val7
     executionEnv := {symState.executionEnv with code := _Gen0.val}
+    substate := {symState.substate with
+            accessedStorageKeys :=  Axioms.mapAccessStorageCell (accessedStorageOfGTC rhs)
+            refundBalance := intMap _Gen17.refund.val
+           }
     returnData := _Gen11.val
     } := by aesop (add simp [«_+Int'_», chop'])
 
