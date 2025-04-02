@@ -51,6 +51,24 @@ def Iₐ : SortIdCell := tc.kevm.ethereum.evm.callState.id
 
 end SortGeneratedTopCell
 
+namespace SortKItem
+
+/- KItem projections to subsorts -/
+@[simp]
+def toAccountSort (k : SortKItem) : Option SortAccount :=
+  match k with
+  | .inj_SortAccount acc => some acc
+  | _ => none
+
+/- Subsort projections to KItem -/
+@[simp]
+def ofAccountSort(acc : SortAccount) : SortKItem :=
+  SortKItem.inj_SortAccount acc
+
+end SortKItem
+
+open SortKItem
+
 namespace StateMap
 
 /- Maps from K types to EvmYul types -/
