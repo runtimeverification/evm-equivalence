@@ -4,6 +4,7 @@ import EvmEquivalence.KEVM2Lean.Inj
 import EvmEquivalence.KEVM2Lean.Func
 import EvmEquivalence.KEVM2Lean.Rewrite
 import EvmEquivalence.Interfaces.EvmYulInterface
+import EvmEquivalence.Interfaces.Axioms
 import EvmEquivalence.Utils.IntUtils
 
 open EvmYul
