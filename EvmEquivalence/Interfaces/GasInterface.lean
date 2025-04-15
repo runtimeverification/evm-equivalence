@@ -93,7 +93,7 @@ theorem sched_default_def :
   | .maxInitCodeSize_SCHEDULE_ScheduleConst        => some 0
   | .Ginitcodewordcost_SCHEDULE_ScheduleConst      => some 0
   | .Rmaxquotient_SCHEDULE_ScheduleConst           => some 2
-  | .Gpointeval_SCHEDULE_ScheduleConst => some 0
+  | .Gpointeval_SCHEDULE_ScheduleConst             => some 0
   := by
   simp_schedule1; cases const <;> simp_schedule2
 
@@ -128,8 +128,8 @@ theorem sched_tangerine_whistle_def :
 theorem sched_spurious_dragon_def :
   «_<_>_SCHEDULE_Int_ScheduleConst_Schedule» const .SPURIOUS_DRAGON_EVM =
   match const with
-  | .Gexpbyte_SCHEDULE_ScheduleConst      => some 50
-  | .maxCodeSize_SCHEDULE_ScheduleConst   => some 24576
+  | .Gexpbyte_SCHEDULE_ScheduleConst    => some 50
+  | .maxCodeSize_SCHEDULE_ScheduleConst => some 24576
   | const => «_<_>_SCHEDULE_Int_ScheduleConst_Schedule» const .TANGERINE_WHISTLE_EVM := by
   simp_schedule1; cases const <;> simp_schedule2
 
