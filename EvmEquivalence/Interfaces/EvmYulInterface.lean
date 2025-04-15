@@ -15,6 +15,8 @@ set_option linter.deprecated false
 variable {n : ℕ}
 variable {p : ℤ}
 
+-- Conversions
+
 theorem val_eq (h : n < UInt256.size): ↑(UInt256.ofNat n).1 = n := by
   aesop (add simp [UInt256.ofNat, Id.run, Fin.ofNat])
         (add safe (by omega))
@@ -25,6 +27,11 @@ theorem ofNat_eq: UInt256.ofNat n = ⟨Fin.ofNat n⟩ := by
 theorem ofNat_toNat (n_le_size : n < UInt256.size) :
   (UInt256.ofNat n).toNat = n := by
   aesop (add simp [UInt256.ofNat, UInt256.toNat, Id.run, dbgTrace, Fin.ofNat])
+
+theorem ofNat_toSigned {n : ℕ} {p : ℤ} (h : ↑n = p) :
+  UInt256.ofNat n = .toSigned p := by aesop
+
+-- Arithmetic
 
 @[simp]
 theorem sub_0 {n : UInt256} : n - .ofNat 0 = n := by
