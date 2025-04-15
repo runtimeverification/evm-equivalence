@@ -234,9 +234,12 @@ theorem add_prestate_equiv
     stack := (intMap W0) :: (intMap W1) :: wordStackMap WS
     pc := intMap PC_CELL
     gasAvailable := intMap GAS_CELL
-    executionEnv := {symState.executionEnv with code := _Gen0.val}
+    executionEnv := {symState.executionEnv with
+                  code := _Gen0.val,
+                  codeOwner := idMap lhs.Iₐ}
+    accountMap := Axioms.SortAccountsCellMap lhs.accounts
     substate := {symState.substate with
-            accessedStorageKeys :=  Axioms.mapAccessStorageCell (accessedStorageOfGTC lhs)
+            accessedStorageKeys :=  Axioms.SortAccessedStorageCellMap lhs.accessedStorage
             refundBalance := intMap _Gen17.refund.val
            }
     returnData := _Gen11.val
@@ -284,13 +287,17 @@ theorem add_poststate_equiv
     stack := (intMap (chop' («_+Int'_» W0 W1))) :: wordStackMap WS
     pc := intMap («_+Int'_» PC_CELL 1)
     gasAvailable := intMap _Val7
-    executionEnv := {symState.executionEnv with code := _Gen0.val}
+    executionEnv := {symState.executionEnv with
+                  code := _Gen0.val,
+                  codeOwner := idMap rhs.Iₐ}
+    accountMap := Axioms.SortAccountsCellMap rhs.accounts
     substate := {symState.substate with
-            accessedStorageKeys :=  Axioms.mapAccessStorageCell (accessedStorageOfGTC rhs)
+            accessedStorageKeys :=  Axioms.SortAccessedStorageCellMap rhs.accessedStorage
             refundBalance := intMap _Gen17.refund.val
            }
     returnData := _Gen11.val
     } := by aesop (add simp [«_+Int'_», chop'])
+
 
 open AddSummary
 
@@ -356,7 +363,7 @@ theorem step_add_equiv
   cases gas; contradiction
   case succ gas =>
     rw [EVM.step_add_summary] <;> try assumption
-    congr
+    simp [addLHS, addRHS]; constructor <;> try constructor
     . aesop (add simp [GasInterface.cancun_def, «_-Int_», intMap_sub_dist])
     . rw [plusInt_def, ←UInt256.add_succ_mod_size, intMap_add_dist] <;> aesop
     . aesop (add simp [intMap, chop_def, plusInt_def, intMap_add_dist])
@@ -428,7 +435,7 @@ theorem X_add_equiv
   -- If we don't apply this lemma we cannot rewrite X_add_summary
   have pc_equiv : intMap 0 = UInt256.ofNat 0 := rfl
   rw [pc_equiv, X_add_summary]
-  · aesop (add simp [GasInterface.cancun_def, «_-Int_», chop_def, plusInt_def, intMap_add_dist])
+  · aesop (add simp [GasInterface.cancun_def, «_-Int_», chop_def, plusInt_def, intMap_add_dist, addLHS, addRHS])
       (add safe (by rw [intMap_sub_dist])) (add safe (by apply le_of_lt))
   · aesop (add simp [GasConstants.Gverylow, intMap, UInt256.toSigned])
       (add simp [intMap_toNat, UInt256.ofNat_toNat])
