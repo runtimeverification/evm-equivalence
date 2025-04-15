@@ -199,3 +199,142 @@ theorem intMap_toNat {n : SortInt} (nh : 0 ≤ n) (size : n < UInt256.size) :
   aesop (add simp [intMap, Int.toNat, UInt256.toSigned, Int.toNat_ofNat, UInt256.ofNat_toNat])
 
 end StateMap
+
+open StateMap
+
+namespace Axioms
+
+/--
+This axiom states that if an account is in an `AccountCellMap`, then
+`Batteries.RBMap.find?` finds it in the image of the axiomatized mapping
+
+The second element of `AccountCellMapItem` is provided embedded in `accCellMap_def` for
+ease of use when proving theorems
+ -/
+axiom findAccountInAccountCellMap
+  {ID_CELL : SortInt}
+  {balance : SortBalanceCell}
+  {code : SortCodeCell}
+  {STORAGE_CELL ORIG_STORAGE_CELL : SortMap}
+  {tstorage : SortTransientStorageCell}
+  {nonce : SortNonceCell}
+  {accCellMap dotVar accCellMap2 : SortAccountCellMap}
+  (accCellMap_def : AccountCellMapItem { val := ID_CELL } {
+    acctID := { val := ID_CELL },
+    balance := balance,
+    code := code,
+    storage := { val := STORAGE_CELL },
+    origStorage := { val := ORIG_STORAGE_CELL },
+    transientStorage := tstorage,
+    nonce := nonce } = some accCellMap)
+  (accCellMap2_def : _AccountCellMap_ accCellMap dotVar = some accCellMap2) :
+  Batteries.RBMap.find? (Axioms.SortAccountsCellMap { val := accCellMap2 }) (AccountAddress.ofNat (Int.toNat ID_CELL)) = some (StateMap.accountMap {
+    acctID := { val := ID_CELL },
+    balance := balance,
+    code := code,
+    storage := { val := STORAGE_CELL },
+    origStorage := { val := ORIG_STORAGE_CELL },
+    transientStorage := tstorage,
+    nonce := nonce })
+
+/--
+Expected behavior of `SortAccountsCellMap` w.r.t. `Batteries.RBMap.find?`
+
+This axiom states that
+- Given an `accountsCell` (`accCellMap2`) containing an account identifiable by `ID_CELL` (`acc`)
+- The (axiomatic) mapping of `accCellMap2` contains the mapping of `acc`
+- And, in particular, `RBMap.find?` correctly finds the mapped `acc` if provided with the mapped `ID_CELL`
+ -/
+axiom accountsCell_map_find?
+  {ID_CELL : SortInt}
+  {balance : SortBalanceCell}
+  {code : SortCodeCell}
+  {STORAGE_CELL ORIG_STORAGE_CELL : SortMap}
+  {tstorage : SortTransientStorageCell}
+  {nonce : SortNonceCell}
+  {accCellMap dotVar accCellMap2 : SortAccountCellMap}
+  (acc : SortAccountCell)
+  (acc_def : acc = {
+    acctID := { val := ID_CELL },
+    balance := balance,
+    code := code,
+    storage := { val := STORAGE_CELL },
+    origStorage := { val := ORIG_STORAGE_CELL },
+    transientStorage := tstorage,
+    nonce := nonce })
+  (accCellMap_def : AccountCellMapItem { val := ID_CELL } acc = some accCellMap)
+  (accCellMap2_def : _AccountCellMap_ accCellMap dotVar = some accCellMap2) :
+  Batteries.RBMap.find? (Axioms.SortAccountsCellMap { val := accCellMap2 }) (AccountAddress.ofNat (Int.toNat ID_CELL)) = some (StateMap.accountMap acc)
+
+/--
+Expected behavior of `SortAccountsCellMap` w.r.t. `Batteries.RBMap.insert`
+
+This axiom states that
+- Given an `accountsCell` (`initCellMap`) containing an account identifiable by `ID_CELL` (`initAccount`) with symbolic storage `STORAGE_CELL`
+- Given an updated `accountsCell` (`updatedCellMap`) consisting of `initAccount` with an updated `STORAGE_CELL` which contains the symbolic (`key`, `value`) pair (`stor_update`)
+- `RBMap.insert`ing the mapped (`key`, `value`) pair into the (axiomatically) mapped `initCellMap` equals to the (axiomatic) mapping of `updatedCellMap`
+ -/
+axiom accountsCell_map_insert
+  {ID_CELL key value : SortInt}
+  {balance : SortBalanceCell}
+  {code : SortCodeCell}
+  {tstorage : SortTransientStorageCell}
+  {nonce : SortNonceCell}
+  {ACCESSEDSTORAGE_CELL ORIG_STORAGE_CELL STORAGE_CELL stor_update : SortMap}
+  {emptySet kitemToSet keySet fullSet : SortSet}
+  {kitemLookup : SortKItem}
+  {dotvar initAccount initCellMap updatedAccount updatedCellMap : SortAccountCellMap}
+  (defn_Val34 : «.Set» = some emptySet)
+  (defn_Val35 : «Map:lookupOrDefault» ACCESSEDSTORAGE_CELL ((@inj SortInt SortKItem) ID_CELL) ((@inj SortSet SortKItem) emptySet) = some kitemLookup)
+  (defn_Val36 : «project:Set» (SortK.kseq kitemLookup SortK.dotk) = some kitemToSet)
+  (defn_Val37 : SetItem ((@inj SortInt SortKItem) key) = some keySet)
+  (defn_Val38 : «_|Set__SET_Set_Set_Set» kitemToSet keySet = some fullSet)
+  (defn_Val40 : «Map:update» STORAGE_CELL ((@inj SortInt SortKItem) key) ((@inj SortInt SortKItem) value) = some stor_update)
+  (defn_Val41 : AccountCellMapItem { val := ID_CELL } {
+    acctID := { val := ID_CELL },
+    balance := balance,
+    code := code,
+    storage := { val := stor_update },
+    origStorage := { val := ORIG_STORAGE_CELL },
+    transientStorage := tstorage,
+    nonce := nonce } = some updatedAccount)
+  (defn_Val42 : _AccountCellMap_ updatedAccount dotvar = some updatedCellMap)
+  (defn_Val19 : AccountCellMapItem { val := ID_CELL } {
+    acctID := { val := ID_CELL },
+    balance := balance,
+    code := code,
+    storage := { val := STORAGE_CELL },
+    origStorage := { val := ORIG_STORAGE_CELL },
+    transientStorage := tstorage,
+    nonce := nonce } = some initAccount)
+  (defn_Val20 : _AccountCellMap_ initAccount dotvar = some initCellMap)
+  (ownerAcc : Account)
+  :
+  Batteries.RBMap.insert (Axioms.SortAccountsCellMap { val := initCellMap }) (accountAddressMap (inj ID_CELL))
+    (ownerAcc.updateStorage (intMap key) (intMap value)) =
+  Axioms.SortAccountsCellMap { val := updatedCellMap }
+
+/--
+Expected behavior of `SortAccessedStorageCellMap` w.r.t. `Batteries.RBSet.insert`
+
+This axiom states that
+- Given a symbolic map of accessed storage keys `ACCESSEDSTORAGE_CELL`
+- Given an update of `ACCESSEDSTORAGE_CELL` containing the account `ID_CELL` and the key `key` (`stor_update`)
+- `RBMap.insert`ing the mapped pair (`ID_CELL`, `key`) into the (axiomatically) mapped `ACCESSEDSTORAGE_CELL` equals to the (axiomatic) mapping of `stor_update`
+ -/
+axiom accessedStorageCell_map_insert
+    {ID_CELL key : SortInt}
+  {ACCESSEDSTORAGE_CELL stor_update : SortMap}
+  {emptySet kitemToSet keySet fullSet : SortSet}
+  {kitemLookup : SortKItem}
+  (defn_Val34 : «.Set» = some emptySet)
+  (defn_Val35 : «Map:lookupOrDefault» ACCESSEDSTORAGE_CELL ((@inj SortInt SortKItem) ID_CELL) ((@inj SortSet SortKItem) emptySet) = some kitemLookup)
+  (defn_Val36 : «project:Set» (SortK.kseq kitemLookup SortK.dotk) = some kitemToSet)
+  (defn_Val37 : SetItem ((@inj SortInt SortKItem) key) = some keySet)
+  (defn_Val38 : «_|Set__SET_Set_Set_Set» kitemToSet keySet = some fullSet)
+  (defn_Val39 : «Map:update» ACCESSEDSTORAGE_CELL ((@inj SortInt SortKItem) ID_CELL) ((@inj SortSet SortKItem) fullSet) = some stor_update) :
+  (Axioms.SortAccessedStorageCellMap { val := ACCESSEDSTORAGE_CELL }).insert
+    (AccountAddress.ofNat (Int.toNat ID_CELL), intMap key) =
+  Axioms.SortAccessedStorageCellMap { val := stor_update }
+
+end Axioms
