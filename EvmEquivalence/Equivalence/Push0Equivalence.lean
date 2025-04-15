@@ -241,9 +241,12 @@ theorem push0_prestate_equiv
     stack := wordStackMap WS
     pc := intMap PC_CELL
     gasAvailable := intMap GAS_CELL
-    executionEnv := {symState.executionEnv with code := _Gen0.val}
+    executionEnv := {symState.executionEnv with
+                  code := _Gen0.val,
+                  codeOwner := idMap lhs.Iₐ}
+    accountMap := Axioms.SortAccountsCellMap lhs.accounts
     substate := {symState.substate with
-            accessedStorageKeys :=  Axioms.mapAccessStorageCell (accessedStorageOfGTC lhs)
+            accessedStorageKeys :=  Axioms.SortAccessedStorageCellMap lhs.accessedStorage
             refundBalance := intMap _Gen17.refund.val
            }
     returnData := _Gen11.val
@@ -289,9 +292,12 @@ theorem push0_poststate_equiv
     stack := .ofNat 0 :: wordStackMap WS
     pc := intMap («_+Int'_» PC_CELL 1)
     gasAvailable := intMap _Val13
-    executionEnv := {symState.executionEnv with code := _Gen0.val}
+    executionEnv := {symState.executionEnv with
+                  code := _Gen0.val,
+                  codeOwner := idMap rhs.Iₐ}
+    accountMap := Axioms.SortAccountsCellMap rhs.accounts
     substate := {symState.substate with
-            accessedStorageKeys :=  Axioms.mapAccessStorageCell (accessedStorageOfGTC rhs)
+            accessedStorageKeys :=  Axioms.SortAccessedStorageCellMap rhs.accessedStorage
             refundBalance := intMap _Gen17.refund.val
            }
     returnData := _Gen11.val
@@ -360,7 +366,7 @@ theorem step_push0_equiv
   rw [push0_prestate_equiv, (push0_poststate_equiv PC_CELL)]
   cases gas; contradiction
   rw [EVM.step_push0_summary] <;> try assumption
-  congr
+  simp [push0LHS, push0RHS]; constructor <;> try constructor
   . aesop (add simp [GasConstants.Gbase, «_-Int_», cancun_def, intMap_sub_dist])
   . rw [plusInt_def, ←UInt256.add_succ_mod_size, intMap_add_dist] <;> aesop
   . aesop (add simp [«_+Int_»])
@@ -434,7 +440,7 @@ theorem X_push0_equiv
   . rw [intMap_toNat, Int.toNat_eq_zero] at cgc <;> linarith
   . have pc_equiv : intMap 0 = UInt256.ofNat 0 := rfl
     rw [pc_equiv, ←intMap_toNat, X_push0_summary] <;> first | linarith | try simp
-    . aesop (add simp [«_-Int_», intMap_sub_dist])
+    . aesop (add simp [«_-Int_», intMap_sub_dist, push0LHS, push0RHS])
       (add safe (by rw [intMap_sub_dist])) (add safe (by linarith))
     . rw [intMap_toNat] <;> aesop (add safe (by linarith))
     . simp [defn_Val3] at defn_Val6; subst defn_Val6
