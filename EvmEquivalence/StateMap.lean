@@ -10,6 +10,8 @@ import EvmEquivalence.Utils.IntUtils
 open EvmYul
 open EVM
 
+set_option linter.deprecated false
+
 /- Getters for accessing cells from the Generated Top Cell -/
 
 namespace SortGeneratedTopCell
