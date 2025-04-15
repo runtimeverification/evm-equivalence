@@ -348,11 +348,6 @@ theorem flag_homestead_def :
   «_<<_>>_SCHEDULE_Bool_ScheduleFlag_Schedule» flag .DEFAULT_EVM := by
   simp_flag; cases flag <;> simp_flag
 
-/- theorem ksek_beq (kitem₁ kitem₂ : SortKItem) (kseq₁ kseq₂ : SortK) :
-  (SortK.kseq kitem₁ kseq₁ == SortK.kseq kitem₂ kseq₂) = false ↔
-  kitem₁ ≠ kitem₂ ∨ kseq₁ ≠ kseq₂ := by
-  aesop (add safe (by cases ceq: decide (kitem₁ = kitem₂))) -/
-
 @[local simp]
 theorem flag_tangerine_whistle_def :
   «_<<_>>_SCHEDULE_Bool_ScheduleFlag_Schedule» flag .TANGERINE_WHISTLE_EVM =
