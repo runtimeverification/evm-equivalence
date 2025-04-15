@@ -31,7 +31,7 @@ theorem neq_gconst_fls (c₁ c₂ : SortScheduleConst) : c₁ ≠ c₂ →
 @[local simp]
 theorem neq_gconst_true (c₁ c₂ : SortScheduleConst) : c₁ ≠ c₂ →
   (SortK.kseq (inj c₁) SortK.dotk != SortK.kseq (inj c₂) SortK.dotk) := by
-  simp [ne_eq, bne_iff_ne, SortK.kseq.injEq, and_true, inj, Inj.inj]
+    aesop (add simp [bne])
 
 set_option maxRecDepth 100000
 
