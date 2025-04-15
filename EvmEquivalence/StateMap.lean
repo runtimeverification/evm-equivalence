@@ -133,10 +133,8 @@ noncomputable def accountMap (acc : SortAccountCell) : Account where
   code := accCodeMap acc.code.val
   tstorage := transStorageMap acc.transientStorage
 
---def mapMap (key value : Type) : Batteries.RBSet
-
 /--
-State Mapping: Mapping KEVM states to EvmYul states
+**State Mapping**: Mapping KEVM states to EvmYul states
 
 We temporarely require the `symState` argument since we don't map the entire KEVM state yet
 
