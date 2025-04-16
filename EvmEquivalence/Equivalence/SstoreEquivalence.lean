@@ -407,6 +407,10 @@ current gas available
 noncomputable def sstore_gas (map : SortMap) (value stor_val ostor_val acc key: SortInt) : SortInt :=
   (Csstore_compute value stor_val ostor_val) + ite (inStorage_compute map acc key) 0 2100
 
+theorem sstore_gas_pos (map : SortMap) (value stor_val ostor_val acc key: SortInt) :
+  0 < sstore_gas map value stor_val ostor_val acc key := by
+  aesop (add simp [sstore_gas, Csstore_compute])
+
 /--
 Computational content of `GAS_FEES_Rsstore_new`
 The function is named `rsstore` instead of `rsstore_new` because if the
