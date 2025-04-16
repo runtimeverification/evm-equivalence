@@ -243,7 +243,8 @@ theorem push0_prestate_equiv
     gasAvailable := intMap GAS_CELL
     executionEnv := {symState.executionEnv with
                   code := _Gen0.val,
-                  codeOwner := idMap lhs.Iₐ}
+                  codeOwner := idMap lhs.Iₐ,
+                  perm := !lhs.isStatic.val}
     accountMap := Axioms.SortAccountsCellMap lhs.accounts
     substate := {symState.substate with
             accessedStorageKeys :=  Axioms.SortAccessedStorageCellMap lhs.accessedStorage
@@ -294,7 +295,8 @@ theorem push0_poststate_equiv
     gasAvailable := intMap _Val13
     executionEnv := {symState.executionEnv with
                   code := _Gen0.val,
-                  codeOwner := idMap rhs.Iₐ}
+                  codeOwner := idMap rhs.Iₐ,
+                  perm := !rhs.isStatic.val}
     accountMap := Axioms.SortAccountsCellMap rhs.accounts
     substate := {symState.substate with
             accessedStorageKeys :=  Axioms.SortAccessedStorageCellMap rhs.accessedStorage

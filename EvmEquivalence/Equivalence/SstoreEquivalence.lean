@@ -370,7 +370,8 @@ theorem sstore_prestate_equiv
     gasAvailable := intMap GAS_CELL
     executionEnv := {symState.executionEnv with
                   code := _Gen0.val,
-                  codeOwner := accountAddressMap ((@inj SortInt SortAccount) ID_CELL)},
+                  codeOwner := accountAddressMap ((@inj SortInt SortAccount) ID_CELL)
+                  perm := true},
     substate := {symState.substate with
             accessedStorageKeys :=  Axioms.SortAccessedStorageCellMap (SortGeneratedTopCell.accessedStorage lhs)
             refundBalance := intMap REFUND_CELL
@@ -553,7 +554,8 @@ theorem sstore_poststate_equiv
     gasAvailable := intMap (GAS_CELL - sstore_gas ACCESSEDSTORAGE_CELL W1 _Val22 _Val23 ID_CELL W0)
     executionEnv := {symState.executionEnv with
                   code := _Gen0.val,
-                  codeOwner := accountAddressMap ((@inj SortInt SortAccount) ID_CELL)},
+                  codeOwner := accountAddressMap ((@inj SortInt SortAccount) ID_CELL)
+                  perm := true},
     accountMap := Axioms.SortAccountsCellMap rhs.accounts
     substate := {symState.substate with
             accessedStorageKeys :=  Axioms.SortAccessedStorageCellMap  rhs.accessedStorage
