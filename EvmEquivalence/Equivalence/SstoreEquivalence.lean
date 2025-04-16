@@ -730,5 +730,6 @@ theorem step_sstore_equiv
     rw [cancun, Csstore_def, Option.some.injEq] at defn_Val10 defn_Val3
     aesop (add safe (by rw [intMap_sub_dist])) (add simp [Csstore_compute])
   . rw [plusInt_def, ←UInt256.add_succ_mod_size, intMap_add_dist] <;> aesop
+  . aesop (add simp [ltInt_def, andBool_def]) (add safe (by linarith))
 
 end SstoreOpcodeEquivalence
