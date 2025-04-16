@@ -177,6 +177,67 @@ theorem EVM.step_sstore_summary (gas_pos : 0 < gas) (symState : EVM.State):
   have srw := EvmYul.step_sstore_summary symStack symPc (symGasAvailable - UInt256.ofNat gasCost) symRefund key value (symExecLength + 1) symReturnData symCode
   simp [EvmYul.step_sstore, Operation.SSTORE] at srw; aesop
 
+@[simp]
+theorem decode_singleton_sstore :
+  decode ⟨#[0x55]⟩ (.ofNat 0) = some ⟨sstoreEVM, none⟩ := rfl
+
+@[simp]
+theorem memoryExpansionCost_sstore (symState : EVM.State) :
+  memoryExpansionCost symState sstoreEVM = 0 := by
+  simp [memoryExpansionCost, memoryExpansionCost.μᵢ']
+
+/--
+TODO: Generalize to `C'`
+ -/
+theorem Csstore_pos (symState : EVM.State) : 99 < Csstore symState := by
+  aesop (add simp [Csstore, GasConstants.Gwarmaccess, GasConstants.Gsset, GasConstants.Gsreset])
+
+theorem X_sstore_summary (symState : EVM.State)
+                         (symStack_ok : symStack.length < 1024)
+                         (gasStippend : GasConstants.Gcallstipend < symGasAvailable.toNat):
+  let ss := {symState with
+    stack := key :: value :: symStack,
+    pc := .ofNat 0
+    gasAvailable := symGasAvailable,
+    executionEnv := {symState.executionEnv with
+                  code := ⟨#[(0x55 : UInt8)]⟩,
+                  codeOwner := symCodeOwner
+                  perm := true},
+    substate := {symState.substate with
+                 accessedStorageKeys :=  symAccessedStorageKeys
+                 refundBalance := symRefund}
+    returnData := symReturnData,
+    execLength := symExecLength,
+    accountMap := symAccounts}
+  Csstore ss < symGasAvailable.toNat →
+  X false symGasAvailable.toNat ss =
+  .ok (.success {ss with
+          stack := symStack,
+          pc := .ofNat 1,
+          gasAvailable := symGasAvailable - (.ofNat (Csstore ss)),
+          accountMap := accountMap_sstore ss.toState key value
+          substate := {ss.substate with
+            accessedStorageKeys := accessedStorageKeys_sstore ss.toState key
+            refundBalance := Aᵣ_sstore ss.toState key value
+           }
+          returnData := .empty,
+          execLength := symExecLength + 2} .empty) := by
+  intro ss enoughGas
+  have gavail_pos := Nat.lt_trans (Csstore_pos ss) enoughGas
+  cases g_case : symGasAvailable.toNat; rw [g_case] at gavail_pos; contradiction
+  case succ g_pos =>
+  simp [X, C', δ]
+  have lt_fls_rw {n m : ℕ} (_ : n < m) : (m < n) = False := by
+    simp; apply Nat.ge_of_not_lt; simp; omega
+  simp [ss, (lt_fls_rw enoughGas), α, (lt_fls_rw symStack_ok)]
+  have g_rw : (symGasAvailable.toNat ≤ GasConstants.Gcallstipend) = False := by aesop
+  simp [g_rw]; split; contradiction; next evm cost stateOk =>
+  have step_rw := (EVM.step_sstore_summary g_pos (Csstore evm) symStack (.ofNat 0)
+    symGasAvailable symRefund key value symExecLength symReturnData ⟨#[(0x55 : UInt8)]⟩
+    symAccessedStorageKeys symAccounts symCodeOwner (by omega) evm)
+  cases stateOk; simp at step_rw; rw [step_rw]; simp [Except.instMonad, Except.bind]
+  rw [X_bad_pc] <;> aesop (add safe (by omega))
+
 end
 
 end SstoreSummary
