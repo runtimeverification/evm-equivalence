@@ -680,10 +680,9 @@ theorem step_sstore_equiv
   (req : _Val18 = true)
   (symState : EVM.State)
   -- needed for EVM.step
-  (gas gasCost : ℕ)
+  (gasCost : ℕ)
   -- Necessary assumptions for equivalence
   (cancun : SCHEDULE_CELL = .CANCUN_EVM)
-  (gasPos : 0 < gas)
   (gavailEnough : sstore_gas ACCESSEDSTORAGE_CELL W1 _Val22 _Val23 ID_CELL W0 ≤ GAS_CELL)
   (gavailSmall : GAS_CELL < ↑UInt256.size)
   (gasCostValue : gasCost = sstore_gas ACCESSEDSTORAGE_CELL W1 _Val22 _Val23 ID_CELL W0)
@@ -692,7 +691,7 @@ theorem step_sstore_equiv
   (W0ge0 : 0 ≤ W0)
   (W1ge0 : 0 ≤ W1)
   (ID_CELLSize : Int.toNat ID_CELL < AccountAddress.size):
-  EVM.step_sstore gas gasCost (stateMap symState (@sstoreLHS ACCESSEDSTORAGE_CELL GAS_CELL ID_CELL PC_CELL REFUND_CELL W0 W1 K_CELL SCHEDULE_CELL USEGAS_CELL WS _DotVar0 _DotVar6 _Val20 _Gen0 _Gen1 _Gen10 _Gen11 _Gen12 _Gen13 _Gen14 _Gen15 _Gen16 _Gen17 _Gen18 _Gen19 _Gen2 _Gen20 _Gen21 _Gen22 _Gen23 _Gen24 _Gen25 _Gen26 _Gen27 _Gen28 _Gen29 _Gen3 _Gen30 _Gen31 _Gen32 _Gen33 _Gen34 _Gen35 _Gen4 _Gen5 _Gen6 _Gen7 _Gen8 _Gen9)) =
+  EVM.step_sstore (Int.toNat GAS_CELL) gasCost (stateMap symState (@sstoreLHS ACCESSEDSTORAGE_CELL GAS_CELL ID_CELL PC_CELL REFUND_CELL W0 W1 K_CELL SCHEDULE_CELL USEGAS_CELL WS _DotVar0 _DotVar6 _Val20 _Gen0 _Gen1 _Gen10 _Gen11 _Gen12 _Gen13 _Gen14 _Gen15 _Gen16 _Gen17 _Gen18 _Gen19 _Gen2 _Gen20 _Gen21 _Gen22 _Gen23 _Gen24 _Gen25 _Gen26 _Gen27 _Gen28 _Gen29 _Gen3 _Gen30 _Gen31 _Gen32 _Gen33 _Gen34 _Gen35 _Gen4 _Gen5 _Gen6 _Gen7 _Gen8 _Gen9)) =
   .ok (stateMap {symState with execLength := symState.execLength + 1} (@sstoreRHS  _Val39 _Val40  ID_CELL _Val1 _Val10 _Val11 _Val13 _Val2 _Val21 _Val22 _Val23 _Val24 _Val25 _Val27 _Val28 _Val29 _Val3 _Val30 _Val31 _Val32 _Val33 _Val6 _Val7 _Val8 _Val9 K_CELL SCHEDULE_CELL _Val0 _Val12 _Val14 _Val15 _Val16 _Val17 _Val18 _Val26 _Val4 _Val5 WS _DotVar0 _DotVar6 _Val19 _Val20 _Val41 _Val42 _Gen0 _Gen1 _Gen10 _Gen11 _Gen12 _Gen13 _Gen14 _Gen15 _Gen16 _Gen17 _Gen18 _Gen19 _Gen2 _Gen20 _Gen21 _Gen22 _Gen23 _Gen24 _Gen25 _Gen26 _Gen27 _Gen28 _Gen29 _Gen3 _Gen30 _Gen31 _Gen32 _Gen33 _Gen34 _Gen35 _Gen4 _Gen5 _Gen6 _Gen7 _Gen8 _Gen9 _Val34 _Val36 _Val37 _Val38 _Val35)) := by
   let acc : SortAccountCell := {
           acctID := { val := ID_CELL },
@@ -702,7 +701,11 @@ theorem step_sstore_equiv
           origStorage := { val := ORIG_STORAGE_CELL },
           transientStorage := _Gen25,
           nonce := _Gen26 }
-  cases gas; contradiction
+  cases cg: (Int.toNat GAS_CELL)
+  next =>
+    have fls := sstore_gas_pos ACCESSEDSTORAGE_CELL W1 _Val22 _Val23 ID_CELL W0
+    have _ := Int.lt_of_lt_of_le fls gavailEnough
+    omega
   rw [sstore_prestate_equiv, EVM.step_sstore_summary] <;> try assumption
   rw [sstoreLHS, sstore_poststate_equiv, sstoreRHS] <;> try congr
   . simp only [accountMap_sstore, Aᵣ_sstore]
