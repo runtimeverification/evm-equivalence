@@ -732,4 +732,178 @@ theorem step_sstore_equiv
   . rw [plusInt_def, ←UInt256.add_succ_mod_size, intMap_add_dist] <;> aesop
   . aesop (add simp [ltInt_def, andBool_def]) (add safe (by linarith))
 
+theorem X_sstore_equiv
+  {ACCESSEDSTORAGE_CELL ORIG_STORAGE_CELL STORAGE_CELL _Val39 _Val40 : SortMap}
+  {GAS_CELL ID_CELL PC_CELL REFUND_CELL W0 W1 _Val1 _Val10 _Val11 _Val13 _Val2 _Val21 _Val22 _Val23 _Val24 _Val25 _Val27 _Val28 _Val29 _Val3 _Val30 _Val31 _Val32 _Val33 _Val6 _Val7 _Val8 _Val9 : SortInt}
+  {K_CELL : SortK}
+  {SCHEDULE_CELL : SortSchedule}
+  {USEGAS_CELL _Val0 _Val12 _Val14 _Val15 _Val16 _Val17 _Val18 _Val26 _Val4 _Val5 : SortBool}
+  {WS : SortWordStack}
+  {_DotVar0 : SortGeneratedCounterCell}
+  {_DotVar6 _Val19 _Val20 _Val41 _Val42 : SortAccountCellMap}
+  {_Gen0 : SortProgramCell}
+  {_Gen1 : SortJumpDestsCell}
+  {_Gen10 : SortLogCell}
+  {_Gen11 : SortAccessedAccountsCell}
+  {_Gen12 : SortCreatedAccountsCell}
+  {_Gen13 : SortOutputCell}
+  {_Gen14 : SortStatusCodeCell}
+  {_Gen15 : SortCallStackCell}
+  {_Gen16 : SortInterimStatesCell}
+  {_Gen17 : SortTouchedAccountsCell}
+  {_Gen18 : SortVersionedHashesCell}
+  {_Gen19 : SortGasPriceCell}
+  {_Gen2 : SortCallerCell}
+  {_Gen20 : SortOriginCell}
+  {_Gen21 : SortBlockhashesCell}
+  {_Gen22 : SortBlockCell}
+  {_Gen23 : SortBalanceCell}
+  {_Gen24 : SortCodeCell}
+  {_Gen25 : SortTransientStorageCell}
+  {_Gen26 : SortNonceCell}
+  {_Gen27 : SortChainIDCell}
+  {_Gen28 : SortTxOrderCell}
+  {_Gen29 : SortTxPendingCell}
+  {_Gen3 : SortCallDataCell}
+  {_Gen30 : SortMessagesCell}
+  {_Gen31 : SortWithdrawalsPendingCell}
+  {_Gen32 : SortWithdrawalsOrderCell}
+  {_Gen33 : SortWithdrawalsCell}
+  {_Gen34 : SortExitCodeCell}
+  {_Gen35 : SortModeCell}
+  {_Gen4 : SortCallValueCell}
+  {_Gen5 : SortLocalMemCell}
+  {_Gen6 : SortMemoryUsedCell}
+  {_Gen7 : SortCallGasCell}
+  {_Gen8 : SortCallDepthCell}
+  {_Gen9 : SortSelfDestructCell}
+  {_Val34 _Val36 _Val37 _Val38 : SortSet}
+  {_Val35 : SortKItem}
+  (defn_Val0 : «_<<_>>_SCHEDULE_Bool_ScheduleFlag_Schedule» SortScheduleFlag.Ghasaccesslist_SCHEDULE_ScheduleFlag SCHEDULE_CELL = some _Val0)
+  (defn_Val1 : lookup STORAGE_CELL W0 = some _Val1)
+  (defn_Val2 : lookup ORIG_STORAGE_CELL W0 = some _Val2)
+  (defn_Val3 : Csstore SCHEDULE_CELL W1 _Val1 _Val2 = some _Val3)
+  (defn_Val4 : «_<=Int_» _Val3 GAS_CELL = some _Val4)
+  (defn_Val5 : «#inStorage» ACCESSEDSTORAGE_CELL ((@inj SortInt SortAccount) ID_CELL) W0 = some _Val5)
+  (defn_Val6 : «_<_>_SCHEDULE_Int_ScheduleConst_Schedule» SortScheduleConst.Gcoldsload_SCHEDULE_ScheduleConst SCHEDULE_CELL = some _Val6)
+  (defn_Val7 : kite _Val5 0 _Val6 = some _Val7)
+  (defn_Val8 : lookup STORAGE_CELL W0 = some _Val8)
+  (defn_Val9 : lookup ORIG_STORAGE_CELL W0 = some _Val9)
+  (defn_Val10 : Csstore SCHEDULE_CELL W1 _Val8 _Val9 = some _Val10)
+  (defn_Val11 : «_-Int_» GAS_CELL _Val10 = some _Val11)
+  (defn_Val12 : «_<=Int_» _Val7 _Val11 = some _Val12)
+  (defn_Val13 : «_<_>_SCHEDULE_Int_ScheduleConst_Schedule» SortScheduleConst.Gcallstipend_SCHEDULE_ScheduleConst SCHEDULE_CELL = some _Val13)
+  (defn_Val14 : «_<Int_» _Val13 GAS_CELL = some _Val14)
+  (defn_Val15 : _andBool_ _Val12 _Val14 = some _Val15)
+  (defn_Val16 : _andBool_ _Val4 _Val15 = some _Val16)
+  (defn_Val17 : _andBool_ _Val0 _Val16 = some _Val17)
+  (defn_Val18 : _andBool_ USEGAS_CELL _Val17 = some _Val18)
+  (defn_Val19 : AccountCellMapItem { val := ID_CELL } {
+    acctID := { val := ID_CELL },
+    balance := _Gen23,
+    code := _Gen24,
+    storage := { val := STORAGE_CELL },
+    origStorage := { val := ORIG_STORAGE_CELL },
+    transientStorage := _Gen25,
+    nonce := _Gen26 } = some _Val19)
+  (defn_Val20 : _AccountCellMap_ _Val19 _DotVar6 = some _Val20)
+  (defn_Val21 : «_+Int_» PC_CELL 1 = some _Val21)
+  (defn_Val22 : lookup STORAGE_CELL W0 = some _Val22)
+  (defn_Val23 : lookup ORIG_STORAGE_CELL W0 = some _Val23)
+  (defn_Val24 : Csstore SCHEDULE_CELL W1 _Val22 _Val23 = some _Val24)
+  (defn_Val25 : «_-Int_» GAS_CELL _Val24 = some _Val25)
+  (defn_Val26 : «#inStorage» ACCESSEDSTORAGE_CELL ((@inj SortInt SortAccount) ID_CELL) W0 = some _Val26)
+  (defn_Val27 : «_<_>_SCHEDULE_Int_ScheduleConst_Schedule» SortScheduleConst.Gcoldsload_SCHEDULE_ScheduleConst SCHEDULE_CELL = some _Val27)
+  (defn_Val28 : kite _Val26 0 _Val27 = some _Val28)
+  (defn_Val29 : «_-Int_» _Val25 _Val28 = some _Val29)
+  (defn_Val30 : lookup STORAGE_CELL W0 = some _Val30)
+  (defn_Val31 : lookup ORIG_STORAGE_CELL W0 = some _Val31)
+  (defn_Val32 : Rsstore SCHEDULE_CELL W1 _Val30 _Val31 = some _Val32)
+  (defn_Val33 : «_+Int_» REFUND_CELL _Val32 = some _Val33)
+  (defn_Val34 : «.Set» = some _Val34)
+  (defn_Val35 : «Map:lookupOrDefault» ACCESSEDSTORAGE_CELL ((@inj SortInt SortKItem) ID_CELL) ((@inj SortSet SortKItem) _Val34) = some _Val35)
+  (defn_Val36 : «project:Set» (SortK.kseq _Val35 SortK.dotk) = some _Val36)
+  (defn_Val37 : SetItem ((@inj SortInt SortKItem) W0) = some _Val37)
+  (defn_Val38 : «_|Set__SET_Set_Set_Set» _Val36 _Val37 = some _Val38)
+  (defn_Val39 : «Map:update» ACCESSEDSTORAGE_CELL ((@inj SortInt SortKItem) ID_CELL) ((@inj SortSet SortKItem) _Val38) = some _Val39)
+  (defn_Val40 : «Map:update» STORAGE_CELL ((@inj SortInt SortKItem) W0) ((@inj SortInt SortKItem) W1) = some _Val40)
+  (defn_Val41 : AccountCellMapItem { val := ID_CELL } {
+    acctID := { val := ID_CELL },
+    balance := _Gen23,
+    code := _Gen24,
+    storage := { val := _Val40 },
+    origStorage := { val := ORIG_STORAGE_CELL },
+    transientStorage := _Gen25,
+    nonce := _Gen26 } = some _Val41)
+  (defn_Val42 : _AccountCellMap_ _Val41 _DotVar6 = some _Val42)
+  (req : _Val18 = true)
+  (symState : EVM.State)
+  -- Necessary assumptions for equivalence
+  (cancun : SCHEDULE_CELL = .CANCUN_EVM)
+  (gavailEnough : sstore_gas ACCESSEDSTORAGE_CELL W1 _Val22 _Val23 ID_CELL W0 ≤ GAS_CELL)
+  (gavailSmall : GAS_CELL < ↑UInt256.size)
+  /- (gasCostValue : gasCost = sstore_gas ACCESSEDSTORAGE_CELL W1 _Val22 _Val23 ID_CELL W0) -/
+  (codeSstoreLHS : _Gen0 = ⟨⟨#[(0x55 : UInt8)]⟩⟩)
+  (codeSstoreRHS : _Gen24 = ⟨⟨⟨#[(0x55 : UInt8)]⟩⟩⟩)
+  (pcZero : PC_CELL = 0)
+  (key_pos : 0 ≤ W0)
+  (val_pos : 0 ≤ W1)
+  (ID_CELLSize : Int.toNat ID_CELL < AccountAddress.size)
+  -- TODO: Replace with a native measure for `SortWordStack` and
+  -- prove this assumption via an equality theorem stating that
+  -- `List.length (wordStackMap WS) = wordStackLength WS`
+  (stackOk: List.length (wordStackMap WS) < 1024)
+  -- This hypothesis is needed in order to have a successful run of `EVM.X`:
+  (callStipendGas : GasConstants.Gcallstipend < (intMap GAS_CELL).toNat)
+  :
+  EVM.X false (UInt256.toNat (intMap GAS_CELL)) (stateMap symState (@sstoreLHS ACCESSEDSTORAGE_CELL GAS_CELL ID_CELL PC_CELL REFUND_CELL W0 W1 K_CELL SCHEDULE_CELL USEGAS_CELL WS _DotVar0 _DotVar6 _Val20 _Gen0 _Gen1 _Gen10 _Gen11 _Gen12 _Gen13 _Gen14 _Gen15 _Gen16 _Gen17 _Gen18 _Gen19 _Gen2 _Gen20 _Gen21 _Gen22 _Gen23 _Gen24 _Gen25 _Gen26 _Gen27 _Gen28 _Gen29 _Gen3 _Gen30 _Gen31 _Gen32 _Gen33 _Gen34 _Gen35 _Gen4 _Gen5 _Gen6 _Gen7 _Gen8 _Gen9)) =
+  .ok (.success (stateMap {symState with execLength := symState.execLength + 2} (@sstoreRHS  _Val39 _Val40  ID_CELL _Val1 _Val10 _Val11 _Val13 _Val2 _Val21 _Val22 _Val23 _Val24 _Val25 _Val27 _Val28 _Val29 _Val3 _Val30 _Val31 _Val32 _Val33 _Val6 _Val7 _Val8 _Val9 K_CELL SCHEDULE_CELL _Val0 _Val12 _Val14 _Val15 _Val16 _Val17 _Val18 _Val26 _Val4 _Val5 WS _DotVar0 _DotVar6 _Val19 _Val20 _Val41 _Val42 _Gen0 _Gen1 _Gen10 _Gen11 _Gen12 ⟨.empty⟩ _Gen14 _Gen15 _Gen16 _Gen17 _Gen18 _Gen19 _Gen2 _Gen20 _Gen21 _Gen22 _Gen23 _Gen24 _Gen25 _Gen26 _Gen27 _Gen28 _Gen29 _Gen3 _Gen30 _Gen31 _Gen32 _Gen33 _Gen34 _Gen35 _Gen4 _Gen5 _Gen6 _Gen7 _Gen8 _Gen9 _Val34 _Val36 _Val37 _Val38 _Val35)) .empty ) := by
+  let acc : SortAccountCell := {
+          acctID := { val := ID_CELL },
+          balance := _Gen23,
+          code := _Gen24,
+          storage := { val := STORAGE_CELL },
+          origStorage := { val := ORIG_STORAGE_CELL },
+          transientStorage := _Gen25,
+          nonce := _Gen26 }
+  let acc_updated : SortAccountCell := {
+    acctID := { val := ID_CELL },
+    balance := _Gen23,
+    code := _Gen24,
+    storage := { val := _Val40 },
+    origStorage := { val := ORIG_STORAGE_CELL },
+    transientStorage := _Gen25,
+    nonce := _Gen26 }
+  rw [pcZero, codeSstoreLHS, codeSstoreRHS, sstore_prestate_equiv, sstore_poststate_equiv] <;> try assumption
+  simp
+  have pc_equiv : intMap 0 = UInt256.ofNat 0 := rfl
+  rw [pc_equiv, X_sstore_summary] <;> try assumption
+  . congr
+    . simp [State.lookupAccount, sstoreLHS, sstoreRHS]
+      simp [Axioms.accountsCell_map_find? acc (by eq_refl) defn_Val19 defn_Val20]
+      apply (Axioms.accountsCell_map_insert defn_Val34 defn_Val35 defn_Val36 defn_Val37 defn_Val38 defn_Val40 defn_Val41 defn_Val42 defn_Val19 defn_Val20 (accountMap acc))
+    . /- Refund Cell -/
+      sorry
+    . /- Gas Cell -/
+      rw [cancun, Csstore_def, Option.some.injEq] at defn_Val10 defn_Val3
+      simp [EVM.Csstore, sstoreLHS, sstoreRHS]
+      simp [GasConstants.Gwarmaccess, GasConstants.Gcoldsload, GasConstants.Gsset, GasConstants.Gsreset]
+      rw [intMap_sub_dist] <;> try assumption
+      . congr
+        conv =>
+        rhs
+        simp [intMap, UInt256.toSigned]
+        cases cg: (sstore_gas ACCESSEDSTORAGE_CELL W1 _Val22 _Val23 ID_CELL W0) <;> try contradiction
+        next n =>
+          congr
+          simp [sstore_gas, Csstore_compute] at *
+          sorry
+        next =>
+          have fls := sstore_gas_pos ACCESSEDSTORAGE_CELL W1 _Val22 _Val23 ID_CELL W0
+          rw [cg] at fls; contradiction
+      . aesop (add simp [sstore_gas, Csstore_compute]) (add safe (by omega))
+    . aesop (add simp [plusInt_def])
+  . /- We should have a theorem saying that `sstore_gas` and `Csstore` compute the same value -/
+    sorry
+
 end SstoreOpcodeEquivalence
