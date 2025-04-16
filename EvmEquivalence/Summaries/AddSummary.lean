@@ -20,6 +20,7 @@ variable (symReturnData symCode : ByteArray)
 variable (symAccessedStorageKeys : Batteries.RBSet (AccountAddress × UInt256) Substate.storageKeysCmp)
 variable (symAccounts : AccountMap)
 variable (symCodeOwner : AccountAddress)
+variable (symPerm : Bool)
 
 abbrev addEVM := @Operation.ADD .EVM
 
@@ -49,7 +50,8 @@ theorem EVM.step_add_to_step_add (gpos : 0 < gas) (symState : EVM.State):
       execLength := symExecLength,
       executionEnv := {symState.executionEnv with
                   code := symCode,
-                  codeOwner := symCodeOwner},
+                  codeOwner := symCodeOwner,
+                  perm := symPerm},
       accountMap := symAccounts
       substate := {symState.substate with
             accessedStorageKeys :=  symAccessedStorageKeys
@@ -63,7 +65,8 @@ theorem EVM.step_add_to_step_add (gpos : 0 < gas) (symState : EVM.State):
     pc := symPc,
     executionEnv := {symState.executionEnv with
                   code := symCode,
-                  codeOwner := symCodeOwner},
+                  codeOwner := symCodeOwner,
+                  perm := symPerm},
     accountMap := symAccounts
     returnData := symReturnData,
     substate := {symState.substate with
@@ -83,7 +86,8 @@ theorem EVM.step_add_summary (gpos : 0 < gas) (symState : EVM.State):
       returnData := symReturnData,
       executionEnv := {symState.executionEnv with
                     code := symCode,
-                    codeOwner := symCodeOwner},
+                    codeOwner := symCodeOwner,
+                    perm := symPerm},
       accountMap := symAccounts
       substate := {symState.substate with
             accessedStorageKeys :=  symAccessedStorageKeys
@@ -97,7 +101,8 @@ theorem EVM.step_add_summary (gpos : 0 < gas) (symState : EVM.State):
           returnData := symReturnData,
           executionEnv := {symState.executionEnv with
                         code := symCode,
-                        codeOwner := symCodeOwner},
+                        codeOwner := symCodeOwner,
+                        perm := symPerm},
           accountMap := symAccounts
           substate := {symState.substate with
             accessedStorageKeys :=  symAccessedStorageKeys
@@ -157,7 +162,8 @@ theorem X_add_summary (enoughGas : GasConstants.Gverylow < symGasAvailable.toNat
     gasAvailable := symGasAvailable,
     executionEnv := {symState.executionEnv with
                   code := ⟨#[(0x1 : UInt8)]⟩,
-                  codeOwner := symCodeOwner},
+                  codeOwner := symCodeOwner,
+                  perm := symPerm},
     accountMap := symAccounts
     substate := {symState.substate with
             accessedStorageKeys :=  symAccessedStorageKeys
@@ -170,7 +176,8 @@ theorem X_add_summary (enoughGas : GasConstants.Gverylow < symGasAvailable.toNat
         gasAvailable := symGasAvailable - .ofNat GasConstants.Gverylow,
         executionEnv := {symState.executionEnv with
                   code := ⟨#[(0x1 : UInt8)]⟩,
-                  codeOwner := symCodeOwner},
+                  codeOwner := symCodeOwner,
+                  perm := symPerm},
         accountMap := symAccounts
         returnData := ByteArray.empty,
         substate := {symState.substate with
@@ -190,7 +197,7 @@ theorem X_add_summary (enoughGas : GasConstants.Gverylow < symGasAvailable.toNat
   split; contradiction
   case h_2 evm _ stateOk =>
   have gPos : (0 < g_pos) := by aesop (add simp [GasConstants.Gverylow]) (add safe (by omega))
-  have step_rw := (EVM.step_add_summary word₁ word₂ g_pos GasConstants.Gverylow symStack (.ofNat 0) symGasAvailable symRefund symExecLength symReturnData ⟨#[(0x1 : UInt8)]⟩ symAccessedStorageKeys symAccounts symCodeOwner gPos evm)
+  have step_rw := (EVM.step_add_summary word₁ word₂ g_pos GasConstants.Gverylow symStack (.ofNat 0) symGasAvailable symRefund symExecLength symReturnData ⟨#[(0x1 : UInt8)]⟩ symAccessedStorageKeys symAccounts symCodeOwner symPerm gPos evm)
   cases stateOk; rw [←EVM.step_add, step_rw]; simp [Except.instMonad, Except.bind]
   rw [X_bad_pc] <;> aesop (add simp [GasConstants.Gverylow]) (add safe (by omega))
 

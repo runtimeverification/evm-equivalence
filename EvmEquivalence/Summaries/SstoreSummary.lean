@@ -19,6 +19,7 @@ variable (symReturnData symCode : ByteArray)
 variable (symAccessedStorageKeys : Batteries.RBSet (AccountAddress × UInt256) Substate.storageKeysCmp)
 variable (symAccounts : AccountMap)
 variable (symCodeOwner : AccountAddress)
+variable (symPerm : Bool)
 
 @[simp]
 abbrev sstoreEVM := @Operation.SSTORE .EVM
@@ -45,7 +46,8 @@ theorem sstore_bypass_private (symState : EVM.State):
   gasAvailable := symGasAvailable,
   executionEnv := {symState.executionEnv with
                   code := symCode,
-                  codeOwner := symCodeOwner},
+                  codeOwner := symCodeOwner
+                  perm := symPerm},
   substate := {symState.substate with
                accessedStorageKeys :=  symAccessedStorageKeys
                refundBalance := symRefund}
@@ -110,7 +112,8 @@ theorem sstore_summary (symState : EvmYul.State) (key value : UInt256):
   let ss := {symState with
              executionEnv := {symState.executionEnv with
                   code := symCode,
-                  codeOwner := symCodeOwner},
+                  codeOwner := symCodeOwner
+                  perm := symPerm},
              substate := {symState.substate with
                           accessedStorageKeys :=  symAccessedStorageKeys
                           refundBalance := symRefund}
@@ -130,7 +133,8 @@ theorem EvmYul.step_sstore_summary (symState : EVM.State):
     gasAvailable := symGasAvailable,
     executionEnv := {symState.executionEnv with
                   code := symCode,
-                  codeOwner := symCodeOwner},
+                  codeOwner := symCodeOwner
+                  perm := symPerm},
     substate := {symState.substate with
                  accessedStorageKeys :=  symAccessedStorageKeys
                  refundBalance := symRefund}
@@ -154,7 +158,8 @@ theorem EVM.step_sstore_summary (gas_pos : 0 < gas) (symState : EVM.State):
     gasAvailable := symGasAvailable,
     executionEnv := {symState.executionEnv with
                   code := symCode,
-                  codeOwner := symCodeOwner},
+                  codeOwner := symCodeOwner
+                  perm := true},
     substate := {symState.substate with
                  accessedStorageKeys :=  symAccessedStorageKeys
                  refundBalance := symRefund}
