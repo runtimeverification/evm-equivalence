@@ -51,6 +51,9 @@ def accounts : SortAccountsCell := tc.kevm.ethereum.network.accounts
 @[simp]
 def Iₐ : SortIdCell := tc.kevm.ethereum.evm.callState.id
 
+@[simp]
+def isStatic : SortStaticCell := tc.kevm.ethereum.evm.callState.static
+
 end SortGeneratedTopCell
 
 namespace SortKItem
@@ -151,7 +154,8 @@ noncomputable def stateMap (symState : EVM.State) (tc : SortGeneratedTopCell) : 
   gasAvailable := gasCellMap tc.gas
   executionEnv := {symState.executionEnv with
                 code := tc.program.val,
-                codeOwner := idMap tc.Iₐ}
+                codeOwner := idMap tc.Iₐ
+                perm := !tc.isStatic.val}
   accountMap := Axioms.SortAccountsCellMap tc.accounts
   substate := {symState.substate with
             accessedStorageKeys :=  Axioms.SortAccessedStorageCellMap tc.accessedStorage
