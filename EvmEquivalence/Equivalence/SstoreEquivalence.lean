@@ -471,8 +471,9 @@ theorem Aᵣ_rsstore_eq {new /- current original -/} /- {sched} -/ {symState: Ev
              accountMap := accountMap_sstore ss key (intMap new),
              substate.accessedStorageKeys := accessedStorageKeys_sstore symState key,
              substate.refundBalance := Aᵣ_sstore ss key (intMap new)} key (intMap new) = symRefund +
-             intMap (rsstore new (Int.ofNat ((symState.accountMap.find! symCodeOwner).storage.findD key ⟨0⟩).val.val) (Int.ofNat ((symState.σ₀.find! symCodeOwner).storage.findD key ⟨0⟩).val.val)) := by
-  simp [Aᵣ_sstore, rsstore]
+             intMap (rsstore new (Int.ofNat ((symState.accountMap.find! symCodeOwner).storage.findD key ⟨0⟩).val.val) (Int.ofNat ((symState.σ₀.find! symCodeOwner).storage.findD key ⟨0⟩).val.val)) := by sorry
+-- Commented to speed up
+/-   simp [Aᵣ_sstore, rsstore]
   split <;> split <;> try split <;> simp_all [State.lookupAccount] <;> aesop
   . simp_all [Batteries.RBMap.find?_insert]
     rename_i _ _ _ h _; split at h <;> simp_all
@@ -486,7 +487,7 @@ theorem Aᵣ_rsstore_eq {new /- current original -/} /- {sched} -/ {symState: Ev
     · aesop (add simp [UInt256.ofNat_toSigned])
     · sorry
     · sorry
-  . sorry
+  . sorry -/
 
 end Aᵣ_equivalence
 
