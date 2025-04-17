@@ -312,10 +312,16 @@ axiom accountsCell_map_insert
     transientStorage := tstorage,
     nonce := nonce } = some initAccount)
   (defn_Val20 : _AccountCellMap_ initAccount dotvar = some initCellMap)
-  (ownerAcc : Account)
   :
   Batteries.RBMap.insert (Axioms.SortAccountsCellMap { val := initCellMap }) (accountAddressMap (inj ID_CELL))
-    (ownerAcc.updateStorage (intMap key) (intMap value)) =
+    ((accountMap {
+    acctID := { val := ID_CELL },
+    balance := balance,
+    code := code,
+    storage := { val := STORAGE_CELL },
+    origStorage := { val := ORIG_STORAGE_CELL },
+    transientStorage := tstorage,
+    nonce := nonce }).updateStorage (intMap key) (intMap value)) =
   Axioms.SortAccountsCellMap { val := updatedCellMap }
 
 /--
