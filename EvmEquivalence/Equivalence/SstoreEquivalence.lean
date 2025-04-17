@@ -1,8 +1,8 @@
 import EvmEquivalence.Summaries.SstoreSummary
-import EvmEquivalence.StateMap
-import EvmEquivalence.Interfaces.FuncInterface
-import EvmEquivalence.Interfaces.GasInterface
 import EvmEquivalence.Interfaces.EvmYulInterface
+import EvmEquivalence.Interfaces.GasInterface
+import EvmEquivalence.Interfaces.FuncInterface
+import EvmEquivalence.StateMap
 
 open EvmYul
 open StateMap
