@@ -16,8 +16,8 @@ Given this, let's understand the anatomy of a Lean-generated rewrite rule.
 ### Anatomy of a rewrite rule
 
 Rewrite rules are comprised of
-- A left-hand side (lhs): a `KEVM` state prior to the execution of an opcode. Also known as prestate.
-- A right-hand side (rhs): a `KEVM` state derived from the execution of an opcode on the lhs. Also known as prestate.
+- A left-hand side (lhs): `KEVM` state prior to the execution of an opcode. Also known as prestate.
+- A right-hand side (rhs): `KEVM` state derived from the execution of an opcode on the lhs. Also known as prestate.
 - All the variables involved in the definition of the lhs and rhs.
 - All the conditions that give meaning to the variables present in the lhs and rhs.
 
@@ -32,7 +32,7 @@ inductive Rewrites : SortGeneratedTopCell → SortGeneratedTopCell → Prop wher
   ...                 -- A bunch more of variables
   (defn_Valn : f other_variables = some Valn) -- The meaning of the `_Valn` is explicitly given
   ...                 -- A bunch more of conditions
-  : Rewrites LHS RHS  -- Given all the conditions (`defn_Val*`) above we can state LHS => RHS
+  : Rewrites LHS RHS  -- Given all the conditions (`defn_Val*`) above, we can state LHS => RHS
 ```
 
 Here `LHS` and `RHS` are representations of the `KEVM` pre and post states with the appropriate structure given the `defn_Val*` conditions.
@@ -61,7 +61,7 @@ These theorems are mostly structural, especially the `opcodeLHS`. However, the `
 
 To exemplify what this means, consider `add_poststate_equiv` in [`AddEquivalence.lean`](./AddEquivalence.lean).
 
-We have that the structural translation of the `PC_CELL` of `addRHS` into an ``EvmYul` state is `pc := intMap _Val5`.
+We have that the structural translation of the `PC_CELL` of `addRHS` into an `EvmYul` state is `pc := intMap _Val5`.
 That is, mapping the value of `_Val5` into a `UInt256`.
 However, as per `(defn_Val5 : «_+Int_» PC_CELL 1 = some _Val5)` and the definition of `«_+Int_»` found in [`FuncInterface.lean`](../Interfaces/FuncInterface.lean),
 we know that the value of `_Val5` is `PC_CELL + 1`.
@@ -74,9 +74,9 @@ The `EvmYul` functions that reflect the semantics of executing an opcode are `EV
 Since the effects of opcode execution are separated between the two functions (for instance, `step` doesn't assign gas costs), we have
 one theorem for each function stating broadly the same.
 
-The statement is, for `f` being `EVM.step` or `X`
+The statement is, for `f` being `EVM.step` or `EVM.X`:
 > Given the `KEVM` prestate `LHS`, `f (stateMap LHS) = stateMap RHS`
-That is, mapping the `KEVM` prestate to `EvmYul` and executing either `EVM.step` or `X` gives us the mapped `KEVM` poststate.
+That is, mapping the `KEVM` prestate to `EvmYul` and executing either `EVM.step` or `EVM.X` gives us the mapped `KEVM` poststate.
 
 An number of additional hypothesis from the `defn_Val*` is added to each theorem. Revisiting and sanity-checking these hypothesis is worthwhile.
 The vast majority of them stem from the fact that [`KEVM` summaries](https://github.com/runtimeverification/evm-semantics/tree/master/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries)
