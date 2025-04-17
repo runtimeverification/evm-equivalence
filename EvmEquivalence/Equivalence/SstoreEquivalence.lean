@@ -709,14 +709,11 @@ theorem step_sstore_equiv
     omega
   rw [sstore_prestate_equiv, EVM.step_sstore_summary] <;> try assumption
   rw [sstoreLHS, sstore_poststate_equiv, sstoreRHS] <;> try congr
-  . simp only [accountMap_sstore, Aᵣ_sstore]
-    simp only [State.lookupAccount, SortGeneratedTopCell.accounts]
-    split
-    . rename_i _ _ owner; simp only [accountAddressMap.eq_def, inj_ID_CELL] at owner
-      rw [(Axioms.accountsCell_map_find? acc)] at owner <;> first | contradiction | congr
-    . rename_i _ ownerAcc findOwner
-      exact (Axioms.accountsCell_map_insert defn_Val34 defn_Val35 defn_Val36 defn_Val37
-      defn_Val38 defn_Val40 defn_Val41 defn_Val42 defn_Val19 defn_Val20 ownerAcc)
+  . simp only [accountMap_sstore, Aᵣ_sstore, State.lookupAccount]
+    simp only [SortGeneratedTopCell.accounts, accountAddressMap, inj_ID_CELL]
+    simp [(Axioms.accountsCell_map_find? acc (by eq_refl) defn_Val19 defn_Val20)]
+    exact (Axioms.accountsCell_map_insert defn_Val34 defn_Val35 defn_Val36 defn_Val37
+    defn_Val38 defn_Val40 defn_Val41 defn_Val42 defn_Val19 defn_Val20)
   . simp [State.lookupAccount]
     split
     . rename_i _ _ owner
@@ -882,7 +879,7 @@ theorem X_sstore_equiv
   . congr
     . simp [State.lookupAccount, sstoreLHS, sstoreRHS]
       simp [Axioms.accountsCell_map_find? acc (by eq_refl) defn_Val19 defn_Val20]
-      apply (Axioms.accountsCell_map_insert defn_Val34 defn_Val35 defn_Val36 defn_Val37 defn_Val38 defn_Val40 defn_Val41 defn_Val42 defn_Val19 defn_Val20 (accountMap acc))
+      apply (Axioms.accountsCell_map_insert defn_Val34 defn_Val35 defn_Val36 defn_Val37 defn_Val38 defn_Val40 defn_Val41 defn_Val42 defn_Val19 defn_Val20)
     . /- Refund Cell -/
       sorry
     . /- Gas Cell -/
