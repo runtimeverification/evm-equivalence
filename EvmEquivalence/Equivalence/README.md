@@ -17,7 +17,7 @@ Given this, let's understand the anatomy of a Lean-generated rewrite rule.
 
 Rewrite rules are comprised of
 - A left-hand side (lhs): `KEVM` state prior to the execution of an opcode. Also known as prestate.
-- A right-hand side (rhs): `KEVM` state derived from the execution of an opcode on the lhs. Also known as prestate.
+- A right-hand side (rhs): `KEVM` state derived from the execution of an opcode on the lhs. Also known as poststate.
 - All the variables involved in the definition of the lhs and rhs.
 - All the conditions that give meaning to the variables present in the lhs and rhs.
 
