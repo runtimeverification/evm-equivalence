@@ -29,25 +29,25 @@ The structure of Lean-generated rewrite rules is as follows:
 inductive Rewrites : SortGeneratedTopCell → SortGeneratedTopCell → Prop where
 | NAME_OF_THE_RULE
   {Var : CustomType} -- Variables are declared as implicit
-  ...                 -- A bunch more of variables
+  ...                 -- A bunch more variables
   (defn_Valn : f other_variables = some Valn) -- The meaning of the `_Valn` is explicitly given
-  ...                 -- A bunch more of conditions
+  ...                 -- A bunch more conditions
   : Rewrites LHS RHS  -- Given all the conditions (`defn_Val*`) above, we can state LHS => RHS
 ```
 
-Here `LHS` and `RHS` are representations of the `KEVM` pre and post states with the appropriate structure given the `defn_Val*` conditions.
+Here `LHS` and `RHS` are representations of the `KEVM` pre and post states with the appropriate structure given by the `defn_Val*` conditions.
 
 ### Proper definition of pre and post states
 
 The first step in all proofs is to have a precise definition of `LHS` and `RHS`.
 The naming convention is `opcode?HS` for each (e.g. `addLHS` for the prestate of the `ADD` opcode).
 
-Note that for these definitions we don't need any of the `defn_Val*` conditions yet, since we only care about the structural content of both states.
+Note that for these definitions we don't need any of the `defn_Val*` conditions yet, since we only care about the structural content of both states. That is, we don't need to know yet how the variables in these definitions relate to each other.
 
 #### Theorems-as-tests
 
-Once we have a definition of the `LHS` and `RHS` we can test it with a theorem stating that, indeed, given all the `defn_Val*` preconditions,
-`Rewrites opcodeLHS opcodeRHS` holds.
+Once we have a definition of the `LHS` and `RHS` we want to test them and make sure they are the right ones.
+To this end, we can prove a theorem stating that, indeed, given all the `defn_Val*` preconditions, `Rewrites opcodeLHS opcodeRHS` holds.
 
 The general name for that theorem is `rw_opcodeLHS_opcodeRHS`.
 
@@ -71,21 +71,21 @@ Hence, we will state `pc := intMap («_+Int'_» PC_CELL 1)` instead of `pc := in
 ### Final proofs
 
 The `EvmYul` functions that reflect the semantics of executing an opcode are `EVM.step` and `X` found in [`EvmYul/EVM/Semantics.lean`](https://github.com/NethermindEth/EVMYulLean/blob/main/EvmYul/EVM/Semantics.lean).
-Since the effects of opcode execution are separated between the two functions (for instance, `step` doesn't assign gas costs), we have
-one theorem for each function stating broadly the same.
+Since the full effects of opcode execution are separated between the two functions (for instance, `step` doesn't assign gas costs), we have one theorem for each function stating broadly the same.
 
 The statement is, for `f` being `EVM.step` or `EVM.X`:
 > Given the `KEVM` prestate `LHS`, `f (stateMap LHS) = stateMap RHS`
 That is, mapping the `KEVM` prestate to `EvmYul` and executing either `EVM.step` or `EVM.X` gives us the mapped `KEVM` poststate.
 
-An number of additional hypothesis from the `defn_Val*` is added to each theorem. Revisiting and sanity-checking these hypothesis is worthwhile.
+A number of additional hypotheses from the `defn_Val*` is added to each theorem. Revisiting and sanity-checking these hypotheses is worthwhile.
 The vast majority of them stem from the fact that [`KEVM` summaries](https://github.com/runtimeverification/evm-semantics/tree/master/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries)
 assume that the `LHS` is a valid `KEVM` state. This means that conditions such as `PC_CELL < 2^256` are not enforced by the summaries and
 therefore need to be added as assumptions to obtain equivalence.
 
 These assumptions are present in the `KEVM` semantics, but they are enforced before triggering opcode execution.
+That is, the assumptions are not present in the rewrite rule of the opcodes, but in rewrite rules leading to opcode execution.
 
 ### Future work
 
 Notably, these proofs are only in one direction. Namely, we show that if `KEVM` computes something, `EvmYul` agrees with a
-translation of that computation. It remains to prove the converse. Namely, that `KEVM` agrees with a translation of what `EvmYul` computes.
+translation of that computation. It remains to prove the converse: that `KEVM` agrees with a translation of what `EvmYul` computes.
