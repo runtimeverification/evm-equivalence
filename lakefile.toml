@@ -1,6 +1,6 @@
 name = "evm-equivalence"
 version = "0.1.0"
-defaultTargets = ["EvmEquivalence*"]
+defaultTargets = ["EvmEquivalence"]
 
 [leanOptions]
 pp.unicode.fun = true # pretty-prints `fun a ↦ b`

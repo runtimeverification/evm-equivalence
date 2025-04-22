@@ -82,6 +82,10 @@ end -/
 axiom Keq_def (k₁ k₂ : SortK) : «_==K_» k₁ k₂ = some (k₁ == k₂)
 axiom Kneq_def (k₁ k₂ : SortK) : «_=/=K_» k₁ k₂ = some (k₁ != k₂)
 
+-- Behavior of `==Int` and `=/=Int`
+axiom IntEq_def (n m : SortInt) : «_==Int_» n m = some (n == m)
+axiom IntNEq_def (n m : SortInt) : «_=/=Int_» n m = some (n != m)
+
 -- Behavior of `_orBool_` and `_andBool_`
 axiom orBool_def (b₁ b₂ : SortBool) : _orBool_ b₁ b₂ = some (b₁ || b₂)
 axiom andBool_def (b₁ b₂ : SortBool) : _andBool_ b₁ b₂ = some (b₁ && b₂)
@@ -132,5 +136,59 @@ theorem wsLength_eq_length_wordStackMap {ws : SortWordStack} :
 theorem sizeWordStack_def {ws : SortWordStack} :
   sizeWordStackAux ws 0 = some (List.length (wordStackMap ws)) :=
   wsLength_eq_length_wordStackMap ▸ sizeWordStackIsSome
+
+
+-- Behavior of `AccountCellMapItem`
+-- TODO: Complete or delete
+/--
+Note that this function is dependent on the current implementation of `SortAccountCellMap`
+
+The current implementation is `List (SortAcctIDCell × SortAccountCell)` but
+this might change in the future
+-/
+def accountCellMapItem_def (x0 : SortAcctIDCell) (x1 : SortAccountCell) : Option SortAccountCellMap :=
+  some (⟨[(x0, x1)]⟩)
+
+-- Behavior of `kite`
+@[simp]
+theorem kite_def {SortSort : Type} (cnd : SortBool) (true_branch false_branch: SortSort) :
+  kite cnd true_branch false_branch = ite cnd true_branch false_branch := by
+  aesop
+
+-- Behavior of K's `in_keys` function
+-- NOTE: These functions depend on the dummy implementation as maps
+-- being `List (Key × Value)`
+def keys {K V : Type} (l : List (K × V)) : List K :=
+  List.map (λ pair => pair.1) l
+
+def inKeys_compute (map : SortMap) (key : SortInt) : Bool :=
+  List.elem (inj key) (keys map.coll)
+
+@[simp]
+axiom Axioms.inKeys_def (map : SortMap) (key : SortInt) :
+  «_in_keys(_)_MAP_Bool_KItem_Map» (inj ((inj key) : SortAccount)) map =
+  some (inKeys_compute map key)
+
+-- Behavior of `#inStorage`
+noncomputable def inStorage_compute (map : SortMap) (acc key : SortInt) : Bool :=
+  match «Map:lookup» map (inj ((@inj SortInt SortAccount) acc)) with
+  | none => false
+  | some a => match «#inStorageAux1» a key with
+    | none => false
+    | some b => if inKeys_compute map acc then b else false
+
+@[simp]
+theorem inStorage_def {ACCESSEDSTORAGE_CELL : SortMap} {ID_CELL W0 : SortInt} :
+  «#inStorage» ACCESSEDSTORAGE_CELL ((@inj SortInt SortAccount) ID_CELL) W0 = some (inStorage_compute ACCESSEDSTORAGE_CELL ID_CELL W0) := by
+  aesop (add simp [«#inStorage», _dbb1f9e, _8d90a32, Option.bind, inStorage_compute])
+
+-- Helper theorems
+
+@[simp]
+theorem inj_ID_CELL (ID_CELL : SortInt) : @inj SortInt SortAccount instInjSortIntSortAccount ID_CELL = .inj_SortInt ID_CELL := rfl
+
+@[simp]
+theorem accountAddressIsSome (n : ℕ) (size : n < AccountAddress.size) : AccountAddress.ofNat n = ⟨n, size⟩ := by
+  simp [AccountAddress.ofNat, Fin.ofNat]; aesop
 
 end KEVMInterface

@@ -199,7 +199,7 @@ theorem rw_push0LHS_push0RHS
   Rewrites
   (@push0LHS GAS_CELL PC_CELL K_CELL SCHEDULE_CELL USEGAS_CELL WS _DotVar0 _DotVar2 _Gen0 _Gen1 _Gen10 _Gen11 _Gen12 _Gen13 _Gen14 _Gen15 _Gen16 _Gen17 _Gen18 _Gen19 _Gen2 _Gen20 _Gen21 _Gen22 _Gen23 _Gen3 _Gen4 _Gen5 _Gen6 _Gen7 _Gen8 _Gen9)
   (@push0RHS _Val11 _Val13 K_CELL SCHEDULE_CELL WS _DotVar0 _DotVar2 _Gen0 _Gen1 _Gen10 _Gen11 _Gen12 _Gen13 _Gen14 _Gen15 _Gen16 _Gen17 _Gen18 _Gen19 _Gen2 _Gen20 _Gen21 _Gen22 _Gen23 _Gen3 _Gen4 _Gen5 _Gen6 _Gen7 _Gen8 _Gen9) :=
-  by apply Rewrites.SUMMARY_PUSHZERO_0_SPEC_BASIC_BLOCK_25_TO_24 <;> try assumption
+  by apply Rewrites.PUSHZERO_SUMMARY_PUSHZERO_SUMMARY_1 <;> try assumption
      all_goals simp_all [notBool_def, andBool_def]
 
 theorem push0_prestate_equiv
@@ -235,12 +235,21 @@ theorem push0_prestate_equiv
   {_Gen8 : SortCallGasCell}
   {_Gen9 : SortStaticCell}
   {symState : EVM.State}:
-  stateMap symState (@push0LHS GAS_CELL PC_CELL K_CELL SCHEDULE_CELL USEGAS_CELL WS _DotVar0 _DotVar2 _Gen0 _Gen1 _Gen10 _Gen11 _Gen12 _Gen13 _Gen14 _Gen15 _Gen16 _Gen17 _Gen18 _Gen19 _Gen2 _Gen20 _Gen21 _Gen22 _Gen23 _Gen3 _Gen4 _Gen5 _Gen6 _Gen7 _Gen8 _Gen9) =
+  let lhs := (@push0LHS GAS_CELL PC_CELL K_CELL SCHEDULE_CELL USEGAS_CELL WS _DotVar0 _DotVar2 _Gen0 _Gen1 _Gen10 _Gen11 _Gen12 _Gen13 _Gen14 _Gen15 _Gen16 _Gen17 _Gen18 _Gen19 _Gen2 _Gen20 _Gen21 _Gen22 _Gen23 _Gen3 _Gen4 _Gen5 _Gen6 _Gen7 _Gen8 _Gen9)
+  stateMap symState lhs =
   {symState with
     stack := wordStackMap WS
     pc := intMap PC_CELL
     gasAvailable := intMap GAS_CELL
-    executionEnv := {symState.executionEnv with code := _Gen0.val}
+    executionEnv := {symState.executionEnv with
+                  code := _Gen0.val,
+                  codeOwner := idMap lhs.Iₐ,
+                  perm := !lhs.isStatic.val}
+    accountMap := Axioms.SortAccountsCellMap lhs.accounts
+    substate := {symState.substate with
+            accessedStorageKeys :=  Axioms.SortAccessedStorageCellMap lhs.accessedStorage
+            refundBalance := intMap _Gen17.refund.val
+           }
     returnData := _Gen11.val
     } := rfl
 
@@ -278,12 +287,21 @@ theorem push0_poststate_equiv
   {_Gen9 : SortStaticCell}
   {symState : EVM.State}
   (defn_Val11 : «_+Int_» PC_CELL 1 = some _Val11):
-  stateMap symState (@push0RHS _Val11 _Val13 K_CELL SCHEDULE_CELL WS _DotVar0 _DotVar2 _Gen0 _Gen1 _Gen10 _Gen11 _Gen12 _Gen13 _Gen14 _Gen15 _Gen16 _Gen17 _Gen18 _Gen19 _Gen2 _Gen20 _Gen21 _Gen22 _Gen23 _Gen3 _Gen4 _Gen5 _Gen6 _Gen7 _Gen8 _Gen9) =
+  let rhs := (@push0RHS _Val11 _Val13 K_CELL SCHEDULE_CELL WS _DotVar0 _DotVar2 _Gen0 _Gen1 _Gen10 _Gen11 _Gen12 _Gen13 _Gen14 _Gen15 _Gen16 _Gen17 _Gen18 _Gen19 _Gen2 _Gen20 _Gen21 _Gen22 _Gen23 _Gen3 _Gen4 _Gen5 _Gen6 _Gen7 _Gen8 _Gen9)
+  stateMap symState rhs =
   {symState with
     stack := .ofNat 0 :: wordStackMap WS
     pc := intMap («_+Int'_» PC_CELL 1)
     gasAvailable := intMap _Val13
-    executionEnv := {symState.executionEnv with code := _Gen0.val}
+    executionEnv := {symState.executionEnv with
+                  code := _Gen0.val,
+                  codeOwner := idMap rhs.Iₐ,
+                  perm := !rhs.isStatic.val}
+    accountMap := Axioms.SortAccountsCellMap rhs.accounts
+    substate := {symState.substate with
+            accessedStorageKeys :=  Axioms.SortAccessedStorageCellMap rhs.accessedStorage
+            refundBalance := intMap _Gen17.refund.val
+           }
     returnData := _Gen11.val
     } := by aesop (add simp [«_+Int'_»])
 
@@ -350,7 +368,7 @@ theorem step_push0_equiv
   rw [push0_prestate_equiv, (push0_poststate_equiv PC_CELL)]
   cases gas; contradiction
   rw [EVM.step_push0_summary] <;> try assumption
-  congr
+  simp [push0LHS, push0RHS]; constructor <;> try constructor
   . aesop (add simp [GasConstants.Gbase, «_-Int_», cancun_def, intMap_sub_dist])
   . rw [plusInt_def, ←UInt256.add_succ_mod_size, intMap_add_dist] <;> aesop
   . aesop (add simp [«_+Int_»])
@@ -424,7 +442,7 @@ theorem X_push0_equiv
   . rw [intMap_toNat, Int.toNat_eq_zero] at cgc <;> linarith
   . have pc_equiv : intMap 0 = UInt256.ofNat 0 := rfl
     rw [pc_equiv, ←intMap_toNat, X_push0_summary] <;> first | linarith | try simp
-    . aesop (add simp [«_-Int_», intMap_sub_dist])
+    . aesop (add simp [«_-Int_», intMap_sub_dist, push0LHS, push0RHS])
       (add safe (by rw [intMap_sub_dist])) (add safe (by linarith))
     . rw [intMap_toNat] <;> aesop (add safe (by linarith))
     . simp [defn_Val3] at defn_Val6; subst defn_Val6

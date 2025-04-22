@@ -93,8 +93,40 @@ inductive SortTxType : Type where
   | «Legacy_EVM-TYPES_TxType» : SortTxType
   deriving BEq, DecidableEq
 
+inductive SortScheduleFlag : Type where
+  | Gemptyisnonexistent_SCHEDULE_ScheduleFlag : SortScheduleFlag
+  | Ghasaccesslist_SCHEDULE_ScheduleFlag : SortScheduleFlag
+  | Ghasbasefee_SCHEDULE_ScheduleFlag : SortScheduleFlag
+  | Ghasbeaconroot_SCHEDULE_ScheduleFlag : SortScheduleFlag
+  | Ghasblobbasefee_SCHEDULE_ScheduleFlag : SortScheduleFlag
+  | Ghasblobhash_SCHEDULE_ScheduleFlag : SortScheduleFlag
+  | Ghaschainid_SCHEDULE_ScheduleFlag : SortScheduleFlag
+  | Ghascreate2_SCHEDULE_ScheduleFlag : SortScheduleFlag
+  | Ghasdirtysstore_SCHEDULE_ScheduleFlag : SortScheduleFlag
+  | Ghaseip6780_SCHEDULE_ScheduleFlag : SortScheduleFlag
+  | Ghasextcodehash_SCHEDULE_ScheduleFlag : SortScheduleFlag
+  | Ghasmaxinitcodesize_SCHEDULE_ScheduleFlag : SortScheduleFlag
+  | Ghasmcopy_SCHEDULE_ScheduleFlag : SortScheduleFlag
+  | Ghasprevrandao_SCHEDULE_ScheduleFlag : SortScheduleFlag
+  | Ghaspushzero_SCHEDULE_ScheduleFlag : SortScheduleFlag
+  | Ghasrejectedfirstbyte_SCHEDULE_ScheduleFlag : SortScheduleFlag
+  | Ghasreturndata_SCHEDULE_ScheduleFlag : SortScheduleFlag
+  | Ghasrevert_SCHEDULE_ScheduleFlag : SortScheduleFlag
+  | Ghasselfbalance_SCHEDULE_ScheduleFlag : SortScheduleFlag
+  | Ghasshift_SCHEDULE_ScheduleFlag : SortScheduleFlag
+  | Ghassstorestipend_SCHEDULE_ScheduleFlag : SortScheduleFlag
+  | Ghasstaticcall_SCHEDULE_ScheduleFlag : SortScheduleFlag
+  | Ghastransient_SCHEDULE_ScheduleFlag : SortScheduleFlag
+  | Ghaswarmcoinbase_SCHEDULE_ScheduleFlag : SortScheduleFlag
+  | Ghaswithdrawals_SCHEDULE_ScheduleFlag : SortScheduleFlag
+  | Gselfdestructnewaccount_SCHEDULE_ScheduleFlag : SortScheduleFlag
+  | Gstaticcalldepth_SCHEDULE_ScheduleFlag : SortScheduleFlag
+  | Gzerovaluenewaccountgas_SCHEDULE_ScheduleFlag : SortScheduleFlag
+  deriving BEq, DecidableEq
+
 inductive SortBinStackOp : Type where
   | ADD_EVM_BinStackOp : SortBinStackOp
+  | SSTORE_EVM_BinStackOp : SortBinStackOp
   deriving BEq, DecidableEq
 
 inductive SortMode : Type where
@@ -653,6 +685,7 @@ mutual
     | inj_SortSchedule (x : SortSchedule) : SortKItem
     | inj_SortScheduleCell (x : SortScheduleCell) : SortKItem
     | inj_SortScheduleConst (x : SortScheduleConst) : SortKItem
+    | inj_SortScheduleFlag (x : SortScheduleFlag) : SortKItem
     | inj_SortSelfDestructCell (x : SortSelfDestructCell) : SortKItem
     | inj_SortSet (x : SortSet) : SortKItem
     | inj_SortSigRCell (x : SortSigRCell) : SortKItem

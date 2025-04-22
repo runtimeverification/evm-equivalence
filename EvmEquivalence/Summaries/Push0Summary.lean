@@ -12,10 +12,14 @@ section
 
 variable (gas gasCost : ℕ)
 variable (symStack : Stack UInt256)
-variable (symPc : UInt256)
-variable (symGasAvailable : UInt256)
+variable (symPc symGasAvailable symRefund : UInt256)
 variable (symExecLength : ℕ)
 variable (symReturnData symCode : ByteArray)
+variable (symAccessedStorageKeys : Batteries.RBSet (AccountAddress × UInt256) Substate.storageKeysCmp)
+variable (symAccessedStorageKeys : Batteries.RBSet (AccountAddress × UInt256) Substate.storageKeysCmp)
+variable (symAccounts : AccountMap)
+variable (symCodeOwner : AccountAddress)
+variable (symPerm : Bool)
 
 @[simp]
 abbrev push0EVM := @Operation.PUSH0
@@ -52,14 +56,30 @@ theorem EVM.step_push0_summary (gpos : 0 < gas) (symState : EVM.State):
       stack := symStack,
       pc := symPc,
       gasAvailable := symGasAvailable,
-      execLength := symExecLength,
-      executionEnv := {symState.executionEnv with code := symCode},
-      returnData := symReturnData} =
+      executionEnv := {symState.executionEnv with
+                  code := symCode,
+                  codeOwner := symCodeOwner,
+                  perm := symPerm},
+      accountMap := symAccounts
+      substate := {symState.substate with
+            accessedStorageKeys :=  symAccessedStorageKeys
+            refundBalance := symRefund
+           }
+      returnData := symReturnData,
+      execLength := symExecLength} =
     .ok {symState with
     stack := (.ofNat 0) :: symStack
     gasAvailable := symGasAvailable - UInt256.ofNat gasCost
     pc := symPc + .ofNat 1,
-    executionEnv := {symState.executionEnv with code := symCode},
+    executionEnv := {symState.executionEnv with
+                  code := symCode,
+                  codeOwner := symCodeOwner,
+                  perm := symPerm},
+    accountMap := symAccounts,
+    substate := {symState.substate with
+            accessedStorageKeys :=  symAccessedStorageKeys
+            refundBalance := symRefund
+           }
     returnData := symReturnData,
     execLength := symExecLength + 1} := by
   cases gas; contradiction; rfl
@@ -84,15 +104,31 @@ theorem X_push0_summary (enoughGas : GasConstants.Gbase < symGasAvailable.toNat)
   {symState with
     stack := symStack,
     pc := .ofNat 0,
-    execLength := symExecLength,
     gasAvailable := symGasAvailable,
-    executionEnv := {symState.executionEnv with code := ⟨#[(0x5F : UInt8)]⟩}
-    returnData := symReturnData} =
+    executionEnv := {symState.executionEnv with
+                  code := ⟨#[(0x5F : UInt8)]⟩,
+                  codeOwner := symCodeOwner,
+                  perm := symPerm},
+    accountMap := symAccounts,
+    substate := {symState.substate with
+            accessedStorageKeys :=  symAccessedStorageKeys
+            refundBalance := symRefund
+           }
+    returnData := symReturnData,
+    execLength := symExecLength} =
   Except.ok (.success {symState with
         stack := (.ofNat 0) :: symStack,
         pc := .ofNat 1,
         gasAvailable := symGasAvailable - .ofNat GasConstants.Gbase,
-        executionEnv := {symState.executionEnv with code := ⟨#[(0x5F : UInt8)]⟩},
+        executionEnv := {symState.executionEnv with
+                  code := ⟨#[(0x5F : UInt8)]⟩,
+                  codeOwner := symCodeOwner,
+                  perm := symPerm},
+        accountMap := symAccounts,
+        substate := {symState.substate with
+            accessedStorageKeys :=  symAccessedStorageKeys
+            refundBalance := symRefund
+           }
         returnData := ByteArray.empty,
         execLength := symExecLength + 2} ByteArray.empty):= by
   cases g_case: symGasAvailable.toNat; rw [g_case] at enoughGas; contradiction
@@ -106,7 +142,7 @@ theorem X_push0_summary (enoughGas : GasConstants.Gbase < symGasAvailable.toNat)
   rename_i evm _ stateOk; revert stateOk
   simp [pure, Except.pure]; intro evm_eq cost; subst cost evm_eq
   dsimp [Except.instMonad, Except.bind]
-  have step_rw := (@EVM.step_push0_summary g_pos GasConstants.Gbase symStack (.ofNat 0) symGasAvailable symExecLength symReturnData ⟨#[(0x5F : UInt8)]⟩ gPos)
+  have step_rw := (@EVM.step_push0_summary g_pos GasConstants.Gbase symStack (.ofNat 0) symGasAvailable symRefund symExecLength symReturnData ⟨#[(0x5F : UInt8)]⟩ symAccessedStorageKeys symAccounts symCodeOwner symPerm gPos)
   rw [EVM.step_push0, push0_instr] at step_rw; simp [step_rw]
   rw [X_bad_pc] <;> aesop (add simp [GasConstants.Gbase]) (add safe (by omega))
 

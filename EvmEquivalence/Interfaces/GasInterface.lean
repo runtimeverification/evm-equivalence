@@ -14,6 +14,7 @@ attribute [local simp] Keq_def Kneq_def
 attribute [local simp] orBool_def andBool_def notBool_def
 
 variable (const : SortScheduleConst)
+variable (flag : SortScheduleFlag)
 
 -- These should be temporary axioms
 instance: DecidableEq SortK := fun
@@ -31,7 +32,7 @@ theorem neq_gconst_fls (c₁ c₂ : SortScheduleConst) : c₁ ≠ c₂ →
 @[local simp]
 theorem neq_gconst_true (c₁ c₂ : SortScheduleConst) : c₁ ≠ c₂ →
   (SortK.kseq (inj c₁) SortK.dotk != SortK.kseq (inj c₂) SortK.dotk) := by
-  simp [ne_eq, bne_iff_ne, SortK.kseq.injEq, and_true, inj, Inj.inj]
+    aesop (add simp [bne])
 
 set_option maxRecDepth 100000
 
@@ -93,7 +94,7 @@ theorem sched_default_def :
   | .maxInitCodeSize_SCHEDULE_ScheduleConst        => some 0
   | .Ginitcodewordcost_SCHEDULE_ScheduleConst      => some 0
   | .Rmaxquotient_SCHEDULE_ScheduleConst           => some 2
-  | .Gpointeval_SCHEDULE_ScheduleConst => some 0
+  | .Gpointeval_SCHEDULE_ScheduleConst             => some 0
   := by
   simp_schedule1; cases const <;> simp_schedule2
 
@@ -128,8 +129,8 @@ theorem sched_tangerine_whistle_def :
 theorem sched_spurious_dragon_def :
   «_<_>_SCHEDULE_Int_ScheduleConst_Schedule» const .SPURIOUS_DRAGON_EVM =
   match const with
-  | .Gexpbyte_SCHEDULE_ScheduleConst      => some 50
-  | .maxCodeSize_SCHEDULE_ScheduleConst   => some 24576
+  | .Gexpbyte_SCHEDULE_ScheduleConst    => some 50
+  | .maxCodeSize_SCHEDULE_ScheduleConst => some 24576
   | const => «_<_>_SCHEDULE_Int_ScheduleConst_Schedule» const .TANGERINE_WHISTLE_EVM := by
   simp_schedule1; cases const <;> simp_schedule2
 
@@ -306,5 +307,183 @@ theorem cancun_def :
   := by
   simp [«_<_>_SCHEDULE_Int_ScheduleConst_Schedule»]
   cases const <;> simp
+
+@[local simp]
+theorem flag_default_def :
+  «_<<_>>_SCHEDULE_Bool_ScheduleFlag_Schedule» flag .DEFAULT_EVM =
+  match flag with
+  | .Gemptyisnonexistent_SCHEDULE_ScheduleFlag     => false
+  | .Ghasaccesslist_SCHEDULE_ScheduleFlag          => false
+  | .Ghasbasefee_SCHEDULE_ScheduleFlag             => false
+  | .Ghasbeaconroot_SCHEDULE_ScheduleFlag          => false
+  | .Ghasblobbasefee_SCHEDULE_ScheduleFlag         => false
+  | .Ghasblobhash_SCHEDULE_ScheduleFlag            => false
+  | .Ghaschainid_SCHEDULE_ScheduleFlag             => false
+  | .Ghascreate2_SCHEDULE_ScheduleFlag             => false
+  | .Ghasdirtysstore_SCHEDULE_ScheduleFlag         => false
+  | .Ghaseip6780_SCHEDULE_ScheduleFlag             => false
+  | .Ghasextcodehash_SCHEDULE_ScheduleFlag         => false
+  | .Ghasmaxinitcodesize_SCHEDULE_ScheduleFlag     => false
+  | .Ghasmcopy_SCHEDULE_ScheduleFlag               => false
+  | .Ghasprevrandao_SCHEDULE_ScheduleFlag          => false
+  | .Ghaspushzero_SCHEDULE_ScheduleFlag            => false
+  | .Ghasrejectedfirstbyte_SCHEDULE_ScheduleFlag   => false
+  | .Ghasreturndata_SCHEDULE_ScheduleFlag          => false
+  | .Ghasrevert_SCHEDULE_ScheduleFlag              => false
+  | .Ghasselfbalance_SCHEDULE_ScheduleFlag         => false
+  | .Ghasshift_SCHEDULE_ScheduleFlag               => false
+  | .Ghassstorestipend_SCHEDULE_ScheduleFlag       => false
+  | .Ghasstaticcall_SCHEDULE_ScheduleFlag          => false
+  | .Ghastransient_SCHEDULE_ScheduleFlag           => false
+  | .Ghaswarmcoinbase_SCHEDULE_ScheduleFlag        => false
+  | .Ghaswithdrawals_SCHEDULE_ScheduleFlag         => false
+  | .Gselfdestructnewaccount_SCHEDULE_ScheduleFlag => false
+  | .Gstaticcalldepth_SCHEDULE_ScheduleFlag        => true
+  | .Gzerovaluenewaccountgas_SCHEDULE_ScheduleFlag => true := by
+  simp_flag; cases flag <;> simp
+
+@[local simp]
+theorem flag_homestead_def :
+  «_<<_>>_SCHEDULE_Bool_ScheduleFlag_Schedule» flag .HOMESTEAD_EVM =
+  «_<<_>>_SCHEDULE_Bool_ScheduleFlag_Schedule» flag .DEFAULT_EVM := by
+  simp_flag; cases flag <;> simp_flag
+
+@[local simp]
+theorem flag_tangerine_whistle_def :
+  «_<<_>>_SCHEDULE_Bool_ScheduleFlag_Schedule» flag .TANGERINE_WHISTLE_EVM =
+  match flag with
+  | .Gselfdestructnewaccount_SCHEDULE_ScheduleFlag => true
+  | .Gstaticcalldepth_SCHEDULE_ScheduleFlag        => false
+  | flag =>
+    «_<<_>>_SCHEDULE_Bool_ScheduleFlag_Schedule» flag .HOMESTEAD_EVM := by
+  simp_flag; cases flag <;> simp_flag <;> simp [inj, Inj.inj]
+
+@[local simp]
+theorem flag_spurious_dragon_def :
+  «_<<_>>_SCHEDULE_Bool_ScheduleFlag_Schedule» flag .SPURIOUS_DRAGON_EVM =
+  match flag with
+  | .Gemptyisnonexistent_SCHEDULE_ScheduleFlag     => true
+  | .Gzerovaluenewaccountgas_SCHEDULE_ScheduleFlag => false
+  | flag =>
+    «_<<_>>_SCHEDULE_Bool_ScheduleFlag_Schedule» flag .TANGERINE_WHISTLE_EVM := by
+  simp_flag; cases flag <;> simp_flag <;> simp [inj, Inj.inj]
+
+@[local simp]
+theorem flag_byzantyum_def :
+  «_<<_>>_SCHEDULE_Bool_ScheduleFlag_Schedule» flag .BYZANTIUM_EVM =
+  match flag with
+  | .Ghasrevert_SCHEDULE_ScheduleFlag     => true
+  | .Ghasreturndata_SCHEDULE_ScheduleFlag => true
+  | .Ghasstaticcall_SCHEDULE_ScheduleFlag => true
+  | flag =>
+    «_<<_>>_SCHEDULE_Bool_ScheduleFlag_Schedule» flag .SPURIOUS_DRAGON_EVM  := by
+  simp_flag; cases flag <;> simp_flag <;> simp [inj, Inj.inj]
+
+@[local simp]
+theorem flag_constantinople_def :
+  «_<<_>>_SCHEDULE_Bool_ScheduleFlag_Schedule» flag .CONSTANTINOPLE_EVM =
+  match flag with
+  | .Ghasshift_SCHEDULE_ScheduleFlag       => true
+  | .Ghasdirtysstore_SCHEDULE_ScheduleFlag => true
+  | .Ghascreate2_SCHEDULE_ScheduleFlag     => true
+  | .Ghasextcodehash_SCHEDULE_ScheduleFlag => true
+  | flag =>
+      «_<<_>>_SCHEDULE_Bool_ScheduleFlag_Schedule» flag .BYZANTIUM_EVM := by
+  simp_flag; cases flag <;> simp_flag <;> simp [inj, Inj.inj]
+
+@[local simp]
+theorem flag_petersburg_def :
+  «_<<_>>_SCHEDULE_Bool_ScheduleFlag_Schedule» flag .PETERSBURG_EVM =
+  match flag with
+  | .Ghasdirtysstore_SCHEDULE_ScheduleFlag => false
+  | flag =>
+      «_<<_>>_SCHEDULE_Bool_ScheduleFlag_Schedule» flag .CONSTANTINOPLE_EVM := by
+  simp_flag; cases flag <;> simp_flag <;> simp [inj, Inj.inj]
+
+@[local simp]
+theorem flag_istambul_def :
+  «_<<_>>_SCHEDULE_Bool_ScheduleFlag_Schedule» flag .ISTANBUL_EVM =
+  match flag with
+  | .Ghasselfbalance_SCHEDULE_ScheduleFlag   => true
+  | .Ghasdirtysstore_SCHEDULE_ScheduleFlag   => true
+  | .Ghassstorestipend_SCHEDULE_ScheduleFlag => true
+  | .Ghaschainid_SCHEDULE_ScheduleFlag       => true
+  | flag =>
+      «_<<_>>_SCHEDULE_Bool_ScheduleFlag_Schedule» flag .PETERSBURG_EVM := by
+  simp_flag; cases flag <;> simp_flag <;> simp [inj, Inj.inj]
+
+@[local simp]
+theorem flag_berlin_def :
+  «_<<_>>_SCHEDULE_Bool_ScheduleFlag_Schedule» flag .BERLIN_EVM =
+  match flag with
+  | .Ghasaccesslist_SCHEDULE_ScheduleFlag => true
+  | flag =>
+      «_<<_>>_SCHEDULE_Bool_ScheduleFlag_Schedule» flag .ISTANBUL_EVM := by
+  simp_flag; cases flag <;> simp_flag <;> simp [inj, Inj.inj]
+
+@[local simp]
+theorem flag_london_def :
+  «_<<_>>_SCHEDULE_Bool_ScheduleFlag_Schedule» flag .LONDON_EVM =
+  match flag with
+  | .Ghasbasefee_SCHEDULE_ScheduleFlag           => true
+  | .Ghasrejectedfirstbyte_SCHEDULE_ScheduleFlag => true
+  | flag =>
+      «_<<_>>_SCHEDULE_Bool_ScheduleFlag_Schedule» flag .BERLIN_EVM := by
+  simp_flag; cases flag <;> simp_flag <;> simp [inj, Inj.inj]
+
+@[local simp]
+theorem flag_merge_def :
+  «_<<_>>_SCHEDULE_Bool_ScheduleFlag_Schedule» flag .MERGE_EVM =
+  match flag with
+  | .Ghasprevrandao_SCHEDULE_ScheduleFlag => true
+  | flag =>
+      «_<<_>>_SCHEDULE_Bool_ScheduleFlag_Schedule» flag .LONDON_EVM := by
+  simp_flag; cases flag <;> simp_flag <;> simp [inj, Inj.inj]
+
+@[local simp]
+theorem flag_shanghai_def :
+  «_<<_>>_SCHEDULE_Bool_ScheduleFlag_Schedule» flag .SHANGHAI_EVM =
+  match flag with
+  | .Ghasmaxinitcodesize_SCHEDULE_ScheduleFlag => true
+  | .Ghaspushzero_SCHEDULE_ScheduleFlag        => true
+  | .Ghaswarmcoinbase_SCHEDULE_ScheduleFlag    => true
+  | .Ghaswithdrawals_SCHEDULE_ScheduleFlag     => true
+  | flag =>
+      «_<<_>>_SCHEDULE_Bool_ScheduleFlag_Schedule» flag .MERGE_EVM := by
+  simp_flag; cases flag <;> simp_flag <;> simp [inj, Inj.inj]
+
+@[simp]
+theorem flag_cancun_def :
+  «_<<_>>_SCHEDULE_Bool_ScheduleFlag_Schedule» flag .CANCUN_EVM =
+  match flag with
+  | .Gemptyisnonexistent_SCHEDULE_ScheduleFlag     => true
+  | .Ghasaccesslist_SCHEDULE_ScheduleFlag          => true
+  | .Ghasbasefee_SCHEDULE_ScheduleFlag             => true
+  | .Ghasbeaconroot_SCHEDULE_ScheduleFlag          => true
+  | .Ghasblobbasefee_SCHEDULE_ScheduleFlag         => true
+  | .Ghasblobhash_SCHEDULE_ScheduleFlag            => true
+  | .Ghaschainid_SCHEDULE_ScheduleFlag             => true
+  | .Ghascreate2_SCHEDULE_ScheduleFlag             => true
+  | .Ghasdirtysstore_SCHEDULE_ScheduleFlag         => true
+  | .Ghaseip6780_SCHEDULE_ScheduleFlag             => true
+  | .Ghasextcodehash_SCHEDULE_ScheduleFlag         => true
+  | .Ghasmaxinitcodesize_SCHEDULE_ScheduleFlag     => true
+  | .Ghasmcopy_SCHEDULE_ScheduleFlag               => true
+  | .Ghasprevrandao_SCHEDULE_ScheduleFlag          => true
+  | .Ghaspushzero_SCHEDULE_ScheduleFlag            => true
+  | .Ghasrejectedfirstbyte_SCHEDULE_ScheduleFlag   => true
+  | .Ghasreturndata_SCHEDULE_ScheduleFlag          => true
+  | .Ghasrevert_SCHEDULE_ScheduleFlag              => true
+  | .Ghasselfbalance_SCHEDULE_ScheduleFlag         => true
+  | .Ghasshift_SCHEDULE_ScheduleFlag               => true
+  | .Ghassstorestipend_SCHEDULE_ScheduleFlag       => true
+  | .Ghasstaticcall_SCHEDULE_ScheduleFlag          => true
+  | .Ghastransient_SCHEDULE_ScheduleFlag           => true
+  | .Ghaswarmcoinbase_SCHEDULE_ScheduleFlag        => true
+  | .Ghaswithdrawals_SCHEDULE_ScheduleFlag         => true
+  | .Gselfdestructnewaccount_SCHEDULE_ScheduleFlag => true
+  | .Gstaticcalldepth_SCHEDULE_ScheduleFlag        => false
+  | .Gzerovaluenewaccountgas_SCHEDULE_ScheduleFlag => false := by
+  simp_flag; cases flag <;> simp_flag <;> simp [inj, Inj.inj]
 
 end GasInterface

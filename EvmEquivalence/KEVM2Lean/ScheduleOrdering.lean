@@ -82,3 +82,38 @@ def toNat (sc : SortScheduleConst) : Nat :=
   | Gpointeval_SCHEDULE_ScheduleConst             => 4
 
 end SortScheduleConst
+
+namespace SortScheduleFlag
+
+def toNat (sf : SortScheduleFlag) : Nat :=
+  match sf with
+  | Gemptyisnonexistent_SCHEDULE_ScheduleFlag     => 1
+  | Ghasaccesslist_SCHEDULE_ScheduleFlag          => 1
+  | Ghasbasefee_SCHEDULE_ScheduleFlag             => 1
+  | Ghasbeaconroot_SCHEDULE_ScheduleFlag          => 1
+  | Ghasblobbasefee_SCHEDULE_ScheduleFlag         => 1
+  | Ghasblobhash_SCHEDULE_ScheduleFlag            => 1
+  | Ghaschainid_SCHEDULE_ScheduleFlag             => 1
+  | Ghascreate2_SCHEDULE_ScheduleFlag             => 1
+  | Ghasdirtysstore_SCHEDULE_ScheduleFlag         => 1
+  | Ghaseip6780_SCHEDULE_ScheduleFlag             => 1
+  | Ghasextcodehash_SCHEDULE_ScheduleFlag         => 1
+  | Ghasmaxinitcodesize_SCHEDULE_ScheduleFlag     => 1
+  | Ghasmcopy_SCHEDULE_ScheduleFlag               => 1
+  | Ghasprevrandao_SCHEDULE_ScheduleFlag          => 1
+  | Ghaspushzero_SCHEDULE_ScheduleFlag            => 1
+  | Ghasrejectedfirstbyte_SCHEDULE_ScheduleFlag   => 1
+  | Ghasreturndata_SCHEDULE_ScheduleFlag          => 1
+  | Ghasrevert_SCHEDULE_ScheduleFlag              => 1
+  | Ghasselfbalance_SCHEDULE_ScheduleFlag         => 1
+  | Ghasshift_SCHEDULE_ScheduleFlag               => 1
+  | Ghassstorestipend_SCHEDULE_ScheduleFlag       => 1
+  | Ghasstaticcall_SCHEDULE_ScheduleFlag          => 1
+  | Ghastransient_SCHEDULE_ScheduleFlag           => 1
+  | Ghaswarmcoinbase_SCHEDULE_ScheduleFlag        => 1
+  | Ghaswithdrawals_SCHEDULE_ScheduleFlag         => 1
+  | Gselfdestructnewaccount_SCHEDULE_ScheduleFlag => 1
+  | Gstaticcalldepth_SCHEDULE_ScheduleFlag        => 1
+  | Gzerovaluenewaccountgas_SCHEDULE_ScheduleFlag => 1
+
+end SortScheduleFlag
