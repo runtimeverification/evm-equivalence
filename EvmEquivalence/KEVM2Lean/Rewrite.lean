@@ -6,9 +6,8 @@ inductive Rewrites : SortGeneratedTopCell → SortGeneratedTopCell → Prop wher
     (t1 : Rewrites s1 s2)
     (t2 : Rewrites s2 s3)
     : Rewrites s1 s3
-  | ADD_SUMMARY_ADD_SUMMARY_0
+  | ADD_SUMMARY_ADD_SUMMARY_USEGAS
     {GAS_CELL PC_CELL W0 W1 _Val0 _Val3 _Val4 _Val5 _Val6 _Val7 : SortInt}
-    {K_CELL : SortK}
     {SCHEDULE_CELL : SortSchedule}
     {USEGAS_CELL _Val1 _Val2 : SortBool}
     {WS : SortWordStack}
@@ -38,6 +37,7 @@ inductive Rewrites : SortGeneratedTopCell → SortGeneratedTopCell → Prop wher
     {_Gen7 : SortMemoryUsedCell}
     {_Gen8 : SortCallGasCell}
     {_Gen9 : SortStaticCell}
+    {_K_CELL : SortK}
     (defn_Val0 : «_<_>_SCHEDULE_Int_ScheduleConst_Schedule» SortScheduleConst.Gverylow_SCHEDULE_ScheduleConst SCHEDULE_CELL = some _Val0)
     (defn_Val1 : «_<=Int_» _Val0 GAS_CELL = some _Val1)
     (defn_Val2 : _andBool_ USEGAS_CELL _Val1 = some _Val2)
@@ -49,7 +49,7 @@ inductive Rewrites : SortGeneratedTopCell → SortGeneratedTopCell → Prop wher
     (req : _Val2 = true)
     : Rewrites {
       kevm := {
-        k := { val := SortK.kseq ((@inj SortInternalOp SortKItem) (SortInternalOp.«#next[_]_EVM_InternalOp_MaybeOpCode» ((@inj SortBinStackOp SortMaybeOpCode) SortBinStackOp.ADD_EVM_BinStackOp))) K_CELL },
+        k := { val := SortK.kseq ((@inj SortInternalOp SortKItem) (SortInternalOp.«#next[_]_EVM_InternalOp_MaybeOpCode» ((@inj SortBinStackOp SortMaybeOpCode) SortBinStackOp.ADD_EVM_BinStackOp))) _K_CELL },
         exitCode := _Gen22,
         mode := _Gen23,
         schedule := { val := SCHEDULE_CELL },
@@ -85,7 +85,7 @@ inductive Rewrites : SortGeneratedTopCell → SortGeneratedTopCell → Prop wher
           network := _DotVar2 } },
       generatedCounter := _DotVar0 } {
       kevm := {
-        k := { val := K_CELL },
+        k := { val := _K_CELL },
         exitCode := _Gen22,
         mode := _Gen23,
         schedule := { val := SCHEDULE_CELL },
@@ -120,11 +120,10 @@ inductive Rewrites : SortGeneratedTopCell → SortGeneratedTopCell → Prop wher
             block := _Gen21 },
           network := _DotVar2 } },
       generatedCounter := _DotVar0 }
-  | PUSHZERO_SUMMARY_PUSHZERO_SUMMARY_1
-    {GAS_CELL PC_CELL _Val0 _Val11 _Val12 _Val13 _Val3 _Val6 : SortInt}
-    {K_CELL : SortK}
+  | PUSHZERO_SUMMARY_PUSHZERO_SUMMARY_USEGAS
+    {GAS_CELL PC_CELL _Val0 _Val2 _Val6 _Val7 _Val8 : SortInt}
     {SCHEDULE_CELL : SortSchedule}
-    {USEGAS_CELL _Val1 _Val10 _Val2 _Val4 _Val5 _Val7 _Val8 _Val9 : SortBool}
+    {USEGAS_CELL _Val1 _Val3 _Val4 _Val5 : SortBool}
     {WS : SortWordStack}
     {_DotVar0 : SortGeneratedCounterCell}
     {_DotVar2 : SortNetworkCell}
@@ -152,24 +151,20 @@ inductive Rewrites : SortGeneratedTopCell → SortGeneratedTopCell → Prop wher
     {_Gen7 : SortMemoryUsedCell}
     {_Gen8 : SortCallGasCell}
     {_Gen9 : SortStaticCell}
+    {_K_CELL : SortK}
     (defn_Val0 : sizeWordStackAux WS 0 = some _Val0)
-    (defn_Val1 : «_<Int_» _Val0 0 = some _Val1)
-    (defn_Val2 : notBool_ _Val1 = some _Val2)
-    (defn_Val3 : sizeWordStackAux WS 0 = some _Val3)
-    (defn_Val4 : «_<Int_» 1023 _Val3 = some _Val4)
-    (defn_Val5 : notBool_ _Val4 = some _Val5)
-    (defn_Val6 : «_<_>_SCHEDULE_Int_ScheduleConst_Schedule» SortScheduleConst.Gbase_SCHEDULE_ScheduleConst SCHEDULE_CELL = some _Val6)
-    (defn_Val7 : «_<=Int_» _Val6 GAS_CELL = some _Val7)
-    (defn_Val8 : _andBool_ _Val5 _Val7 = some _Val8)
-    (defn_Val9 : _andBool_ _Val2 _Val8 = some _Val9)
-    (defn_Val10 : _andBool_ USEGAS_CELL _Val9 = some _Val10)
-    (defn_Val11 : «_+Int_» PC_CELL 1 = some _Val11)
-    (defn_Val12 : «_<_>_SCHEDULE_Int_ScheduleConst_Schedule» SortScheduleConst.Gbase_SCHEDULE_ScheduleConst SCHEDULE_CELL = some _Val12)
-    (defn_Val13 : «_-Int_» GAS_CELL _Val12 = some _Val13)
-    (req : _Val10 = true)
+    (defn_Val1 : «_<=Int_» _Val0 1023 = some _Val1)
+    (defn_Val2 : «_<_>_SCHEDULE_Int_ScheduleConst_Schedule» SortScheduleConst.Gbase_SCHEDULE_ScheduleConst SCHEDULE_CELL = some _Val2)
+    (defn_Val3 : «_<=Int_» _Val2 GAS_CELL = some _Val3)
+    (defn_Val4 : _andBool_ _Val1 _Val3 = some _Val4)
+    (defn_Val5 : _andBool_ USEGAS_CELL _Val4 = some _Val5)
+    (defn_Val6 : «_+Int_» PC_CELL 1 = some _Val6)
+    (defn_Val7 : «_<_>_SCHEDULE_Int_ScheduleConst_Schedule» SortScheduleConst.Gbase_SCHEDULE_ScheduleConst SCHEDULE_CELL = some _Val7)
+    (defn_Val8 : «_-Int_» GAS_CELL _Val7 = some _Val8)
+    (req : _Val5 = true)
     : Rewrites {
       kevm := {
-        k := { val := SortK.kseq ((@inj SortInternalOp SortKItem) (SortInternalOp.«#next[_]_EVM_InternalOp_MaybeOpCode» ((@inj SortPushOp SortMaybeOpCode) SortPushOp.PUSHZERO_EVM_PushOp))) K_CELL },
+        k := { val := SortK.kseq ((@inj SortInternalOp SortKItem) (SortInternalOp.«#next[_]_EVM_InternalOp_MaybeOpCode» ((@inj SortPushOp SortMaybeOpCode) SortPushOp.PUSHZERO_EVM_PushOp))) _K_CELL },
         exitCode := _Gen22,
         mode := _Gen23,
         schedule := { val := SCHEDULE_CELL },
@@ -205,7 +200,7 @@ inductive Rewrites : SortGeneratedTopCell → SortGeneratedTopCell → Prop wher
           network := _DotVar2 } },
       generatedCounter := _DotVar0 } {
       kevm := {
-        k := { val := K_CELL },
+        k := { val := _K_CELL },
         exitCode := _Gen22,
         mode := _Gen23,
         schedule := { val := SCHEDULE_CELL },
@@ -226,8 +221,8 @@ inductive Rewrites : SortGeneratedTopCell → SortGeneratedTopCell → Prop wher
               callValue := _Gen5,
               wordStack := { val := SortWordStack.«_:__EVM-TYPES_WordStack_Int_WordStack» 0 WS },
               localMem := _Gen6,
-              pc := { val := _Val11 },
-              gas := { val := (@inj SortInt SortGas) _Val13 },
+              pc := { val := _Val6 },
+              gas := { val := (@inj SortInt SortGas) _Val8 },
               memoryUsed := _Gen7,
               callGas := _Gen8,
               static := _Gen9,
@@ -240,13 +235,11 @@ inductive Rewrites : SortGeneratedTopCell → SortGeneratedTopCell → Prop wher
             block := _Gen21 },
           network := _DotVar2 } },
       generatedCounter := _DotVar0 }
-  | SLOAD_SUMMARY_SLOAD_SUMMARY_1
+  | SLOAD_SUMMARY_SLOAD_SUMMARY_USEGAS_BERLIN
     {ACCESSEDSTORAGE_CELL STORAGE_CELL _Val22 : SortMap}
     {GAS_CELL ID_CELL PC_CELL W0 _Val10 _Val11 _Val13 _Val14 _Val15 _Val16 _Val2 _Val3 _Val4 : SortInt}
-    {K_CELL : SortK}
     {SCHEDULE_CELL : SortSchedule}
     {USEGAS_CELL _Val0 _Val1 _Val12 _Val5 _Val6 _Val7 : SortBool}
-    {WS : SortWordStack}
     {_DotVar0 : SortGeneratedCounterCell}
     {_DotVar6 _Val23 _Val24 _Val8 _Val9 : SortAccountCellMap}
     {_Gen0 : SortProgramCell}
@@ -288,8 +281,10 @@ inductive Rewrites : SortGeneratedTopCell → SortGeneratedTopCell → Prop wher
     {_Gen7 : SortCallGasCell}
     {_Gen8 : SortStaticCell}
     {_Gen9 : SortCallDepthCell}
+    {_K_CELL : SortK}
     {_Val17 _Val19 _Val20 _Val21 : SortSet}
     {_Val18 : SortKItem}
+    {_WS : SortWordStack}
     (defn_Val0 : «_<<_>>_SCHEDULE_Bool_ScheduleFlag_Schedule» SortScheduleFlag.Ghasaccesslist_SCHEDULE_ScheduleFlag SCHEDULE_CELL = some _Val0)
     (defn_Val1 : «#inStorage» ACCESSEDSTORAGE_CELL ((@inj SortInt SortAccount) ID_CELL) W0 = some _Val1)
     (defn_Val2 : «_<_>_SCHEDULE_Int_ScheduleConst_Schedule» SortScheduleConst.Gwarmstorageread_SCHEDULE_ScheduleConst SCHEDULE_CELL = some _Val2)
@@ -332,7 +327,7 @@ inductive Rewrites : SortGeneratedTopCell → SortGeneratedTopCell → Prop wher
     (req : _Val7 = true)
     : Rewrites {
       kevm := {
-        k := { val := SortK.kseq ((@inj SortInternalOp SortKItem) (SortInternalOp.«#next[_]_EVM_InternalOp_MaybeOpCode» ((@inj SortUnStackOp SortMaybeOpCode) SortUnStackOp.SLOAD_EVM_UnStackOp))) K_CELL },
+        k := { val := SortK.kseq ((@inj SortInternalOp SortKItem) (SortInternalOp.«#next[_]_EVM_InternalOp_MaybeOpCode» ((@inj SortUnStackOp SortMaybeOpCode) SortUnStackOp.SLOAD_EVM_UnStackOp))) _K_CELL },
         exitCode := _Gen37,
         mode := _Gen38,
         schedule := { val := SCHEDULE_CELL },
@@ -351,7 +346,7 @@ inductive Rewrites : SortGeneratedTopCell → SortGeneratedTopCell → Prop wher
               caller := _Gen2,
               callData := _Gen3,
               callValue := _Gen4,
-              wordStack := { val := SortWordStack.«_:__EVM-TYPES_WordStack_Int_WordStack» W0 WS },
+              wordStack := { val := SortWordStack.«_:__EVM-TYPES_WordStack_Int_WordStack» W0 _WS },
               localMem := _Gen5,
               pc := { val := PC_CELL },
               gas := { val := (@inj SortInt SortGas) GAS_CELL },
@@ -382,7 +377,7 @@ inductive Rewrites : SortGeneratedTopCell → SortGeneratedTopCell → Prop wher
             withdrawals := _Gen36 } } },
       generatedCounter := _DotVar0 } {
       kevm := {
-        k := { val := K_CELL },
+        k := { val := _K_CELL },
         exitCode := _Gen37,
         mode := _Gen38,
         schedule := { val := SCHEDULE_CELL },
@@ -401,7 +396,7 @@ inductive Rewrites : SortGeneratedTopCell → SortGeneratedTopCell → Prop wher
               caller := _Gen2,
               callData := _Gen3,
               callValue := _Gen4,
-              wordStack := { val := SortWordStack.«_:__EVM-TYPES_WordStack_Int_WordStack» _Val10 WS },
+              wordStack := { val := SortWordStack.«_:__EVM-TYPES_WordStack_Int_WordStack» _Val10 _WS },
               localMem := _Gen5,
               pc := { val := _Val11 },
               gas := { val := (@inj SortInt SortGas) _Val16 },
@@ -431,10 +426,9 @@ inductive Rewrites : SortGeneratedTopCell → SortGeneratedTopCell → Prop wher
             withdrawalsOrder := _Gen35,
             withdrawals := _Gen36 } } },
       generatedCounter := _DotVar0 }
-  | SSTORE_SUMMARY_SSTORE_SUMMARY_1
+  | SSTORE_SUMMARY_SSTORE_SUMMARY_USEGAS_BERLIN
     {ACCESSEDSTORAGE_CELL ORIG_STORAGE_CELL STORAGE_CELL _Val39 _Val40 : SortMap}
     {GAS_CELL ID_CELL PC_CELL REFUND_CELL W0 W1 _Val1 _Val10 _Val11 _Val13 _Val2 _Val21 _Val22 _Val23 _Val24 _Val25 _Val27 _Val28 _Val29 _Val3 _Val30 _Val31 _Val32 _Val33 _Val6 _Val7 _Val8 _Val9 : SortInt}
-    {K_CELL : SortK}
     {SCHEDULE_CELL : SortSchedule}
     {USEGAS_CELL _Val0 _Val12 _Val14 _Val15 _Val16 _Val17 _Val18 _Val26 _Val4 _Val5 : SortBool}
     {WS : SortWordStack}
@@ -476,6 +470,7 @@ inductive Rewrites : SortGeneratedTopCell → SortGeneratedTopCell → Prop wher
     {_Gen7 : SortCallGasCell}
     {_Gen8 : SortCallDepthCell}
     {_Gen9 : SortSelfDestructCell}
+    {_K_CELL : SortK}
     {_Val34 _Val36 _Val37 _Val38 : SortSet}
     {_Val35 : SortKItem}
     (defn_Val0 : «_<<_>>_SCHEDULE_Bool_ScheduleFlag_Schedule» SortScheduleFlag.Ghasaccesslist_SCHEDULE_ScheduleFlag SCHEDULE_CELL = some _Val0)
@@ -538,7 +533,7 @@ inductive Rewrites : SortGeneratedTopCell → SortGeneratedTopCell → Prop wher
     (req : _Val18 = true)
     : Rewrites {
       kevm := {
-        k := { val := SortK.kseq ((@inj SortInternalOp SortKItem) (SortInternalOp.«#next[_]_EVM_InternalOp_MaybeOpCode» ((@inj SortBinStackOp SortMaybeOpCode) SortBinStackOp.SSTORE_EVM_BinStackOp))) K_CELL },
+        k := { val := SortK.kseq ((@inj SortInternalOp SortKItem) (SortInternalOp.«#next[_]_EVM_InternalOp_MaybeOpCode» ((@inj SortBinStackOp SortMaybeOpCode) SortBinStackOp.SSTORE_EVM_BinStackOp))) _K_CELL },
         exitCode := _Gen34,
         mode := _Gen35,
         schedule := { val := SCHEDULE_CELL },
@@ -588,7 +583,7 @@ inductive Rewrites : SortGeneratedTopCell → SortGeneratedTopCell → Prop wher
             withdrawals := _Gen33 } } },
       generatedCounter := _DotVar0 } {
       kevm := {
-        k := { val := K_CELL },
+        k := { val := _K_CELL },
         exitCode := _Gen34,
         mode := _Gen35,
         schedule := { val := SCHEDULE_CELL },
