@@ -207,6 +207,7 @@ end StateMap
 open StateMap
 
 namespace Axioms
+-- Axioms that have to do with the axiomatic state mapping
 
 /--
 This axiom states that if an account is in an `AccountCellMap`, then
@@ -346,5 +347,26 @@ axiom accessedStorageCell_map_insert
   (Axioms.SortAccessedStorageCellMap { val := ACCESSEDSTORAGE_CELL }).insert
     (AccountAddress.ofNat (Int.toNat ID_CELL), intMap key) =
   Axioms.SortAccessedStorageCellMap { val := stor_update }
+
+/--
+Mapping a `SortStorageCell` through `Axioms.SortStorageCellMap` results
+in an equivalence of behavior between K's `lookup` function and EvmYul's `findD`.
+Provided that `lookup` results in `some result`.
+-/
+axiom lookup_mapped_storage (storage : SortMap) (key result : SortInt) (_ : lookup storage key = some result):
+  Batteries.RBMap.findD (Axioms.SortStorageCellMap { val := storage }) (intMap key) { val := 0 } = intMap result
+
+
+/--
+Mapping a `SortAccessedStorageCell` through `Axioms.SortAccessedStorageCellMap` results
+in an equivalence of behavior between K's `«#inStorage»` function and EvmYul's `RBSet.contains`.
+-/
+axiom contains_accessedStorage_map
+  {contained : Bool}
+  {stor : SortMap}
+  {acc key : SortInt}
+  (_ : «#inStorage» stor (SortAccount.inj_SortInt acc) key = some contained):
+  (Axioms.SortAccessedStorageCellMap { val := stor }).contains
+  (AccountAddress.ofNat (Int.toNat acc), intMap key) = contained
 
 end Axioms
