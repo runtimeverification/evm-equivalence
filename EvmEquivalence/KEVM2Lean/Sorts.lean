@@ -85,6 +85,10 @@ inductive SortSchedule : Type where
   | TANGERINE_WHISTLE_EVM : SortSchedule
   deriving BEq, DecidableEq
 
+inductive SortUnStackOp : Type where
+  | SLOAD_EVM_UnStackOp : SortUnStackOp
+  deriving BEq, DecidableEq
+
 inductive SortTxType : Type where
   | «.TxType_EVM-TYPES_TxType» : SortTxType
   | «AccessList_EVM-TYPES_TxType» : SortTxType
@@ -390,6 +394,7 @@ mutual
     | inj_SortBinStackOp (x : SortBinStackOp) : SortMaybeOpCode
     | inj_SortInternalOp (x : SortInternalOp) : SortMaybeOpCode
     | inj_SortPushOp (x : SortPushOp) : SortMaybeOpCode
+    | inj_SortUnStackOp (x : SortUnStackOp) : SortMaybeOpCode
     deriving BEq, DecidableEq
 end
 
@@ -715,6 +720,7 @@ mutual
     | inj_SortTxType (x : SortTxType) : SortKItem
     | inj_SortTxTypeCell (x : SortTxTypeCell) : SortKItem
     | inj_SortTxVersionedHashesCell (x : SortTxVersionedHashesCell) : SortKItem
+    | inj_SortUnStackOp (x : SortUnStackOp) : SortKItem
     | inj_SortUseGasCell (x : SortUseGasCell) : SortKItem
     | inj_SortValidatorIndexCell (x : SortValidatorIndexCell) : SortKItem
     | inj_SortValueCell (x : SortValueCell) : SortKItem
