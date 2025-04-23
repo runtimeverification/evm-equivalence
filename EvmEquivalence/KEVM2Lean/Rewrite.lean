@@ -240,6 +240,197 @@ inductive Rewrites : SortGeneratedTopCell → SortGeneratedTopCell → Prop wher
             block := _Gen21 },
           network := _DotVar2 } },
       generatedCounter := _DotVar0 }
+  | SLOAD_SUMMARY_SLOAD_SUMMARY_1
+    {ACCESSEDSTORAGE_CELL STORAGE_CELL _Val22 : SortMap}
+    {GAS_CELL ID_CELL PC_CELL W0 _Val10 _Val11 _Val13 _Val14 _Val15 _Val16 _Val2 _Val3 _Val4 : SortInt}
+    {K_CELL : SortK}
+    {SCHEDULE_CELL : SortSchedule}
+    {USEGAS_CELL _Val0 _Val1 _Val12 _Val5 _Val6 _Val7 : SortBool}
+    {WS : SortWordStack}
+    {_DotVar0 : SortGeneratedCounterCell}
+    {_DotVar6 _Val23 _Val24 _Val8 _Val9 : SortAccountCellMap}
+    {_Gen0 : SortProgramCell}
+    {_Gen1 : SortJumpDestsCell}
+    {_Gen10 : SortSelfDestructCell}
+    {_Gen11 : SortLogCell}
+    {_Gen12 : SortRefundCell}
+    {_Gen13 : SortAccessedAccountsCell}
+    {_Gen14 : SortCreatedAccountsCell}
+    {_Gen15 : SortOutputCell}
+    {_Gen16 : SortStatusCodeCell}
+    {_Gen17 : SortCallStackCell}
+    {_Gen18 : SortInterimStatesCell}
+    {_Gen19 : SortTouchedAccountsCell}
+    {_Gen2 : SortCallerCell}
+    {_Gen20 : SortVersionedHashesCell}
+    {_Gen21 : SortGasPriceCell}
+    {_Gen22 : SortOriginCell}
+    {_Gen23 : SortBlockhashesCell}
+    {_Gen24 : SortBlockCell}
+    {_Gen25 : SortBalanceCell}
+    {_Gen26 : SortCodeCell}
+    {_Gen27 : SortOrigStorageCell}
+    {_Gen28 : SortTransientStorageCell}
+    {_Gen29 : SortNonceCell}
+    {_Gen3 : SortCallDataCell}
+    {_Gen30 : SortChainIDCell}
+    {_Gen31 : SortTxOrderCell}
+    {_Gen32 : SortTxPendingCell}
+    {_Gen33 : SortMessagesCell}
+    {_Gen34 : SortWithdrawalsPendingCell}
+    {_Gen35 : SortWithdrawalsOrderCell}
+    {_Gen36 : SortWithdrawalsCell}
+    {_Gen37 : SortExitCodeCell}
+    {_Gen38 : SortModeCell}
+    {_Gen4 : SortCallValueCell}
+    {_Gen5 : SortLocalMemCell}
+    {_Gen6 : SortMemoryUsedCell}
+    {_Gen7 : SortCallGasCell}
+    {_Gen8 : SortStaticCell}
+    {_Gen9 : SortCallDepthCell}
+    {_Val17 _Val19 _Val20 _Val21 : SortSet}
+    {_Val18 : SortKItem}
+    (defn_Val0 : «_<<_>>_SCHEDULE_Bool_ScheduleFlag_Schedule» SortScheduleFlag.Ghasaccesslist_SCHEDULE_ScheduleFlag SCHEDULE_CELL = some _Val0)
+    (defn_Val1 : «#inStorage» ACCESSEDSTORAGE_CELL ((@inj SortInt SortAccount) ID_CELL) W0 = some _Val1)
+    (defn_Val2 : «_<_>_SCHEDULE_Int_ScheduleConst_Schedule» SortScheduleConst.Gwarmstorageread_SCHEDULE_ScheduleConst SCHEDULE_CELL = some _Val2)
+    (defn_Val3 : «_<_>_SCHEDULE_Int_ScheduleConst_Schedule» SortScheduleConst.Gcoldsload_SCHEDULE_ScheduleConst SCHEDULE_CELL = some _Val3)
+    (defn_Val4 : kite _Val1 _Val2 _Val3 = some _Val4)
+    (defn_Val5 : «_<=Int_» _Val4 GAS_CELL = some _Val5)
+    (defn_Val6 : _andBool_ _Val0 _Val5 = some _Val6)
+    (defn_Val7 : _andBool_ USEGAS_CELL _Val6 = some _Val7)
+    (defn_Val8 : AccountCellMapItem { val := ID_CELL } {
+      acctID := { val := ID_CELL },
+      balance := _Gen25,
+      code := _Gen26,
+      storage := { val := STORAGE_CELL },
+      origStorage := _Gen27,
+      transientStorage := _Gen28,
+      nonce := _Gen29 } = some _Val8)
+    (defn_Val9 : _AccountCellMap_ _Val8 _DotVar6 = some _Val9)
+    (defn_Val10 : lookup STORAGE_CELL W0 = some _Val10)
+    (defn_Val11 : «_+Int_» PC_CELL 1 = some _Val11)
+    (defn_Val12 : «#inStorage» ACCESSEDSTORAGE_CELL ((@inj SortInt SortAccount) ID_CELL) W0 = some _Val12)
+    (defn_Val13 : «_<_>_SCHEDULE_Int_ScheduleConst_Schedule» SortScheduleConst.Gwarmstorageread_SCHEDULE_ScheduleConst SCHEDULE_CELL = some _Val13)
+    (defn_Val14 : «_<_>_SCHEDULE_Int_ScheduleConst_Schedule» SortScheduleConst.Gcoldsload_SCHEDULE_ScheduleConst SCHEDULE_CELL = some _Val14)
+    (defn_Val15 : kite _Val12 _Val13 _Val14 = some _Val15)
+    (defn_Val16 : «_-Int_» GAS_CELL _Val15 = some _Val16)
+    (defn_Val17 : «.Set» = some _Val17)
+    (defn_Val18 : «Map:lookupOrDefault» ACCESSEDSTORAGE_CELL ((@inj SortInt SortKItem) ID_CELL) ((@inj SortSet SortKItem) _Val17) = some _Val18)
+    (defn_Val19 : «project:Set» (SortK.kseq _Val18 SortK.dotk) = some _Val19)
+    (defn_Val20 : SetItem ((@inj SortInt SortKItem) W0) = some _Val20)
+    (defn_Val21 : «_|Set__SET_Set_Set_Set» _Val19 _Val20 = some _Val21)
+    (defn_Val22 : «Map:update» ACCESSEDSTORAGE_CELL ((@inj SortInt SortKItem) ID_CELL) ((@inj SortSet SortKItem) _Val21) = some _Val22)
+    (defn_Val23 : AccountCellMapItem { val := ID_CELL } {
+      acctID := { val := ID_CELL },
+      balance := _Gen25,
+      code := _Gen26,
+      storage := { val := STORAGE_CELL },
+      origStorage := _Gen27,
+      transientStorage := _Gen28,
+      nonce := _Gen29 } = some _Val23)
+    (defn_Val24 : _AccountCellMap_ _Val23 _DotVar6 = some _Val24)
+    (req : _Val7 = true)
+    : Rewrites {
+      kevm := {
+        k := { val := SortK.kseq ((@inj SortInternalOp SortKItem) (SortInternalOp.«#next[_]_EVM_InternalOp_MaybeOpCode» ((@inj SortUnStackOp SortMaybeOpCode) SortUnStackOp.SLOAD_EVM_UnStackOp))) K_CELL },
+        exitCode := _Gen37,
+        mode := _Gen38,
+        schedule := { val := SCHEDULE_CELL },
+        useGas := { val := USEGAS_CELL },
+        ethereum := {
+          evm := {
+            output := _Gen15,
+            statusCode := _Gen16,
+            callStack := _Gen17,
+            interimStates := _Gen18,
+            touchedAccounts := _Gen19,
+            callState := {
+              program := _Gen0,
+              jumpDests := _Gen1,
+              id := { val := (@inj SortInt SortAccount) ID_CELL },
+              caller := _Gen2,
+              callData := _Gen3,
+              callValue := _Gen4,
+              wordStack := { val := SortWordStack.«_:__EVM-TYPES_WordStack_Int_WordStack» W0 WS },
+              localMem := _Gen5,
+              pc := { val := PC_CELL },
+              gas := { val := (@inj SortInt SortGas) GAS_CELL },
+              memoryUsed := _Gen6,
+              callGas := _Gen7,
+              static := _Gen8,
+              callDepth := _Gen9 },
+            versionedHashes := _Gen20,
+            substate := {
+              selfDestruct := _Gen10,
+              log := _Gen11,
+              refund := _Gen12,
+              accessedAccounts := _Gen13,
+              accessedStorage := { val := ACCESSEDSTORAGE_CELL },
+              createdAccounts := _Gen14 },
+            gasPrice := _Gen21,
+            origin := _Gen22,
+            blockhashes := _Gen23,
+            block := _Gen24 },
+          network := {
+            chainID := _Gen30,
+            accounts := { val := _Val9 },
+            txOrder := _Gen31,
+            txPending := _Gen32,
+            messages := _Gen33,
+            withdrawalsPending := _Gen34,
+            withdrawalsOrder := _Gen35,
+            withdrawals := _Gen36 } } },
+      generatedCounter := _DotVar0 } {
+      kevm := {
+        k := { val := K_CELL },
+        exitCode := _Gen37,
+        mode := _Gen38,
+        schedule := { val := SCHEDULE_CELL },
+        useGas := { val := true },
+        ethereum := {
+          evm := {
+            output := _Gen15,
+            statusCode := _Gen16,
+            callStack := _Gen17,
+            interimStates := _Gen18,
+            touchedAccounts := _Gen19,
+            callState := {
+              program := _Gen0,
+              jumpDests := _Gen1,
+              id := { val := (@inj SortInt SortAccount) ID_CELL },
+              caller := _Gen2,
+              callData := _Gen3,
+              callValue := _Gen4,
+              wordStack := { val := SortWordStack.«_:__EVM-TYPES_WordStack_Int_WordStack» _Val10 WS },
+              localMem := _Gen5,
+              pc := { val := _Val11 },
+              gas := { val := (@inj SortInt SortGas) _Val16 },
+              memoryUsed := _Gen6,
+              callGas := _Gen7,
+              static := _Gen8,
+              callDepth := _Gen9 },
+            versionedHashes := _Gen20,
+            substate := {
+              selfDestruct := _Gen10,
+              log := _Gen11,
+              refund := _Gen12,
+              accessedAccounts := _Gen13,
+              accessedStorage := { val := _Val22 },
+              createdAccounts := _Gen14 },
+            gasPrice := _Gen21,
+            origin := _Gen22,
+            blockhashes := _Gen23,
+            block := _Gen24 },
+          network := {
+            chainID := _Gen30,
+            accounts := { val := _Val24 },
+            txOrder := _Gen31,
+            txPending := _Gen32,
+            messages := _Gen33,
+            withdrawalsPending := _Gen34,
+            withdrawalsOrder := _Gen35,
+            withdrawals := _Gen36 } } },
+      generatedCounter := _DotVar0 }
   | SSTORE_SUMMARY_SSTORE_SUMMARY_1
     {ACCESSEDSTORAGE_CELL ORIG_STORAGE_CELL STORAGE_CELL _Val39 _Val40 : SortMap}
     {GAS_CELL ID_CELL PC_CELL REFUND_CELL W0 W1 _Val1 _Val10 _Val11 _Val13 _Val2 _Val21 _Val22 _Val23 _Val24 _Val25 _Val27 _Val28 _Val29 _Val3 _Val30 _Val31 _Val32 _Val33 _Val6 _Val7 _Val8 _Val9 : SortInt}
