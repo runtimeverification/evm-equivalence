@@ -208,7 +208,6 @@ def sstoreRHS
 theorem rw_sstoreLHS_sstoreRHS
   {ACCESSEDSTORAGE_CELL ORIG_STORAGE_CELL STORAGE_CELL _Val39 _Val40 : SortMap}
   {GAS_CELL ID_CELL PC_CELL REFUND_CELL W0 W1 _Val1 _Val10 _Val11 _Val13 _Val2 _Val21 _Val22 _Val23 _Val24 _Val25 _Val27 _Val28 _Val29 _Val3 _Val30 _Val31 _Val32 _Val33 _Val6 _Val7 _Val8 _Val9 : SortInt}
-  {K_CELL : SortK}
   {SCHEDULE_CELL : SortSchedule}
   {USEGAS_CELL _Val0 _Val12 _Val14 _Val15 _Val16 _Val17 _Val18 _Val26 _Val4 _Val5 : SortBool}
   {WS : SortWordStack}
@@ -250,6 +249,7 @@ theorem rw_sstoreLHS_sstoreRHS
   {_Gen7 : SortCallGasCell}
   {_Gen8 : SortCallDepthCell}
   {_Gen9 : SortSelfDestructCell}
+  {K_CELL : SortK}
   {_Val34 _Val36 _Val37 _Val38 : SortSet}
   {_Val35 : SortKItem}
   (defn_Val0 : «_<<_>>_SCHEDULE_Bool_ScheduleFlag_Schedule» SortScheduleFlag.Ghasaccesslist_SCHEDULE_ScheduleFlag SCHEDULE_CELL = some _Val0)
@@ -313,7 +313,7 @@ theorem rw_sstoreLHS_sstoreRHS
   Rewrites
   (@sstoreLHS ACCESSEDSTORAGE_CELL GAS_CELL ID_CELL PC_CELL REFUND_CELL W0 W1 K_CELL SCHEDULE_CELL USEGAS_CELL WS _DotVar0 _DotVar6 _Val20 _Gen0 _Gen1 _Gen10 _Gen11 _Gen12 _Gen13 _Gen14 _Gen15 _Gen16 _Gen17 _Gen18 _Gen19 _Gen2 _Gen20 _Gen21 _Gen22 _Gen23 _Gen24 _Gen25 _Gen26 _Gen27 _Gen28 _Gen29 _Gen3 _Gen30 _Gen31 _Gen32 _Gen33 _Gen34 _Gen35 _Gen4 _Gen5 _Gen6 _Gen7 _Gen8 _Gen9)
   (@sstoreRHS  _Val39 _Val40  ID_CELL _Val1 _Val10 _Val11 _Val13 _Val2 _Val21 _Val22 _Val23 _Val24 _Val25 _Val27 _Val28 _Val29 _Val3 _Val30 _Val31 _Val32 _Val33 _Val6 _Val7 _Val8 _Val9 K_CELL SCHEDULE_CELL _Val0 _Val12 _Val14 _Val15 _Val16 _Val17 _Val18 _Val26 _Val4 _Val5 WS _DotVar0 _DotVar6 _Val19 _Val20 _Val41 _Val42 _Gen0 _Gen1 _Gen10 _Gen11 _Gen12 _Gen13 _Gen14 _Gen15 _Gen16 _Gen17 _Gen18 _Gen19 _Gen2 _Gen20 _Gen21 _Gen22 _Gen23 _Gen24 _Gen25 _Gen26 _Gen27 _Gen28 _Gen29 _Gen3 _Gen30 _Gen31 _Gen32 _Gen33 _Gen34 _Gen35 _Gen4 _Gen5 _Gen6 _Gen7 _Gen8 _Gen9 _Val34 _Val36 _Val37 _Val38 _Val35) := by
-  apply (@Rewrites.SSTORE_SUMMARY_SSTORE_SUMMARY_1 ACCESSEDSTORAGE_CELL ORIG_STORAGE_CELL STORAGE_CELL _Val39 _Val40 GAS_CELL ID_CELL PC_CELL REFUND_CELL W0 W1 _Val1 _Val10 _Val11 _Val13 _Val2 _Val21 _Val22 _Val23 _Val24 _Val25 _Val27 _Val28 _Val29 _Val3 _Val30 _Val31 _Val32 _Val33 _Val6 _Val7 _Val8 _Val9 K_CELL SCHEDULE_CELL USEGAS_CELL _Val0 _Val12 _Val14 _Val15 _Val16 _Val17 _Val18 _Val26 _Val4 _Val5 WS _DotVar0 _DotVar6 _Val19 _Val20 _Val41 _Val42 _Gen0 _Gen1 _Gen10 _Gen11 _Gen12 _Gen13 _Gen14 _Gen15 _Gen16 _Gen17 _Gen18 _Gen19 _Gen2 _Gen20 _Gen21 _Gen22 _Gen23 _Gen24 _Gen25 _Gen26 _Gen27 _Gen28 _Gen29 _Gen3 _Gen30 _Gen31 _Gen32 _Gen33 _Gen34 _Gen35 _Gen4 _Gen5 _Gen6 _Gen7 _Gen8 _Gen9 _Val34 _Val36 _Val37 _Val38 _Val35)
+  apply (@Rewrites.SSTORE_SUMMARY_SSTORE_SUMMARY_USEGAS_BERLIN ACCESSEDSTORAGE_CELL ORIG_STORAGE_CELL STORAGE_CELL _Val39 _Val40 GAS_CELL ID_CELL PC_CELL REFUND_CELL W0 W1 _Val1 _Val10 _Val11 _Val13 _Val2 _Val21 _Val22 _Val23 _Val24 _Val25 _Val27 _Val28 _Val29 _Val3 _Val30 _Val31 _Val32 _Val33 _Val6 _Val7 _Val8 _Val9 SCHEDULE_CELL USEGAS_CELL _Val0 _Val12 _Val14 _Val15 _Val16 _Val17 _Val18 _Val26 _Val4 _Val5 WS _DotVar0 _DotVar6 _Val19 _Val20 _Val41 _Val42 _Gen0 _Gen1 _Gen10 _Gen11 _Gen12 _Gen13 _Gen14 _Gen15 _Gen16 _Gen17 _Gen18 _Gen19 _Gen2 _Gen20 _Gen21 _Gen22 _Gen23 _Gen24 _Gen25 _Gen26 _Gen27 _Gen28 _Gen29 _Gen3 _Gen30 _Gen31 _Gen32 _Gen33 _Gen34 _Gen35 _Gen4 _Gen5 _Gen6 _Gen7 _Gen8 _Gen9 K_CELL _Val34 _Val36 _Val37 _Val38 _Val35)
   all_goals assumption
 
 theorem sstore_prestate_equiv
