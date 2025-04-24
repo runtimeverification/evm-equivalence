@@ -6,16 +6,12 @@ defaultTargets = ["EvmEquivalence"]
 pp.unicode.fun = true # pretty-prints `fun a ↦ b`
 autoImplicit = false
 maxHeartbeats = 10000000
+maxRecDepth = 1000
 
 [[require]]
 name = "evmyul"
 scope = "NethermindEth"
-rev = "julek/rv-fix"
-
-[[require]]
-name = "mathlib"
-scope = "leanprover-community"
-rev = "v4.16.0-rc2"
+rev = "main"
 
 [[lean_lib]]
 name = "EvmEquivalence"
