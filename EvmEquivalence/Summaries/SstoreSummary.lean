@@ -123,12 +123,17 @@ theorem sstore_summary (symState : EvmYul.State) (key value : UInt256):
   State.sstore ss key value =
   {ss with
     accountMap := accountMap_sstore ss key value,
-    substate.accessedStorageKeys := accessedStorageKeys_sstore ss key,
-    substate.refundBalance := Aᵣ_sstore ss key value} := by
-  cases cco: (symState.lookupAccount symState.executionEnv.codeOwner)
-  all_goals sorry
+    substate := {ss.substate with
+      accessedStorageKeys :=
+        accessedStorageKeys_sstore ss key
+        --ss.substate.accessedStorageKeys.insert (symCodeOwner, key),
+      refundBalance := Aᵣ_sstore ss key value}} := by
+  simp [sstore, Option.option, lookupAccount]
+  split <;> simp_all [setAccount, addAccessedStorageKey, Substate.addAccessedStorageKey]
+  congr <;> (split <;> rw [σ₀] at * <;> simp_all [Batteries.RBMap.find!]; eq_refl)
   -- Before, this used to work
-  --all_goals aesop (add simp [sstore, Aᵣ_sstore, Option.option, lookupAccount])
+  /- cases cco: (symState.lookupAccount symState.executionEnv.codeOwner)
+  all_goals aesop (add simp [sstore, Aᵣ_sstore, Option.option, lookupAccount]) -/
 
 theorem EvmYul.step_sstore_summary (symState : EVM.State):
   let ss := {symState with
