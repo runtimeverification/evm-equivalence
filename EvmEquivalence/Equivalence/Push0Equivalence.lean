@@ -407,6 +407,7 @@ theorem X_push0_equiv
   (defn_Val8 : «_-Int_» GAS_CELL _Val7 = some _Val8)
   (req : _Val5 = true)
   (symState : EVM.State)
+  (symValidJumps : Array UInt256) -- TODO: Revisit
   -- Necessary assumptions for equivalence
   (cancun : SCHEDULE_CELL = .CANCUN_EVM)
   --(gasEnough : 0 < gas)
@@ -418,9 +419,10 @@ theorem X_push0_equiv
   (codePush0 : _Gen0 = ⟨⟨#[(0x5F : UInt8)]⟩⟩)
   (pcZero : PC_CELL = 0)
   (returnEmpty : _Gen11 = ⟨ByteArray.empty⟩):
-  EVM.X false (UInt256.toNat (intMap GAS_CELL)) (stateMap symState (@push0LHS GAS_CELL PC_CELL SCHEDULE_CELL USEGAS_CELL WS _DotVar0 _DotVar2 _Gen0 _Gen1 _Gen10 _Gen11 _Gen12 _Gen13 _Gen14 _Gen15 _Gen16 _Gen17 _Gen18 _Gen19 _Gen2 _Gen20 _Gen21 _Gen22 _Gen23 _Gen3 _Gen4 _Gen5 _Gen6 _Gen7 _Gen8 _Gen9 _K_CELL)) =
+  EVM.X (UInt256.toNat (intMap GAS_CELL)) symValidJumps
+  (stateMap symState (@push0LHS GAS_CELL PC_CELL SCHEDULE_CELL USEGAS_CELL WS _DotVar0 _DotVar2 _Gen0 _Gen1 _Gen10 _Gen11 _Gen12 _Gen13 _Gen14 _Gen15 _Gen16 _Gen17 _Gen18 _Gen19 _Gen2 _Gen20 _Gen21 _Gen22 _Gen23 _Gen3 _Gen4 _Gen5 _Gen6 _Gen7 _Gen8 _Gen9 _K_CELL)) =
   .ok (.success (stateMap {symState with execLength := symState.execLength + 2} (@push0RHS _Val6 _Val8 SCHEDULE_CELL WS _DotVar0 _DotVar2 _Gen0 _Gen1 _Gen10 _Gen11 _Gen12 _Gen13 _Gen14 _Gen15 _Gen16 _Gen17 _Gen18 _Gen19 _Gen2 _Gen20 _Gen21 _Gen22 _Gen23 _Gen3 _Gen4 _Gen5 _Gen6 _Gen7 _Gen8 _Gen9 _K_CELL)) ByteArray.empty) := by
-  rw [codePush0, pcZero, push0_prestate_equiv, (push0_poststate_equiv defn_Val6)] <;> try assumption
+  rw [codePush0, pcZero, push0_prestate_equiv, (push0_poststate_equiv defn_Val6)]; try assumption
   rw [intMap_toNat] <;> first | linarith | try assumption
   cases cgc: (UInt256.toNat (intMap GAS_CELL))
   . rw [intMap_toNat, Int.toNat_eq_zero] at cgc <;> linarith
