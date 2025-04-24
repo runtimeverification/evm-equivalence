@@ -420,6 +420,7 @@ theorem X_add_equiv
   (defn_Val7 : «_-Int_» GAS_CELL _Val6 = some _Val7)
   (req : _Val2 = true)
   (symState : EVM.State)
+  (symValidJumps : Array UInt256) -- TODO: Revisit
   -- Necessary assumptions for equivalence
   (cancun : SCHEDULE_CELL = .CANCUN_EVM)
   (codeAdd : _Gen0 = ⟨⟨#[(1 : UInt8)]⟩⟩)
@@ -430,7 +431,8 @@ theorem X_add_equiv
   (W1ge0 : 0 ≤ W1)
   -- There's no #sizeWordStack
   (wordStackOk : sizeWordStackAux WS 0 < some 1024):
-  EVM.X false (UInt256.toNat (intMap GAS_CELL)) (stateMap symState (@addLHS GAS_CELL PC_CELL W0 W1 K_CELL SCHEDULE_CELL USEGAS_CELL WS _DotVar0 _DotVar2 _Gen0 _Gen1 _Gen10 _Gen11 _Gen12 _Gen13 _Gen14 _Gen15 _Gen16 _Gen17 _Gen18 _Gen19 _Gen2 _Gen20 _Gen21 _Gen22 _Gen23 _Gen3 _Gen4 _Gen5 _Gen6 _Gen7 _Gen8 _Gen9)) =
+  EVM.X (UInt256.toNat (intMap GAS_CELL)) symValidJumps
+  (stateMap symState (@addLHS GAS_CELL PC_CELL W0 W1 K_CELL SCHEDULE_CELL USEGAS_CELL WS _DotVar0 _DotVar2 _Gen0 _Gen1 _Gen10 _Gen11 _Gen12 _Gen13 _Gen14 _Gen15 _Gen16 _Gen17 _Gen18 _Gen19 _Gen2 _Gen20 _Gen21 _Gen22 _Gen23 _Gen3 _Gen4 _Gen5 _Gen6 _Gen7 _Gen8 _Gen9)) =
   .ok (.success (stateMap {symState with execLength := symState.execLength + 2} (@addRHS _Val0 _Val3 _Val4 _Val5 _Val6 _Val7 K_CELL SCHEDULE_CELL _Val1 _Val2 WS _DotVar0 _DotVar2 _Gen0 _Gen1 _Gen10 ⟨ByteArray.empty⟩ _Gen12 _Gen13 _Gen14 _Gen15 _Gen16 _Gen17 _Gen18 _Gen19 _Gen2 _Gen20 _Gen21 _Gen22 _Gen23 _Gen3 _Gen4 _Gen5 _Gen6 _Gen7 _Gen8 _Gen9)) ByteArray.empty) := by
   -- With `simp` doesn't work
   rw [codeAdd, pcZero, add_prestate_equiv, add_poststate_equiv] <;> try assumption
@@ -443,7 +445,5 @@ theorem X_add_equiv
       (add simp [intMap_toNat, UInt256.ofNat_toNat])
       (add safe (by contradiction))
   · simp_all [sizeWordStack_def]
-    simp [LT.lt, Option.lt, OfNat.ofNat, (@Int.ofNat_eq_coe 1024)] at wordStackOk
-    exact (Int.lt_of_ofNat_lt_ofNat wordStackOk)
 
 end AddOpcodeEquivalence

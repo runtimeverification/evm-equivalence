@@ -21,6 +21,8 @@ variable (symAccounts : AccountMap)
 variable (symCodeOwner : AccountAddress)
 variable (symPerm : Bool)
 
+variable (symValidJumps : Array UInt256)
+
 @[simp]
 abbrev sstoreEVM := @Operation.SSTORE .EVM
 
@@ -30,11 +32,11 @@ abbrev sstore_instr : Option (Operation .EVM × Option (UInt256 × Nat)) :=
 
 @[simp]
 abbrev EVM.step_sstore : Transformer :=
-  EVM.step false gas gasCost sstore_instr
+  EVM.step gas gasCost sstore_instr
 
 @[simp]
 abbrev EvmYul.step_sstore : Transformer :=
-  EvmYul.step false sstoreEVM
+  EvmYul.step sstoreEVM
 
 /--
 Theorem needed to bypass the `private` attribute of `EVM.dispatchBinaryStateOp`
@@ -55,7 +57,7 @@ theorem sstore_bypass_private (symState : EVM.State):
   execLength := symExecLength,
   accountMap := symAccounts}
   EvmYul.step_sstore ss =
-  EVM.binaryStateOp false EvmYul.State.sstore ss := rfl
+  EVM.binaryStateOp EvmYul.State.sstore ss := rfl
 
 @[simp]
 def accountMap_sstore (symState : EvmYul.State) (key value : UInt256) : AccountMap :=
@@ -121,10 +123,17 @@ theorem sstore_summary (symState : EvmYul.State) (key value : UInt256):
   State.sstore ss key value =
   {ss with
     accountMap := accountMap_sstore ss key value,
-    substate.accessedStorageKeys := accessedStorageKeys_sstore ss key,
-    substate.refundBalance := Aᵣ_sstore ss key value} := by
-  cases cco: (symState.lookupAccount symState.executionEnv.codeOwner)
-  all_goals aesop (add simp [sstore, Aᵣ_sstore, Option.option, lookupAccount])
+    substate := {ss.substate with
+      accessedStorageKeys :=
+        accessedStorageKeys_sstore ss key
+        --ss.substate.accessedStorageKeys.insert (symCodeOwner, key),
+      refundBalance := Aᵣ_sstore ss key value}} := by
+  simp [sstore, Option.option, lookupAccount]
+  split <;> simp_all [setAccount, addAccessedStorageKey, Substate.addAccessedStorageKey]
+  congr <;> (split <;> rw [σ₀] at * <;> simp_all [Batteries.RBMap.find!]; eq_refl)
+  -- Before, this used to work
+  /- cases cco: (symState.lookupAccount symState.executionEnv.codeOwner)
+  all_goals aesop (add simp [sstore, Aᵣ_sstore, Option.option, lookupAccount]) -/
 
 theorem EvmYul.step_sstore_summary (symState : EVM.State):
   let ss := {symState with
@@ -191,11 +200,21 @@ theorem memoryExpansionCost_sstore (symState : EVM.State) :
   memoryExpansionCost symState sstoreEVM = 0 := by
   simp [memoryExpansionCost, memoryExpansionCost.μᵢ']
 
-/--
+/-
 TODO: Generalize to `C'`
  -/
+
 theorem Csstore_pos (symState : EVM.State) : 99 < Csstore symState := by
-  aesop (add simp [Csstore, GasConstants.Gwarmaccess, GasConstants.Gsset, GasConstants.Gsreset])
+  unfold Csstore GasConstants.Gcoldsload GasConstants.Gwarmaccess GasConstants.Gsset GasConstants.Gsreset
+  split; split; split
+  . simp; split
+    . simp; split <;> first | simp | split <;> simp
+    . split <;> first | simp | split <;> simp
+  . simp; split <;> first | simp | split <;> try simp
+    . split <;> first | simp | split <;> simp
+    . split <;> simp
+  -- Before this was enough
+  -- aesop (add simp [Csstore, GasConstants.Gwarmaccess, GasConstants.Gsset, GasConstants.Gsreset])
 
 theorem X_sstore_summary (symState : EVM.State)
                          (symStack_ok : symStack.length < 1024)
@@ -215,7 +234,7 @@ theorem X_sstore_summary (symState : EVM.State)
     execLength := symExecLength,
     accountMap := symAccounts}
   Csstore ss < symGasAvailable.toNat →
-  X false symGasAvailable.toNat ss =
+  X symGasAvailable.toNat symValidJumps ss =
   .ok (.success {ss with
           stack := symStack,
           pc := .ofNat 1,

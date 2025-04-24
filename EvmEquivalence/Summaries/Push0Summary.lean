@@ -21,6 +21,8 @@ variable (symAccounts : AccountMap)
 variable (symCodeOwner : AccountAddress)
 variable (symPerm : Bool)
 
+variable (symValidJumps : Array UInt256)
+
 @[simp]
 abbrev push0EVM := @Operation.PUSH0
 
@@ -30,11 +32,11 @@ abbrev push0_instr : Option (Operation .EVM × Option (UInt256 × Nat)) :=
 
 @[simp]
 def EVM.step_push0 : Transformer :=
-  EVM.step false gas gasCost push0_instr
+  EVM.step gas gasCost push0_instr
 
 @[simp]
 def EvmYul.step_push0 : Transformer :=
-  @EvmYul.step OperationType.EVM false push0EVM
+  @EvmYul.step OperationType.EVM push0EVM
 
 theorem EvmYul.step_push0_summary (symState : EVM.State):
   EvmYul.step_push0 {symState with
@@ -100,7 +102,7 @@ theorem C'_push0 (symState : EVM.State) :
 theorem X_push0_summary (enoughGas : GasConstants.Gbase < symGasAvailable.toNat)
                       (symStack_ok : symStack.length < 1024)
                       (symState : EVM.State):
-  X false symGasAvailable.toNat
+  X symGasAvailable.toNat symValidJumps
   {symState with
     stack := symStack,
     pc := .ofNat 0,

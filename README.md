@@ -23,6 +23,14 @@ Under [EvmEquivalence](./EvmEquivalence) we have the following structure:
 * [Utils](./EvmEquivalence/Utils): Useful results for the proving
 * [StateMap.lean](./EvmEquivalence/StateMap.lean): Function mapping `KEVM` states to `EvmYul` states
 
+## Building the Project
+
+After cloning this repository, from its root run:
+1. `lake exe cache get` to download the project's dependencies
+2. `lake build` to build the project
+
+Note that the first time building the project it can take over 20 minutes to do so.
+
 ## Lean 4 Code Generation
 
 These are instructions to generate the `KEVM` related Lean 4 code, which is done via the cli tool `klean`. Note that the current generated code has been modified to aid with the proofs, and such modifications will be reflected in due time on the code generation.

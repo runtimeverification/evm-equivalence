@@ -836,6 +836,7 @@ theorem X_sstore_equiv
   (defn_Val42 : _AccountCellMap_ _Val41 _DotVar6 = some _Val42)
   (req : _Val18 = true)
   (symState : EVM.State)
+  (symValidJumps : Array UInt256) -- TODO: Revisit
   -- Necessary assumptions for equivalence
   (cancun : SCHEDULE_CELL = .CANCUN_EVM)
   (gavailEnough : sstore_gas ACCESSEDSTORAGE_CELL W1 _Val22 _Val23 ID_CELL W0 ≤ GAS_CELL)
@@ -854,7 +855,8 @@ theorem X_sstore_equiv
   -- This hypothesis is needed in order to have a successful run of `EVM.X`:
   (callStipendGas : GasConstants.Gcallstipend < (intMap GAS_CELL).toNat)
   :
-  EVM.X false (UInt256.toNat (intMap GAS_CELL)) (stateMap symState (@sstoreLHS ACCESSEDSTORAGE_CELL GAS_CELL ID_CELL PC_CELL REFUND_CELL W0 W1 K_CELL SCHEDULE_CELL USEGAS_CELL WS _DotVar0 _DotVar6 _Val20 _Gen0 _Gen1 _Gen10 _Gen11 _Gen12 _Gen13 _Gen14 _Gen15 _Gen16 _Gen17 _Gen18 _Gen19 _Gen2 _Gen20 _Gen21 _Gen22 _Gen23 _Gen24 _Gen25 _Gen26 _Gen27 _Gen28 _Gen29 _Gen3 _Gen30 _Gen31 _Gen32 _Gen33 _Gen34 _Gen35 _Gen4 _Gen5 _Gen6 _Gen7 _Gen8 _Gen9)) =
+  EVM.X (UInt256.toNat (intMap GAS_CELL)) symValidJumps
+  (stateMap symState (@sstoreLHS ACCESSEDSTORAGE_CELL GAS_CELL ID_CELL PC_CELL REFUND_CELL W0 W1 K_CELL SCHEDULE_CELL USEGAS_CELL WS _DotVar0 _DotVar6 _Val20 _Gen0 _Gen1 _Gen10 _Gen11 _Gen12 _Gen13 _Gen14 _Gen15 _Gen16 _Gen17 _Gen18 _Gen19 _Gen2 _Gen20 _Gen21 _Gen22 _Gen23 _Gen24 _Gen25 _Gen26 _Gen27 _Gen28 _Gen29 _Gen3 _Gen30 _Gen31 _Gen32 _Gen33 _Gen34 _Gen35 _Gen4 _Gen5 _Gen6 _Gen7 _Gen8 _Gen9)) =
   .ok (.success (stateMap {symState with execLength := symState.execLength + 2} (@sstoreRHS  _Val39 _Val40  ID_CELL _Val1 _Val10 _Val11 _Val13 _Val2 _Val21 _Val22 _Val23 _Val24 _Val25 _Val27 _Val28 _Val29 _Val3 _Val30 _Val31 _Val32 _Val33 _Val6 _Val7 _Val8 _Val9 K_CELL SCHEDULE_CELL _Val0 _Val12 _Val14 _Val15 _Val16 _Val17 _Val18 _Val26 _Val4 _Val5 WS _DotVar0 _DotVar6 _Val19 _Val20 _Val41 _Val42 _Gen0 _Gen1 _Gen10 _Gen11 _Gen12 ⟨.empty⟩ _Gen14 _Gen15 _Gen16 _Gen17 _Gen18 _Gen19 _Gen2 _Gen20 _Gen21 _Gen22 _Gen23 _Gen24 _Gen25 _Gen26 _Gen27 _Gen28 _Gen29 _Gen3 _Gen30 _Gen31 _Gen32 _Gen33 _Gen34 _Gen35 _Gen4 _Gen5 _Gen6 _Gen7 _Gen8 _Gen9 _Val34 _Val36 _Val37 _Val38 _Val35)) .empty ) := by
   let acc : SortAccountCell := {
           acctID := { val := ID_CELL },

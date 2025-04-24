@@ -29,11 +29,11 @@ theorem memoryExpansionCost_stop (symState : EVM.State) :
   simp [memoryExpansionCost, memoryExpansionCost.μᵢ']
 
 theorem EvmYul.step_stop_summary_simple (symState : EVM.State) :
-  EvmYul.step false (@Operation.STOP .EVM) symState =
+  EvmYul.step (@Operation.STOP .EVM) symState =
   .ok {symState with returnData := ByteArray.empty} := rfl
 
 theorem EvmYul.step_stop_summary (symState : EVM.State) :
-EvmYul.step false (@Operation.STOP .EVM)
+EvmYul.step (@Operation.STOP .EVM)
   {symState with
       stack := symStack,
       pc := symPc,
@@ -47,7 +47,7 @@ EvmYul.step false (@Operation.STOP .EVM)
       returnData := ByteArray.empty} := rfl
 
 theorem EVM.step_stop_summary_simple (gpos : 0 < gas) (symState : EVM.State) :
-  EVM.step false gas gasCost (some (@Operation.STOP .EVM, none)) symState =
+  EVM.step gas gasCost (some (@Operation.STOP .EVM, none)) symState =
   .ok {symState with
     gasAvailable := symState.gasAvailable - UInt256.ofNat gasCost,
     returnData := ByteArray.empty
@@ -55,7 +55,7 @@ theorem EVM.step_stop_summary_simple (gpos : 0 < gas) (symState : EVM.State) :
   cases cg: gas; rw [cg] at gpos; contradiction; rfl
 
 theorem EVM.step_stop_summary (gpos : 0 < gas) (symState : EVM.State) :
-  EVM.step false gas gasCost (some (@Operation.STOP .EVM, none))
+  EVM.step gas gasCost (some (@Operation.STOP .EVM, none))
     {symState with
       stack := symStack,
       pc := symPc,
