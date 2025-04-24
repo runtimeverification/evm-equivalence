@@ -20,6 +20,8 @@ variable (symAccounts : AccountMap)
 variable (symCodeOwner : AccountAddress)
 variable (symPerm : Bool)
 
+variable (symValidJumps : Array UInt256)
+
 @[simp]
 abbrev sloadEVM := @Operation.SLOAD .EVM
 
@@ -29,11 +31,11 @@ abbrev sload_instr : Option (Operation .EVM × Option (UInt256 × Nat)) :=
 
 @[simp]
 abbrev EVM.step_sload : Transformer :=
-  EVM.step false gas gasCost sload_instr
+  EVM.step gas gasCost sload_instr
 
 @[simp]
 abbrev EvmYul.step_sload : Transformer :=
-  EvmYul.step false sloadEVM
+  EvmYul.step sloadEVM
 
 @[simp]
 def lookupStorage_sload (symState : EvmYul.State) (key : UInt256) : UInt256 :=
@@ -77,7 +79,7 @@ theorem sload_bypass_private (symState : EVM.State):
   execLength := symExecLength,
   accountMap := symAccounts}
   EvmYul.step_sload ss =
-  EVM.unaryStateOp false EvmYul.State.sload ss := rfl
+  EVM.unaryStateOp EvmYul.State.sload ss := rfl
 
 theorem EvmYul.step_sload_summary (symState : EVM.State):
   let ss := {symState with
@@ -163,7 +165,7 @@ theorem X_sload_summary (symState : EVM.State)
     execLength := symExecLength,
     accountMap := symAccounts}
   Csload ss.stack ss.substate ss.executionEnv < symGasAvailable.toNat →
-  X false symGasAvailable.toNat ss =
+  X symGasAvailable.toNat symValidJumps ss =
   .ok (.success {ss with
           stack := lookupStorage_sload ss.toState key :: symStack,
           pc := .ofNat 1,

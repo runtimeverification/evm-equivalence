@@ -22,16 +22,18 @@ variable (symAccounts : AccountMap)
 variable (symCodeOwner : AccountAddress)
 variable (symPerm : Bool)
 
+variable (symValidJumps : Array UInt256)
+
 abbrev addEVM := @Operation.ADD .EVM
 
 abbrev add_instr : Option (Operation .EVM × Option (UInt256 × Nat)) :=
   some ⟨addEVM, none⟩
 
 def EVM.step_add : Transformer :=
-  EVM.step false gas gasCost add_instr
+  EVM.step gas gasCost add_instr
 
 def EvmYul.step_add : Transformer :=
-  @EvmYul.step OperationType.EVM false addEVM
+  @EvmYul.step OperationType.EVM addEVM
 
 theorem EvmYul.step_add_summary (symState : EVM.State):
   EvmYul.step_add {symState with
@@ -154,7 +156,7 @@ theorem C'_add (symState : EVM.State) :
 theorem X_add_summary (enoughGas : GasConstants.Gverylow < symGasAvailable.toNat)
                       (symStack_ok : symStack.length < 1024)
                       (symState : EVM.State):
-  X false symGasAvailable.toNat
+  X symGasAvailable.toNat symValidJumps
   {symState with
     stack := word₁ :: word₂ :: symStack,
     pc := .ofNat 0,
