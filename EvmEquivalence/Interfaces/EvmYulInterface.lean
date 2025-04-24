@@ -70,12 +70,13 @@ variable {gas gasCost : ℕ}
 Execution result of `X` for a single-opcode program when `pc` is set to 1
  -/
 theorem X_bad_pc {opcode : UInt8}
+                 {symValidJumps : Array UInt256}
                  {symState : EVM.State}
                  (gpos : 1 < gas)
                  (pc1 : symState.pc = .ofNat 1)
                  (opcode_single : symState.executionEnv.code = ⟨#[opcode]⟩)
                  (stack_ok : symState.stack.length < 1025):
-  X false gas symState =
+  X gas symValidJumps symState =
   Except.ok (.success {symState with
       returnData := ByteArray.empty,
       execLength := symState.execLength + 1} ByteArray.empty) := by
