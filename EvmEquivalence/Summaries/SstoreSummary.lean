@@ -1,6 +1,5 @@
 import EvmYul.EVM.Semantics
 import EvmYul.EVM.GasConstants
---import EvmEquivalence.Summaries.StopSummary
 import EvmEquivalence.Interfaces.EvmYulInterface
 
 open EvmYul
