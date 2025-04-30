@@ -42,7 +42,7 @@ Theorem needed to bypass the `private` attribute of `EVM.dispatchBinaryStateOp`
  -/
 theorem sstore_bypass_private (symState : EVM.State):
   let ss := {symState with
-  stack := key :: value :: symStack,
+  stack := symStack,
   pc := symPc
   gasAvailable := symGasAvailable,
   executionEnv := {symState.executionEnv with
