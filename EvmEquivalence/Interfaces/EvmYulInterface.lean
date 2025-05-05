@@ -52,6 +52,13 @@ theorem zero_add: .ofNat 0 + .ofNat n = UInt256.ofNat n := by
 theorem add_succ_mod_size (pos : 0 ≤ p) (size_ok : p + 1 < UInt256.size) : (p + 1) % UInt256.size = p + 1 := by
         rw [Int.mod_cast, Int.toNat_ofNat, Nat.mod_eq_of_lt] <;> aesop (add safe (by omega))
 
+theorem sub_to_fin (n m : UInt256) : n - m = { val := (n.val - m.val)} := rfl
+
+theorem toNat_sub_dist (n m : UInt256) (le_ok : m ≤ n): (n - m).toNat = n.toNat - m.toNat := by
+  rw [sub_to_fin]; simp [UInt256.toNat]; rw [←Fin.sub_val_of_le]; aesop
+
+theorem ofNat_le (n m : UInt256) : (n ≤ m) = (n.toNat ≤ m.toNat) := by aesop
+
 end
 
 end UInt256

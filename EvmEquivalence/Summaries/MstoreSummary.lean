@@ -164,17 +164,6 @@ Memory expansion cost for the `MSTORE` opcode is strictly positive
   . aesop (add safe (by linarith))
   . simp [max_eq_right (Nat.le_of_lt value_big)] -/
 
-theorem UInt256.sub_to_fin (n m : UInt256) : n - m = { val := (n.val - m.val)} := rfl
-
-theorem UInt256.toNat_sub_dist (n m : UInt256) (le_ok : m ≤ n): (n - m).toNat = n.toNat - m.toNat := by
-  rw [UInt256.sub_to_fin]
-  simp [UInt256.toNat]
-  rw [←Fin.sub_val_of_le]
-  aesop
-
-theorem UInt256.ofNat_le (n m : UInt256) : (n ≤ m) = (n.toNat ≤ m.toNat) := by
-  sorry
-
 theorem X_mstore_summary (symState : EVM.State)
                          (symStack_ok : symStack.length < 1024):
   let ss := {symState with
