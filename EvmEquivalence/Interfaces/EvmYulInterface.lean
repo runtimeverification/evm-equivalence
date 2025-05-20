@@ -120,6 +120,14 @@ theorem ofNat_toNat (n_le_size : n < UInt256.size) :
 theorem ofNat_toSigned (h : ↑n = p) :
   UInt256.ofNat n = .toSigned p := by aesop
 
+-- Size of conversions to `ByteArray` and `Array`
+theorem toByteArray_size (val : UInt256) : val.toByteArray.size = 32 := by
+  simp [UInt256.toByteArray, ByteArray.size_append, ffi_zeroes_size]
+  rw [zeroes_size_eq_32]; exact val.val.isLt
+
+theorem toArray_size (n : UInt256) : n.toByteArray.data.size = 32 := by
+  have := UInt256.toByteArray_size; simp_all [ByteArray.size]
+
 -- Arithmetic
 
 @[simp]
