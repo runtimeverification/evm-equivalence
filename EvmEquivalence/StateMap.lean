@@ -94,16 +94,15 @@ def pcCellMap (pcc : SortPcCell) : UInt256 :=
   intMap pcc.val
 
 @[simp]
-def gasMap (gs : SortGas) : UInt256 :=
-  match gs with | .inj_SortInt g => intMap g
+def gasMap : SortGas → UInt256
+  | .inj_SortInt g => intMap g
 
 @[simp]
 def gasCellMap (gc : SortGasCell) : UInt256 :=
   gasMap gc.val
 
 @[simp]
-def accountAddressMap (acc : SortAccount) : AccountAddress :=
-  match acc with
+def accountAddressMap : SortAccount → AccountAddress
   | .«.Account_EVM-TYPES_Account» => 0
   | .inj_SortInt n => AccountAddress.ofNat (Int.toNat n)
 
@@ -124,8 +123,8 @@ noncomputable def transStorageMap (tstor : SortTransientStorageCell) : Storage :
   Axioms.SortTransientStorageCellMap tstor
 
 @[simp]
-def accCodeMap (code : SortAccountCode) : ByteArray :=
-  match code with | SortAccountCode.inj_SortBytes code => code
+def accCodeMap : SortAccountCode → ByteArray
+  | .inj_SortBytes code => code
 
 /- Note that Origin Storage Cell (`origStorage`) is not needed from `SortAccountCell` -/
 @[simp]
