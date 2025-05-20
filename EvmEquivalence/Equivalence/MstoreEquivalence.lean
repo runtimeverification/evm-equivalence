@@ -3,6 +3,7 @@ import EvmEquivalence.Interfaces.EvmYulInterface
 import EvmEquivalence.Interfaces.GasInterface
 import EvmEquivalence.Interfaces.FuncInterface
 import EvmEquivalence.StateMap
+import EvmEquivalence.Utils.ListByteArrayUtils
 
 open EvmYul
 open StateMap
