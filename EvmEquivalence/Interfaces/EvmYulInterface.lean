@@ -7,6 +7,19 @@ import EvmEquivalence.Utils.ListByteArrayUtils
 open EvmYul
 open EVM
 
+namespace USize
+
+theorem toNat_ofNat_le (n : ℕ) :
+  toNat (@OfNat.ofNat USize n instOfNat) ≤ n := by
+  cases System.Platform.numBits_eq <;> aesop (add simp [toNat]) (add safe (by omega))
+
+theorem toNat_ofNat_eq (n : ℕ) (n_small : n < UInt32.size) :
+  toNat (@OfNat.ofNat USize n instOfNat) = n := by
+  cases System.Platform.numBits_eq <;>
+  aesop (add simp [toNat, UInt32.size]) (add safe (by omega))
+
+end USize
+
 namespace UInt256
 
 section
