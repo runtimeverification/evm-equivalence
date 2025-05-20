@@ -117,7 +117,7 @@ theorem ofNat_toNat (n_le_size : n < UInt256.size) :
   (UInt256.ofNat n).toNat = n := by
   aesop (add simp [UInt256.ofNat, UInt256.toNat, Id.run, dbgTrace, Fin.ofNat])
 
-theorem ofNat_toSigned {n : ℕ} {p : ℤ} (h : ↑n = p) :
+theorem ofNat_toSigned (h : ↑n = p) :
   UInt256.ofNat n = .toSigned p := by aesop
 
 -- Arithmetic
