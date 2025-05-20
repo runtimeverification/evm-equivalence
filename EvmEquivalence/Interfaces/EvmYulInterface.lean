@@ -69,6 +69,32 @@ axiom toBytesBigEndian_rw (n : ℕ) :
 
 end Axioms
 
+theorem ffi_zeroes_size (len : USize) :
+  (ffi.ByteArray.zeroes len).size = len.toNat := by
+  simp [Axioms.ffi_zeroes, ByteArray.size]
+
+theorem toBytesBigEndian_lenght_le (n : ℕ) (n_small : n < UInt256.size) :
+  (EvmYul.toBytesBigEndian n).length ≤ 32 := by
+  rw [Axioms.toBytesBigEndian_rw, Function.comp, List.length_reverse]
+  apply toBytes'_UInt256_le; assumption
+
+theorem BE_zero : BE 0 = .empty := by
+  simp [BE, Axioms.toBytesBigEndian_rw, toBytes'_ax]; rfl
+
+theorem BE_size_le_32 (n : ℕ) (h : n < UInt256.size) : (BE n).size ≤ 32 := by
+  simp [BE, Axioms.toBytesBigEndian_rw, List.size_length_eq]
+  apply toBytes'_UInt256_le; assumption
+
+theorem zeroes_size_eq_sub {n : ℕ} (n_small : n < UInt256.size) :
+  ((2 ^ System.Platform.numBits - (BE n).size % 2 ^ System.Platform.numBits + 32) % 2 ^ System.Platform.numBits) = 32 - (BE n).size := by
+  have := BE_size_le_32 n n_small; rw [@Nat.mod_eq_of_lt (BE n).size] <;>
+  cases (System.Platform.numBits_eq) <;> simp_all <;> omega
+
+theorem zeroes_size_eq_32 {n : ℕ} (n_small : n < UInt256.size) :
+  ((2 ^ System.Platform.numBits - (BE n).size % 2 ^ System.Platform.numBits + 32) % 2 ^ System.Platform.numBits) + (BE n).size = 32 := by
+  have := BE_size_le_32 n n_small; rw [@Nat.mod_eq_of_lt (BE n).size] <;>
+  cases (System.Platform.numBits_eq) <;> simp_all <;> omega
+
 namespace UInt256
 
 section
