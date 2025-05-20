@@ -133,10 +133,6 @@ inductive SortScheduleFlag : Type where
   | Gzerovaluenewaccountgas_SCHEDULE_ScheduleFlag : SortScheduleFlag
   deriving BEq, DecidableEq
 
-inductive SortEndianness : Type where
-  | bigEndianBytes : SortEndianness
-  deriving BEq, DecidableEq
-
 inductive SortBinStackOp : Type where
   | ADD_EVM_BinStackOp : SortBinStackOp
   | MSTORE_EVM_BinStackOp : SortBinStackOp
