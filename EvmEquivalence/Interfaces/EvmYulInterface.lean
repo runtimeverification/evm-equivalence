@@ -20,6 +20,43 @@ theorem toNat_ofNat_eq (n : ℕ) (n_small : n < UInt32.size) :
 
 end USize
 
+-- We had to copy from EvmYul some functions declared as `private`
+-- We then axiomatically assert that the copied functions and the `private` ones coincide
+section COPIED_FROM_EVMYUL
+
+-- Copied from EvmYul and changed name from `toBytes'` to `toBytes'_ax`
+def toBytes'_ax : ℕ → List UInt8
+  | 0 => []
+  | n@(.succ n') =>
+    let byte : UInt8 := ⟨Nat.mod n UInt8.size, Nat.mod_lt _ (by linarith)⟩
+    have : n / UInt8.size < n' + 1 := by
+      rename_i h
+      rw [h]
+      apply Nat.div_lt_self <;> simp
+    byte :: toBytes'_ax (n / UInt8.size)
+
+-- Copied from EvmYul
+lemma toBytes'_le {k n : ℕ} (h : n < 2 ^ (8 * k)) : (toBytes'_ax n).length ≤ k := by
+  induction k generalizing n with
+  | zero =>
+    simp at h
+    rw [h]
+    simp [toBytes'_ax]
+  | succ e ih =>
+    match n with
+    | .zero => simp [toBytes'_ax]
+    | .succ n =>
+      unfold toBytes'_ax
+      simp [Nat.succ_le_succ_iff]
+      apply ih (Nat.div_lt_of_lt_mul _)
+      rw [Nat.mul_succ, Nat.pow_add] at h
+      linarith
+
+-- Copied from EvmYul
+lemma toBytes'_UInt256_le {n : ℕ} (h : n < UInt256.size) : (toBytes'_ax n).length ≤ 32 := toBytes'_le h
+
+end COPIED_FROM_EVMYUL
+
 namespace UInt256
 
 section
