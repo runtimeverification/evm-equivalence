@@ -57,6 +57,18 @@ lemma toBytes'_UInt256_le {n : ℕ} (h : n < UInt256.size) : (toBytes'_ax n).len
 
 end COPIED_FROM_EVMYUL
 
+namespace Axioms
+
+/-- This should either be provable at some point or a reasonable assumption -/
+axiom ffi_zeroes (len : USize) :
+  ffi.ByteArray.zeroes len = { data := (List.replicate len.toNat 0).toArray }
+
+/-- Needed to bypass `private` attribute of `toBytes'` -/
+axiom toBytesBigEndian_rw (n : ℕ) :
+  EvmYul.toBytesBigEndian n = (List.reverse ∘ toBytes'_ax) n
+
+end Axioms
+
 namespace UInt256
 
 section
