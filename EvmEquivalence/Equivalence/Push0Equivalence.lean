@@ -242,6 +242,8 @@ theorem push0_prestate_equiv
                   codeOwner := idMap lhs.Iₐ,
                   perm := !lhs.isStatic.val}
     accountMap := Axioms.SortAccountsCellMap lhs.accounts
+    activeWords := intMap lhs.memoryUsed.val
+    memory := memory_map lhs.memory
     substate := {symState.substate with
             accessedStorageKeys :=  Axioms.SortAccessedStorageCellMap lhs.accessedStorage
             refundBalance := intMap _Gen17.refund.val
@@ -293,6 +295,8 @@ theorem push0_poststate_equiv
                   codeOwner := idMap rhs.Iₐ,
                   perm := !rhs.isStatic.val}
     accountMap := Axioms.SortAccountsCellMap rhs.accounts
+    activeWords := intMap rhs.memoryUsed.val
+    memory := memory_map rhs.memory
     substate := {symState.substate with
             accessedStorageKeys :=  Axioms.SortAccessedStorageCellMap rhs.accessedStorage
             refundBalance := intMap _Gen17.refund.val
