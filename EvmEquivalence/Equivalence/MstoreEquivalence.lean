@@ -304,6 +304,22 @@ theorem mstore_poststate_equiv
     memory := memory_map rhs.memory
     } := by cases _Gen15; aesop (add simp [«_+Int_»])
 
+theorem mstore_activeWords_eq
+  {MEMORYUSED_CELL W0 _Val25: SortInt}
+  (defn_Val25 : «#memoryUsageUpdate» MEMORYUSED_CELL W0 32 = some _Val25)
+  (W0ge0 : 0 ≤ W0)
+  (W0small : W0 < UInt256.size)
+  (mucge0 : 0 ≤ MEMORYUSED_CELL)
+  (mucsmall : MEMORYUSED_CELL < UInt256.size) :
+  mstore_activeWords (intMap W0) (intMap MEMORYUSED_CELL) = intMap _Val25 := by
+  unfold mstore_activeWords
+  rw [memoryUsageUpdate_rw, Option.some.injEq] at defn_Val25
+  simp [←defn_Val25, intMap]; rw [UInt256.ofNat_toSigned]
+  simp [UInt256.toSigned]; cases mucc: MEMORYUSED_CELL
+  <;> try (rw [mucc] at mucge0; contradiction)
+  cases wc: W0 <;> try (rw [wc] at W0ge0; contradiction)
+  aesop (add simp [UInt256.ofNat_toNat]) (add safe (by omega)) (add safe (by congr))
+
 theorem mstore_step_equiv
   {GAS_CELL MEMORYUSED_CELL PC_CELL W0 W1 _Val0 _Val1 _Val10 _Val17 _Val18 _Val19 _Val2 _Val20 _Val21 _Val22 _Val23 _Val24 _Val25 _Val3 _Val5 _Val6 _Val7 _Val8 _Val9 : SortInt}
   {LOCALMEM_CELL _Val14 _Val15 _Val16 : SortBytes}
@@ -395,12 +411,6 @@ theorem mstore_step_equiv
   simp [mstore_activeWords, mstore_memory_write]
   constructor; constructor <;> try constructor
   . sorry -- Gas goals are for now unproven
-  . rw [memoryUsageUpdate_rw, Option.some.injEq] at defn_Val25
-    simp [←defn_Val25, intMap]; rw [UInt256.ofNat_toSigned]
-    simp [UInt256.toSigned]; cases mucc: MEMORYUSED_CELL
-    <;> try (rw [mucc] at mucge0; contradiction)
-    cases wc: W0 <;> try (rw [wc] at W0ge0; contradiction)
-    aesop (add simp [UInt256.ofNat_toNat]) (add safe (by omega)) (add safe (by congr))
   . -- TODO: This subproof can probably be amply optimized
     simp [ByteArray.write, ByteArray.copySlice, Axioms.ffi_zeroes]
     --rw [ByteArray.append_empty]
@@ -449,6 +459,7 @@ theorem mstore_step_equiv
     -- This is when we require the hipothesis `W0small_realpolitik`
     rw [←Int.toNat_lt_toNat] at W0small_realpolitik <;> try simp
     aesop (add simp [UInt32.size]) (add safe (by omega))
+  . rw [←mstore_activeWords, mstore_activeWords_eq defn_Val25] <;> assumption
   . rw [←UInt256.add_succ_mod_size, intMap_add_dist] <;> aesop
 
 end MstoreOpcodeEquivalence
