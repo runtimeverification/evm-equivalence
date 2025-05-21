@@ -27,8 +27,10 @@ import EvmEquivalence.Summaries.StopSummary
 import EvmEquivalence.Summaries.AddSummary
 import EvmEquivalence.Summaries.Push0Summary
 import EvmEquivalence.Summaries.SstoreSummary
+import EvmEquivalence.Summaries.SloadSummary
 
 -- Equivalence
 import EvmEquivalence.Equivalence.AddEquivalence
 import EvmEquivalence.Equivalence.Push0Equivalence
 import EvmEquivalence.Equivalence.SstoreEquivalence
+import EvmEquivalence.Equivalence.SloadEquivalence
