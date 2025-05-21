@@ -12,9 +12,9 @@ section
 
 variable (gas gasCost : ℕ)
 variable (symStack : Stack UInt256)
-variable (symPc symGasAvailable symRefund key value : UInt256)
+variable (symPc symGasAvailable symRefund key value symActiveWords : UInt256)
 variable (symExecLength : ℕ)
-variable (symReturnData symCode : ByteArray)
+variable (symReturnData symCode symMemory : ByteArray)
 variable (symAccessedStorageKeys : Batteries.RBSet (AccountAddress × UInt256) Substate.storageKeysCmp)
 variable (symAccounts : AccountMap)
 variable (symCodeOwner : AccountAddress)
@@ -49,12 +49,14 @@ theorem sstore_bypass_private (symState : EVM.State):
                   code := symCode,
                   codeOwner := symCodeOwner
                   perm := symPerm},
+  accountMap := symAccounts,
+  activeWords := symActiveWords,
+  memory := symMemory,
   substate := {symState.substate with
                accessedStorageKeys :=  symAccessedStorageKeys
                refundBalance := symRefund}
   returnData := symReturnData,
-  execLength := symExecLength,
-  accountMap := symAccounts}
+  execLength := symExecLength}
   EvmYul.step_sstore ss =
   EVM.binaryStateOp EvmYul.State.sstore ss := rfl
 
@@ -143,12 +145,14 @@ theorem EvmYul.step_sstore_summary (symState : EVM.State):
                   code := symCode,
                   codeOwner := symCodeOwner
                   perm := symPerm},
+    accountMap := symAccounts,
+    activeWords := symActiveWords,
+    memory := symMemory,
     substate := {symState.substate with
                  accessedStorageKeys :=  symAccessedStorageKeys
                  refundBalance := symRefund}
     returnData := symReturnData,
-    execLength := symExecLength,
-    accountMap := symAccounts}
+    execLength := symExecLength}
   EvmYul.step_sstore ss =
   .ok {ss with
     stack := symStack,
@@ -168,12 +172,14 @@ theorem EVM.step_sstore_summary (gas_pos : 0 < gas) (symState : EVM.State):
                   code := symCode,
                   codeOwner := symCodeOwner
                   perm := true},
+    accountMap := symAccounts,
+    activeWords := symActiveWords,
+    memory := symMemory,
     substate := {symState.substate with
                  accessedStorageKeys :=  symAccessedStorageKeys
                  refundBalance := symRefund}
     returnData := symReturnData,
-    execLength := symExecLength,
-    accountMap := symAccounts}
+    execLength := symExecLength}
   EVM.step_sstore gas gasCost ss =
     .ok {ss with
           stack := symStack,
@@ -187,7 +193,7 @@ theorem EVM.step_sstore_summary (gas_pos : 0 < gas) (symState : EVM.State):
           execLength := symExecLength + 1} := by
   cases gas; contradiction
   simp [step_sstore, EVM.step]
-  have srw := EvmYul.step_sstore_summary symStack symPc (symGasAvailable - UInt256.ofNat gasCost) symRefund key value (symExecLength + 1) symReturnData symCode
+  have srw := EvmYul.step_sstore_summary symStack symPc (symGasAvailable - UInt256.ofNat gasCost) symRefund key value symActiveWords (symExecLength + 1) symReturnData symCode
   simp [EvmYul.step_sstore, Operation.SSTORE] at srw; aesop
 
 @[simp]
@@ -226,12 +232,14 @@ theorem X_sstore_summary (symState : EVM.State)
                   code := ⟨#[(0x55 : UInt8)]⟩,
                   codeOwner := symCodeOwner
                   perm := true},
+    accountMap := symAccounts,
+    activeWords := symActiveWords,
+    memory := symMemory,
     substate := {symState.substate with
                  accessedStorageKeys :=  symAccessedStorageKeys
                  refundBalance := symRefund}
     returnData := symReturnData,
-    execLength := symExecLength,
-    accountMap := symAccounts}
+    execLength := symExecLength}
   Csstore ss < symGasAvailable.toNat →
   X symGasAvailable.toNat symValidJumps ss =
   .ok (.success {ss with
@@ -256,8 +264,8 @@ theorem X_sstore_summary (symState : EVM.State)
   have g_rw : (symGasAvailable.toNat ≤ GasConstants.Gcallstipend) = False := by aesop
   simp [g_rw]; split; contradiction; next evm cost stateOk =>
   have step_rw := (EVM.step_sstore_summary g_pos (Csstore evm) symStack (.ofNat 0)
-    symGasAvailable symRefund key value symExecLength symReturnData ⟨#[(0x55 : UInt8)]⟩
-    symAccessedStorageKeys symAccounts symCodeOwner (by omega) evm)
+    symGasAvailable symRefund key value symActiveWords symExecLength symReturnData ⟨#[(0x55 : UInt8)]⟩
+    symMemory symAccessedStorageKeys symAccounts symCodeOwner (by omega) evm)
   cases stateOk; simp at step_rw; rw [step_rw]; simp [Except.instMonad, Except.bind]
   rw [X_bad_pc] <;> aesop (add safe (by omega))
 
