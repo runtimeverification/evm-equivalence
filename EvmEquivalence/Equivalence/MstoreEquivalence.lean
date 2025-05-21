@@ -387,7 +387,7 @@ theorem mstore_memory_write_eq
   rw [←Int.toNat_lt_toNat] at W0small_realpolitik <;> try simp
   aesop (add simp [UInt32.size]) (add safe (by omega))
 
-theorem mstore_step_equiv
+theorem step_mstore_equiv
   {GAS_CELL MEMORYUSED_CELL PC_CELL W0 W1 _Val0 _Val1 _Val10 _Val17 _Val18 _Val19 _Val2 _Val20 _Val21 _Val22 _Val23 _Val24 _Val25 _Val3 _Val5 _Val6 _Val7 _Val8 _Val9 : SortInt}
   {LOCALMEM_CELL _Val14 _Val15 _Val16 : SortBytes}
   {SCHEDULE_CELL : SortSchedule}
