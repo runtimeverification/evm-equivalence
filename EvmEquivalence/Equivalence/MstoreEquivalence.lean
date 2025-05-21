@@ -320,6 +320,73 @@ theorem mstore_activeWords_eq
   cases wc: W0 <;> try (rw [wc] at W0ge0; contradiction)
   aesop (add simp [UInt256.ofNat_toNat]) (add safe (by omega)) (add safe (by congr))
 
+theorem mstore_memory_write_eq
+  {W0 W1: SortInt}
+  {LOCALMEM_CELL _Val14 _Val15 _Val16 : SortBytes}
+  (defn_Val14 : «#asByteStack» W1 = some _Val14)
+  (defn_Val15 : «#padToWidth» 32 _Val14 = some _Val15)
+  (defn_Val16 : mapWriteRange LOCALMEM_CELL W0 _Val15 = some _Val16)
+  (W0ge0 : 0 ≤ W0)
+  (W1ge0 : 0 ≤ W1)
+  (W0small : W0 < UInt256.size)
+  (W1small : W1 < UInt256.size)
+  -- As per the YP:
+  -- "Due to [the fee shceme] it is highly unlikely [memory] addresses will ever go above 32-bit bounds"
+  -- It seems we need this hypothesis to achieve equivalence of behavior from the EVMYul side
+  -- We keep the original `W0small` for convenience
+  (W0small_realpolitik : W0 < UInt32.size)
+  :
+  mstore_memory_write (intMap W0) (intMap W1) LOCALMEM_CELL = _Val16 := by
+  -- TODO: This proof can probably be amply optimized
+  simp [mstore_memory_write]
+  simp [ByteArray.write, ByteArray.copySlice, Axioms.ffi_zeroes]
+  --rw [ByteArray.append_empty]
+  simp [UInt256.toByteArray_size, UInt256.toArray_size]
+  have : USize.toNat (OfNat.ofNat ((intMap W0).toNat - LOCALMEM_CELL.data.size)) ≤
+    ((intMap W0).toNat - LOCALMEM_CELL.data.size) := by
+    cases System.Platform.numBits_eq <;> simp_all [USize.toNat] <;>
+    aesop (add safe (by omega))
+  simp [ByteArray.size, this]; rw [intMap_toNat] <;> try linarith
+  simp [@Array.extract_of_size_le _ _ (Int.toNat W0 + 32)]
+  rw [@Nat.sub_eq_zero_of_le (USize.toNat _)]
+  case h => apply Nat.le_trans (USize.toNat_ofNat_le _); omega
+  -- Getting `mapWriteRange` to manipulate EvmYul values
+  cases w1c : W1 <;> rw [w1c] at W1small W1ge0 defn_Val14
+  case negSucc => simp_all
+  rename_i w1
+  rw [Int.ofNat_eq_coe, Int.ofNat_lt] at W1small
+  have bs_eq : «#asByteStack» ↑w1 = some _Val14 := by aesop
+  rw [padToWidth32_asByteStack_rw W1small, Option.some.injEq] at defn_Val15
+  <;> try exact bs_eq
+  -- Treating with `mapWriteRange`
+  revert defn_Val16
+  rw [←defn_Val15]; simp [mapWriteRange_rw, Axioms.ffi_zeroes]
+  rw [zeroes_size_eq_sub] <;> try assumption
+  split; linarith
+  rw [ByteArray.size_append, ByteArray.size]; simp [Array.toList]
+  split; omega; rw [UInt256.toByteArray]
+  simp [«replaceAtBytes(_,_,_)_BYTES-HOOKED_Bytes_Bytes_Int_Bytes»]
+  intro h1 h2 h3; subst h3
+  simp [«padRightBytes(_,_,_)_BYTES-HOOKED_Bytes_Bytes_Int_Int», Axioms.ffi_zeroes]
+  have _ : (intMap W0).toNat = Int.toNat W0 := by apply intMap_toNat <;> assumption
+  have _ := BE_size_le_32 _ W1small
+  have : (intMap ↑w1).toNat = w1 := by rw [intMap_toNat, Int.toNat_ofNat] <;> try linarith
+  simp_all [ByteArray.size]
+  have : (Int.toNat W0 - LOCALMEM_CELL.data.size) ⊓
+    (Int.toNat W0 + Int.toNat 32 - LOCALMEM_CELL.data.size) =
+    (Int.toNat W0 - LOCALMEM_CELL.data.size) := by omega
+  rw [Int.toNat_add, this] <;> try linarith
+  have : (BE w1).data.size = (BE w1).size := rfl
+  rw [this, zeroes_size_eq_sub] <;> try exact W1small
+  rw [Nat.min_eq_right] <;> try omega
+  simp [@Array.extract_of_size_le _ _ (Int.toNat W0 + 32)]
+  have _ : (BE w1).data.extract 0 (32 - (32 - (BE w1).size)) = (BE w1).data := by
+    simp [Array.extract_eq_self_of_le]; right; rw [Nat.sub_sub_self]; rfl; assumption
+  congr; rw [USize.toNat_ofNat_eq]
+  -- This is when we require the hipothesis `W0small_realpolitik`
+  rw [←Int.toNat_lt_toNat] at W0small_realpolitik <;> try simp
+  aesop (add simp [UInt32.size]) (add safe (by omega))
+
 theorem mstore_step_equiv
   {GAS_CELL MEMORYUSED_CELL PC_CELL W0 W1 _Val0 _Val1 _Val10 _Val17 _Val18 _Val19 _Val2 _Val20 _Val21 _Val22 _Val23 _Val24 _Val25 _Val3 _Val5 _Val6 _Val7 _Val8 _Val9 : SortInt}
   {LOCALMEM_CELL _Val14 _Val15 _Val16 : SortBytes}
@@ -411,55 +478,9 @@ theorem mstore_step_equiv
   simp [mstore_activeWords, mstore_memory_write]
   constructor; constructor <;> try constructor
   . sorry -- Gas goals are for now unproven
-  . -- TODO: This subproof can probably be amply optimized
-    simp [ByteArray.write, ByteArray.copySlice, Axioms.ffi_zeroes]
-    --rw [ByteArray.append_empty]
-    simp [UInt256.toByteArray_size, UInt256.toArray_size]
-    have : USize.toNat (OfNat.ofNat ((intMap W0).toNat - LOCALMEM_CELL.data.size)) ≤
-      ((intMap W0).toNat - LOCALMEM_CELL.data.size) := by
-      cases System.Platform.numBits_eq <;> simp_all [USize.toNat] <;>
-      aesop (add safe (by omega))
-    simp [ByteArray.size, this]; rw [intMap_toNat] <;> try linarith
-    simp [@Array.extract_of_size_le _ _ (Int.toNat W0 + 32)]
-    rw [@Nat.sub_eq_zero_of_le (USize.toNat _)]
-    case succ.mk.left.right.right.h => apply Nat.le_trans (USize.toNat_ofNat_le _); omega
-    -- Getting `mapWriteRange` to manipulate EvmYul values
-    cases w1c : W1 <;> rw [w1c] at W1small W1ge0 defn_Val14
-    case succ.mk.left.right.right.negSucc => simp_all
-    rename_i w1
-    rw [Int.ofNat_eq_coe, Int.ofNat_lt] at W1small
-    have bs_eq : «#asByteStack» ↑w1 = some _Val14 := by aesop
-    rw [padToWidth32_asByteStack_rw W1small, Option.some.injEq] at defn_Val15
-    <;> try exact bs_eq
-    -- Treating with `mapWriteRange`
-    revert defn_Val16
-    rw [←defn_Val15]; simp [mapWriteRange_rw, Axioms.ffi_zeroes]
-    rw [zeroes_size_eq_sub] <;> try assumption
-    split; linarith
-    rw [ByteArray.size_append, ByteArray.size]; simp [Array.toList]
-    split; omega; rw [UInt256.toByteArray]
-    simp [«replaceAtBytes(_,_,_)_BYTES-HOOKED_Bytes_Bytes_Int_Bytes»]
-    intro h1 h2 h3; subst h3
-    simp [«padRightBytes(_,_,_)_BYTES-HOOKED_Bytes_Bytes_Int_Int», Axioms.ffi_zeroes]
-    have _ : (intMap W0).toNat = Int.toNat W0 := by apply intMap_toNat <;> assumption
-    have _ := BE_size_le_32 _ W1small
-    have : (intMap ↑w1).toNat = w1 := by rw [intMap_toNat, Int.toNat_ofNat] <;> try linarith
-    simp_all [ByteArray.size]
-    have : (Int.toNat W0 - LOCALMEM_CELL.data.size) ⊓
-      (Int.toNat W0 + Int.toNat 32 - LOCALMEM_CELL.data.size) =
-      (Int.toNat W0 - LOCALMEM_CELL.data.size) := by omega
-    rw [Int.toNat_add, this] <;> try linarith
-    have : (BE w1).data.size = (BE w1).size := rfl
-    rw [this, zeroes_size_eq_sub] <;> try exact W1small
-    rw [Nat.min_eq_right] <;> try omega
-    simp [@Array.extract_of_size_le _ _ (Int.toNat W0 + 32)]
-    have _ : (BE w1).data.extract 0 (32 - (32 - (BE w1).size)) = (BE w1).data := by
-      simp [Array.extract_eq_self_of_le]; right; rw [Nat.sub_sub_self]; rfl; assumption
-    congr; rw [USize.toNat_ofNat_eq]
-    -- This is when we require the hipothesis `W0small_realpolitik`
-    rw [←Int.toNat_lt_toNat] at W0small_realpolitik <;> try simp
-    aesop (add simp [UInt32.size]) (add safe (by omega))
   . rw [←mstore_activeWords, mstore_activeWords_eq defn_Val25] <;> assumption
+  . rw [←mstore_memory_write, mstore_memory_write_eq defn_Val14 defn_Val15 defn_Val16]
+    <;> assumption
   . rw [←UInt256.add_succ_mod_size, intMap_add_dist] <;> aesop
 
 end MstoreOpcodeEquivalence
