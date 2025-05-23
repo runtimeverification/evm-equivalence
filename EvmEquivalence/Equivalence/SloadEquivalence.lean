@@ -366,12 +366,14 @@ theorem sload_prestate_equiv
                   code := _Gen0.val,
                   codeOwner := accountAddressMap ((@inj SortInt SortAccount) ID_CELL)
                   perm := !lhs.isStatic.val},
+    accountMap := Axioms.SortAccountsCellMap lhs.accounts
+    activeWords := intMap lhs.memoryUsed.val
+    memory := memory_map lhs.memory
     substate := {symState.substate with
             accessedStorageKeys :=  Axioms.SortAccessedStorageCellMap (SortGeneratedTopCell.accessedStorage lhs)
             refundBalance := intMap lhs.refund.val
            }
     returnData := _Gen15.val
-    accountMap := Axioms.SortAccountsCellMap lhs.accounts
     } := by rfl
 
 theorem sload_poststate_equiv
@@ -446,7 +448,9 @@ theorem sload_poststate_equiv
                   code := _Gen0.val,
                   codeOwner := accountAddressMap ((@inj SortInt SortAccount) ID_CELL)
                   perm := !rhs.isStatic.val},
-    accountMap := Axioms.SortAccountsCellMap rhs.accounts
+    accountMap := Axioms.SortAccountsCellMap rhs.accounts,
+    activeWords := intMap rhs.memoryUsed.val
+    memory := memory_map rhs.memory
     substate := {symState.substate with
             accessedStorageKeys :=  Axioms.SortAccessedStorageCellMap  rhs.accessedStorage
             refundBalance := intMap _Gen12.val

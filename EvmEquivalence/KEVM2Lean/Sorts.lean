@@ -6,6 +6,11 @@ inductive SortStatusCode : Type where
   | EVMC_REJECTED_NETWORK_StatusCode : SortStatusCode
   deriving BEq, DecidableEq
 
+inductive SortSignedness : Type where
+  | signedBytes : SortSignedness
+  | unsignedBytes : SortSignedness
+  deriving BEq, DecidableEq
+
 inductive SortScheduleConst : Type where
   | Gaccesslistaddress_SCHEDULE_ScheduleConst : SortScheduleConst
   | Gaccessliststoragekey_SCHEDULE_ScheduleConst : SortScheduleConst
@@ -130,6 +135,7 @@ inductive SortScheduleFlag : Type where
 
 inductive SortBinStackOp : Type where
   | ADD_EVM_BinStackOp : SortBinStackOp
+  | MSTORE_EVM_BinStackOp : SortBinStackOp
   | SSTORE_EVM_BinStackOp : SortBinStackOp
   deriving BEq, DecidableEq
 
@@ -636,6 +642,7 @@ mutual
     | inj_SortCreatedAccountsCell (x : SortCreatedAccountsCell) : SortKItem
     | inj_SortDataCell (x : SortDataCell) : SortKItem
     | inj_SortDifficultyCell (x : SortDifficultyCell) : SortKItem
+    | inj_SortEndianness (x : SortEndianness) : SortKItem
     | inj_SortEthereumCell (x : SortEthereumCell) : SortKItem
     | inj_SortEvmCell (x : SortEvmCell) : SortKItem
     | inj_SortExcessBlobGasCell (x : SortExcessBlobGasCell) : SortKItem
@@ -696,6 +703,7 @@ mutual
     | inj_SortSigRCell (x : SortSigRCell) : SortKItem
     | inj_SortSigSCell (x : SortSigSCell) : SortKItem
     | inj_SortSigVCell (x : SortSigVCell) : SortKItem
+    | inj_SortSignedness (x : SortSignedness) : SortKItem
     | inj_SortStateRootCell (x : SortStateRootCell) : SortKItem
     | inj_SortStaticCell (x : SortStaticCell) : SortKItem
     | inj_SortStatusCode (x : SortStatusCode) : SortKItem

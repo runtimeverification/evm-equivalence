@@ -372,12 +372,14 @@ theorem sstore_prestate_equiv
                   code := _Gen0.val,
                   codeOwner := accountAddressMap ((@inj SortInt SortAccount) ID_CELL)
                   perm := true},
+    accountMap := Axioms.SortAccountsCellMap lhs.accounts
+    activeWords := intMap lhs.memoryUsed.val
+    memory := memory_map lhs.memory
     substate := {symState.substate with
             accessedStorageKeys :=  Axioms.SortAccessedStorageCellMap (SortGeneratedTopCell.accessedStorage lhs)
             refundBalance := intMap REFUND_CELL
            }
     returnData := _Gen13.val
-    accountMap := Axioms.SortAccountsCellMap lhs.accounts
     } := by rfl
 
 -- Behavior of `Csstore`
@@ -562,6 +564,8 @@ theorem sstore_poststate_equiv
                   codeOwner := accountAddressMap ((@inj SortInt SortAccount) ID_CELL)
                   perm := true},
     accountMap := Axioms.SortAccountsCellMap rhs.accounts
+    activeWords := intMap rhs.memoryUsed.val
+    memory := memory_map rhs.memory
     substate := {symState.substate with
             accessedStorageKeys :=  Axioms.SortAccessedStorageCellMap  rhs.accessedStorage
             -- TODO: Replace `_Val32` with a more explicit computation

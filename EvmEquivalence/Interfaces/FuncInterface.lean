@@ -5,6 +5,7 @@ Some of the contents of this file may be ported to a utils file in the future.
 
 import EvmYul.UInt256
 import EvmEquivalence.KEVM2Lean.Func
+import EvmEquivalence.Interfaces.EvmYulInterface
 import EvmEquivalence.StateMap
 
 open EvmYul
@@ -190,5 +191,69 @@ theorem inj_ID_CELL (ID_CELL : SortInt) : @inj SortInt SortAccount instInjSortIn
 @[simp]
 theorem accountAddressIsSome (n : ℕ) (size : n < AccountAddress.size) : AccountAddress.ofNat n = ⟨n, size⟩ := by
   simp [AccountAddress.ofNat, Fin.ofNat]; aesop
+
+attribute [local simp] «_<Int_» «_+Int_» «_<=Int_» «_-Int_» «_/Int_» «_=/=Int_» «_==Int_»
+theorem memoryUsageUpdate_rw (MEMORYUSED_CELL offset : SortInt) :
+  «#memoryUsageUpdate» MEMORYUSED_CELL offset 32 =
+  some (MEMORYUSED_CELL ⊔ Int.tdiv (offset + 32 + 31) 32) := by
+  simp [«#memoryUsageUpdate», _8096892, _86ca6df, notBool_def, Option.bind]
+  simp [«maxInt(_,_)_INT-COMMON_Int_Int_Int», «_up/Int__EVM-TYPES_Int_Int_Int»]
+  simp [_091b7da, _50d266e, _e985b28, _5321d80 ]
+  aesop (add simp [Int.max_def, failure]) (add safe (by linarith))
+
+theorem mapWriteRange_rw (mem content : SortBytes) (index : SortInt) :
+  mapWriteRange mem index content =
+  if _ : index < 0 then some .empty else
+  if _ : content.size = 0 then some mem else
+  let padded :=
+    «padRightBytes(_,_,_)_BYTES-HOOKED_Bytes_Bytes_Int_Int» mem (index + content.size) 0
+    |>.get (rfl)
+  «replaceAtBytes(_,_,_)_BYTES-HOOKED_Bytes_Bytes_Int_Bytes» padded index content
+  := by
+  split <;> simp [mapWriteRange, _8391694, _4de6e05, _a656ca7, _f03fd7e] <;>
+  simp [«lengthBytes(_)_BYTES-HOOKED_Int_Bytes»] <;>
+  simp [«.Bytes_BYTES-HOOKED_Bytes»] <;>
+  simp [«padRightBytes(_,_,_)_BYTES-HOOKED_Bytes_Bytes_Int_Int»] <;>
+  simp [«replaceAtBytes(_,_,_)_BYTES-HOOKED_Bytes_Bytes_Int_Bytes»]
+  aesop; split; aesop; simp [Option.bind, notBool_def, andBool_def]
+  aesop (add simp [ByteArray.size]) (add safe (by linarith)) (add safe (by omega))
+
+theorem padToWidth_rw (len : SortInt) (b : SortBytes) :
+  «#padToWidth» len b =
+  if len < 0 then some b else some { data := Array.leftpad len.toNat 0 b.data} := by
+  aesop (add simp [«#padToWidth», _67678cd, _ebfe294, notBool_def])
+  (add simp [«padLeftBytes(_,_,_)_BYTES-HOOKED_Bytes_Bytes_Int_Int», Option.bind])
+
+/-- `Int2Bytes` behaves as `BE` for positive integers and big endian representation -/
+axiom Axioms.BE_IntToBytes_eq (n : ℕ) :
+  «Int2Bytes(_,_,_)_BYTES-HOOKED_Bytes_Int_Int_Endianness» (Int.tdiv (↑(n + 1).log2 + 8) 8) (n + 1) .bigEndianBytes = some (BE (n + 1))
+
+/--
+This result notoriously depends on `Axioms.BE_IntToBytes_eq`, which should be
+a theorem at some point
+-/
+theorem asByteStack_rw {n : ℕ} : «#asByteStack» n = some (BE n) := by
+  simp [«#asByteStack», _fdd6ce1, Int2BytesNoLen, _20f05d9, _43f856e, _6c109c0, _ea9648a]
+  simp [«.Bytes_BYTES-HOOKED_Bytes», Option.bind, guard]
+  cases n <;> simp [_e9743d5, «_>Int_», «log2Int(_)_INT-COMMON_Int_Int», BE_zero]
+  refine Axioms.BE_IntToBytes_eq _
+
+/--
+Given `n : ℕ` with `n < UInt256.size`, converting it to `byteStack` and padding
+the result to width 32, is the same as `UInt256.toByteArray (n : UInt256)`
+-/
+theorem padToWidth32_asByteStack_rw
+  {n : ℕ} {b : SortBytes}
+  (n_small : n < UInt256.size)
+  (asByteStack_def : «#asByteStack» n = some b) :
+  «#padToWidth» 32 b = some
+  (ffi.ByteArray.zeroes { toBitVec := 32#System.Platform.numBits - BitVec.ofNat System.Platform.numBits (BE n).size } ++ BE n)
+   := by
+  simp [Axioms.ffi_zeroes, «#padToWidth», _67678cd, _ebfe294, notBool_def, failure]
+  simp [«padLeftBytes(_,_,_)_BYTES-HOOKED_Bytes_Bytes_Int_Int»]
+  rw [zeroes_size_eq_sub n_small, ByteArray.append_array_data]; congr
+  -- To have a clearer view of the goal:
+  all_goals rw [←List.toByteArray]; have: (toBytesBigEndian n).toByteArray = BE n := rfl; rw [this]
+  all_goals rw [asByteStack_rw] at *; aesop
 
 end KEVMInterface

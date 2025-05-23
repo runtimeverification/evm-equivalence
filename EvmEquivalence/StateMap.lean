@@ -54,6 +54,12 @@ def Iₐ : SortIdCell := tc.kevm.ethereum.evm.callState.id
 @[simp]
 def isStatic : SortStaticCell := tc.kevm.ethereum.evm.callState.static
 
+@[simp]
+def memoryUsed : SortMemoryUsedCell := tc.kevm.ethereum.evm.callState.memoryUsed
+
+@[simp]
+def memory : SortLocalMemCell := tc.kevm.ethereum.evm.callState.localMem
+
 end SortGeneratedTopCell
 
 namespace SortKItem
@@ -94,16 +100,15 @@ def pcCellMap (pcc : SortPcCell) : UInt256 :=
   intMap pcc.val
 
 @[simp]
-def gasMap (gs : SortGas) : UInt256 :=
-  match gs with | .inj_SortInt g => intMap g
+def gasMap : SortGas → UInt256
+  | .inj_SortInt g => intMap g
 
 @[simp]
 def gasCellMap (gc : SortGasCell) : UInt256 :=
   gasMap gc.val
 
 @[simp]
-def accountAddressMap (acc : SortAccount) : AccountAddress :=
-  match acc with
+def accountAddressMap : SortAccount → AccountAddress
   | .«.Account_EVM-TYPES_Account» => 0
   | .inj_SortInt n => AccountAddress.ofNat (Int.toNat n)
 
@@ -124,8 +129,8 @@ noncomputable def transStorageMap (tstor : SortTransientStorageCell) : Storage :
   Axioms.SortTransientStorageCellMap tstor
 
 @[simp]
-def accCodeMap (code : SortAccountCode) : ByteArray :=
-  match code with | SortAccountCode.inj_SortBytes code => code
+def accCodeMap : SortAccountCode → ByteArray
+  | .inj_SortBytes code => code
 
 /- Note that Origin Storage Cell (`origStorage`) is not needed from `SortAccountCell` -/
 @[simp]
@@ -135,6 +140,32 @@ noncomputable def accountMap (acc : SortAccountCell) : Account where
   storage := storageMap acc.storage
   code := accCodeMap acc.code.val
   tstorage := transStorageMap acc.transientStorage
+
+@[simp]
+noncomputable def substate_map (sc : SortSubstateCell) (s : Substate) : Substate :=
+  match sc with
+  | .mk
+    _ --selfDestruct
+    _ --log
+    refund
+    _ --accessedAccounts
+    accessedStorage
+    _ --createdAccounts
+    => {s with
+         accessedStorageKeys :=  Axioms.SortAccessedStorageCellMap accessedStorage
+         refundBalance := intMap refund.val}
+
+@[simp]
+def memory_map : SortLocalMemCell → ByteArray | .mk b => b
+
+/- Maps from parts of the Generated Top Cell to EvmYul structures -/
+
+@[simp]
+def executionEnv_map (tc : SortGeneratedTopCell) (s : EVM.State) : ExecutionEnv :=
+  {s.executionEnv with
+    code := tc.program.val,
+    codeOwner := idMap tc.Iₐ
+    perm := !tc.isStatic.val}
 
 /--
 **State Mapping**: Mapping KEVM states to EvmYul states
@@ -162,6 +193,8 @@ noncomputable def stateMap (symState : EVM.State) (tc : SortGeneratedTopCell) : 
             refundBalance := intMap tc.refund.val
            }
   returnData := tc.output.val
+  activeWords := intMap tc.memoryUsed.val
+  memory := memory_map tc.memory
   }
 
 /- State Mapping Results -/

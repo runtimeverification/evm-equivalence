@@ -14,9 +14,9 @@ section
 variable (word₁ word₂ : UInt256)
 variable (gas gasCost : ℕ)
 variable (symStack : Stack UInt256)
-variable (symPc symGasAvailable symRefund : UInt256)
+variable (symPc symGasAvailable symRefund symActiveWords : UInt256)
 variable (symExecLength : ℕ)
-variable (symReturnData symCode : ByteArray)
+variable (symReturnData symCode symMemory : ByteArray)
 variable (symAccessedStorageKeys : Batteries.RBSet (AccountAddress × UInt256) Substate.storageKeysCmp)
 variable (symAccounts : AccountMap)
 variable (symCodeOwner : AccountAddress)
@@ -54,7 +54,9 @@ theorem EVM.step_add_to_step_add (gpos : 0 < gas) (symState : EVM.State):
                   code := symCode,
                   codeOwner := symCodeOwner,
                   perm := symPerm},
-      accountMap := symAccounts
+      accountMap := symAccounts,
+      activeWords := symActiveWords,
+      memory := symMemory,
       substate := {symState.substate with
             accessedStorageKeys :=  symAccessedStorageKeys
             refundBalance := symRefund
@@ -69,7 +71,9 @@ theorem EVM.step_add_to_step_add (gpos : 0 < gas) (symState : EVM.State):
                   code := symCode,
                   codeOwner := symCodeOwner,
                   perm := symPerm},
-    accountMap := symAccounts
+    accountMap := symAccounts,
+    activeWords := symActiveWords,
+    memory := symMemory,
     returnData := symReturnData,
     substate := {symState.substate with
             accessedStorageKeys :=  symAccessedStorageKeys
@@ -90,7 +94,9 @@ theorem EVM.step_add_summary (gpos : 0 < gas) (symState : EVM.State):
                     code := symCode,
                     codeOwner := symCodeOwner,
                     perm := symPerm},
-      accountMap := symAccounts
+      accountMap := symAccounts,
+      activeWords := symActiveWords,
+      memory := symMemory,
       substate := {symState.substate with
             accessedStorageKeys :=  symAccessedStorageKeys
             refundBalance := symRefund
@@ -105,7 +111,9 @@ theorem EVM.step_add_summary (gpos : 0 < gas) (symState : EVM.State):
                         code := symCode,
                         codeOwner := symCodeOwner,
                         perm := symPerm},
-          accountMap := symAccounts
+          accountMap := symAccounts,
+          activeWords := symActiveWords,
+          memory := symMemory,
           substate := {symState.substate with
             accessedStorageKeys :=  symAccessedStorageKeys
             refundBalance := symRefund
@@ -166,7 +174,9 @@ theorem X_add_summary (enoughGas : GasConstants.Gverylow < symGasAvailable.toNat
                   code := ⟨#[(0x1 : UInt8)]⟩,
                   codeOwner := symCodeOwner,
                   perm := symPerm},
-    accountMap := symAccounts
+    accountMap := symAccounts,
+    activeWords := symActiveWords,
+    memory := symMemory,
     substate := {symState.substate with
             accessedStorageKeys :=  symAccessedStorageKeys
             refundBalance := symRefund
@@ -180,7 +190,9 @@ theorem X_add_summary (enoughGas : GasConstants.Gverylow < symGasAvailable.toNat
                   code := ⟨#[(0x1 : UInt8)]⟩,
                   codeOwner := symCodeOwner,
                   perm := symPerm},
-        accountMap := symAccounts
+        accountMap := symAccounts,
+        activeWords := symActiveWords,
+        memory := symMemory,
         returnData := ByteArray.empty,
         substate := {symState.substate with
             accessedStorageKeys :=  symAccessedStorageKeys
@@ -199,7 +211,7 @@ theorem X_add_summary (enoughGas : GasConstants.Gverylow < symGasAvailable.toNat
   split; contradiction
   case h_2 evm _ stateOk =>
   have gPos : (0 < g_pos) := by aesop (add simp [GasConstants.Gverylow]) (add safe (by omega))
-  have step_rw := (EVM.step_add_summary word₁ word₂ g_pos GasConstants.Gverylow symStack (.ofNat 0) symGasAvailable symRefund symExecLength symReturnData ⟨#[(0x1 : UInt8)]⟩ symAccessedStorageKeys symAccounts symCodeOwner symPerm gPos evm)
+  have step_rw := (EVM.step_add_summary word₁ word₂ g_pos GasConstants.Gverylow symStack (.ofNat 0) symGasAvailable symRefund symActiveWords symExecLength symReturnData ⟨#[(0x1 : UInt8)]⟩ symMemory symAccessedStorageKeys symAccounts symCodeOwner symPerm gPos evm)
   cases stateOk; rw [←EVM.step_add, step_rw]; simp [Except.instMonad, Except.bind]
   rw [X_bad_pc] <;> aesop (add simp [GasConstants.Gverylow]) (add safe (by omega))
 
