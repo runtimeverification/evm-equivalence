@@ -91,6 +91,7 @@ inductive SortSchedule : Type where
   deriving BEq, DecidableEq
 
 inductive SortUnStackOp : Type where
+  | MLOAD_EVM_UnStackOp : SortUnStackOp
   | SLOAD_EVM_UnStackOp : SortUnStackOp
   deriving BEq, DecidableEq
 
