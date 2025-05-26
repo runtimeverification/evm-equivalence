@@ -65,7 +65,7 @@ theorem mstore_bypass_private (symState : EVM.State):
 The new amount of `activeWords` based after running `MSTORE` with `offset`
 and `currentAC` amount of active words
 -/
-def mstore_activeWords :=
+def activeWords_comp :=
   UInt256.ofNat (symActiveWords.toNat ⊔ (offset.toNat + 32 + 31) / 32)
 
 /--
@@ -96,7 +96,7 @@ theorem EvmYul.step_mstore_summary (symState : EVM.State):
     stack := symStack,
     pc := symPc + .ofNat 1
     memory := mstore_memory_write offset value symMemory,
-    activeWords := mstore_activeWords offset symActiveWords} := by
+    activeWords := activeWords_comp offset symActiveWords} := by
   aesop (add simp [mstore_bypass_private])
 
 theorem EVM.step_mstore_summary (gas_pos : 0 < gas) (symState : EVM.State):
@@ -122,7 +122,7 @@ theorem EVM.step_mstore_summary (gas_pos : 0 < gas) (symState : EVM.State):
           pc := symPc + (.ofNat 1),
           gasAvailable := symGasAvailable - UInt256.ofNat gasCost,
           memory := mstore_memory_write offset value symMemory,
-          activeWords := mstore_activeWords offset symActiveWords
+          activeWords := activeWords_comp offset symActiveWords
           execLength := symExecLength + 1} := by
   cases gas; contradiction
   simp [step_mstore, EVM.step]
@@ -191,7 +191,7 @@ theorem X_mstore_summary (symState : EVM.State)
           pc := .ofNat 1,
           gasAvailable := symGasAvailable - .ofNat (memoryExpansionCost ss mstoreEVM) - .ofNat GasConstants.Gverylow
           memory := mstore_memory_write offset value symMemory,
-          activeWords := mstore_activeWords offset symActiveWords
+          activeWords := activeWords_comp offset symActiveWords
           returnData := .empty,
           execLength := symExecLength + 2} .empty) := by
   intro ss enoughGas mec_small
