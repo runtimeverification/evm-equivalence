@@ -30,6 +30,7 @@ import EvmEquivalence.Summaries.Push0Summary
 import EvmEquivalence.Summaries.SstoreSummary
 import EvmEquivalence.Summaries.SloadSummary
 import EvmEquivalence.Summaries.MstoreSummary
+import EvmEquivalence.Summaries.MloadSummary
 
 -- Equivalence
 import EvmEquivalence.Equivalence.AddEquivalence
@@ -37,3 +38,4 @@ import EvmEquivalence.Equivalence.Push0Equivalence
 import EvmEquivalence.Equivalence.SstoreEquivalence
 import EvmEquivalence.Equivalence.SloadEquivalence
 import EvmEquivalence.Equivalence.MstoreEquivalence
+import EvmEquivalence.Equivalence.MloadEquivalence
