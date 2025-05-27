@@ -260,6 +260,11 @@ inductive SortEndianness : Type where
   | littleEndianBytes : SortEndianness
   deriving BEq, DecidableEq
 
+inductive SortSignedness : Type where
+  | signedBytes : SortSignedness
+  | unsignedBytes : SortSignedness
+  deriving BEq, DecidableEq
+
 def «.Bytes_BYTES-HOOKED_Bytes» : Option SortBytes := some .empty
 
 -- Adapted from https://github.com/runtimeverification/haskell-backend/blob/362dab30d6435ec117862fea722be67373572034/kore/src/Kore/Builtin/InternalBytes.hs#L496-L511
@@ -276,6 +281,32 @@ def «Int2Bytes(_,_,_)_BYTES-HOOKED_Bytes_Int_Int_Endianness» (x0 x1 : SortInt)
       | .succ l, 0 => pad :: bytes l 0
       | .succ l, n => ⟨(n % 256).toNat⟩ :: bytes l (n / 256)
     bytes x0.toNat x1
+
+-- Adapted from
+-- https://github.com/runtimeverification/haskell-backend/blob/362dab30d6435ec117862fea722be67373572034/kore/src/Kore/Builtin/InternalBytes.hs#L527-L543
+-- Note that we use `List.foldl` and not `ByteArray.foldl` for ease of reasoning
+def «Bytes2Int(_,_,_)_BYTES-HOOKED_Int_Bytes_Endianness_Signedness» (bytes : SortBytes) (endian : SortEndianness) (sign : SortSignedness) : Option SortInt :=
+  match sign with
+  | .unsignedBytes => Int.ofNat unsigned
+  | .signedBytes => if 2 * unsigned >= modulus then (Int.ofNat unsigned) - (Int.ofNat modulus)
+                    else Int.ofNat unsigned
+  where
+  modulus : Nat := res.1
+  unsigned : Nat := res.2
+  res : Nat×Nat :=
+    let littleEndian := match endian with
+                        -- We're not using ByteArray.toList for eas of reasoning
+                        | .littleEndianBytes => bytes.toList
+                            --match bytes with |⟨⟨l⟩⟩ => l
+                        | .bigEndianBytes => bytes.toList.reverse
+                            --match bytes with |⟨⟨l⟩⟩ => l.reverse
+    let go (res : Nat×Nat) (b : UInt8) : Nat×Nat :=
+      -- `place` is `res.1`
+      -- `acc` is `res.2`
+      let place := res.1 * 0x100
+      let acc := res.2 + res.1 * b.toNat
+      ⟨place, acc⟩
+    List.foldl go (1, 0) littleEndian
 
 /--
 Pads to the right `len - b.length` bytes with specified `val` value

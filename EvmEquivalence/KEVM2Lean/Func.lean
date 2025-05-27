@@ -659,8 +659,6 @@ axiom AccountCellMapItem (x0 : SortAcctIDCell) (x1 : SortAccountCell) : Option S
 
 axiom SetItem (x0 : SortKItem) : Option SortSet
 
-axiom «Bytes2Int(_,_,_)_BYTES-HOOKED_Int_Bytes_Endianness_Signedness» (x0 : SortBytes) (x1 : SortEndianness) (x2 : SortSignedness) : Option SortInt
-
 axiom _AccountCellMap_ (x0 : SortAccountCellMap) (x1 : SortAccountCellMap) : Option SortAccountCellMap
 
 axiom «Map:lookup» (x0 : SortMap) (x1 : SortKItem) : Option SortKItem
