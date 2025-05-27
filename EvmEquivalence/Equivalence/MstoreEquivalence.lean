@@ -304,7 +304,7 @@ theorem mstore_poststate_equiv
     memory := memory_map rhs.memory
     } := by cases _Gen15; aesop (add simp [«_+Int_»])
 
-theorem mstore_activeWords_eq
+theorem activeWords_eq
   {MEMORYUSED_CELL W0 _Val25: SortInt}
   (defn_Val25 : «#memoryUsageUpdate» MEMORYUSED_CELL W0 32 = some _Val25)
   (W0ge0 : 0 ≤ W0)
@@ -478,7 +478,7 @@ theorem step_mstore_equiv
   simp [activeWords_comp, mstore_memory_write]
   constructor; constructor <;> try constructor
   . sorry -- Gas goals are for now unproven
-  . rw [←activeWords_comp, mstore_activeWords_eq defn_Val25] <;> assumption
+  . rw [←activeWords_comp, activeWords_eq defn_Val25] <;> assumption
   . rw [←mstore_memory_write, mstore_memory_write_eq defn_Val14 defn_Val15 defn_Val16]
     <;> assumption
   . rw [←UInt256.add_succ_mod_size, intMap_add_dist] <;> aesop
@@ -585,7 +585,7 @@ theorem X_mstore_equiv
       simp [memoryExpansionCost_mstore _ (intMap W0) (intMap MEMORYUSED_CELL)]
       simp [EVM.Cₘ]
       sorry
-    . rw [mstore_activeWords_eq defn_Val25] <;> assumption
+    . rw [activeWords_eq defn_Val25] <;> assumption
     . rw [mstore_memory_write_eq defn_Val14 defn_Val15 defn_Val16] <;> assumption
     . aesop
   . -- Enough Gas
