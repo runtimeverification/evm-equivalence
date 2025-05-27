@@ -311,8 +311,8 @@ theorem mstore_activeWords_eq
   (W0small : W0 < UInt256.size)
   (mucge0 : 0 ≤ MEMORYUSED_CELL)
   (mucsmall : MEMORYUSED_CELL < UInt256.size) :
-  mstore_activeWords (intMap W0) (intMap MEMORYUSED_CELL) = intMap _Val25 := by
-  unfold mstore_activeWords
+  activeWords_comp (intMap W0) (intMap MEMORYUSED_CELL) = intMap _Val25 := by
+  unfold activeWords_comp
   rw [memoryUsageUpdate_rw, Option.some.injEq] at defn_Val25
   simp [←defn_Val25, intMap]; rw [UInt256.ofNat_toSigned]
   simp [UInt256.toSigned]; cases mucc: MEMORYUSED_CELL
@@ -475,10 +475,10 @@ theorem step_mstore_equiv
   cases _Gen15; rw [mstore_prestate_equiv]; simp [mstoreLHS]
   rw [←EVM.step_mstore, EVM.step_mstore_summary] <;> first | assumption | try simp
   rw [mstore_poststate_equiv, mstoreRHS] <;> first | assumption | try simp
-  simp [mstore_activeWords, mstore_memory_write]
+  simp [activeWords_comp, mstore_memory_write]
   constructor; constructor <;> try constructor
   . sorry -- Gas goals are for now unproven
-  . rw [←mstore_activeWords, mstore_activeWords_eq defn_Val25] <;> assumption
+  . rw [←activeWords_comp, mstore_activeWords_eq defn_Val25] <;> assumption
   . rw [←mstore_memory_write, mstore_memory_write_eq defn_Val14 defn_Val15 defn_Val16]
     <;> assumption
   . rw [←UInt256.add_succ_mod_size, intMap_add_dist] <;> aesop
