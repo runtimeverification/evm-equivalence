@@ -21,6 +21,7 @@ import EvmEquivalence.StateMap
 
 -- Utils
 import EvmEquivalence.Utils.IntUtils
+import EvmEquivalence.Utils.ListByteArrayUtils
 
 -- Summaries
 import EvmEquivalence.Summaries.StopSummary
