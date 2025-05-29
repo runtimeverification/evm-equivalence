@@ -39,36 +39,6 @@ abbrev EVM.step_mload : Transformer :=
 abbrev EvmYul.step_mload : Transformer :=
   EvmYul.step mloadEVM
 
-/-
-Theorem needed to bypass the `private` attribute of `EVM.dispatchBinaryMachineStateOp`
- -/
-/- theorem mload_bypass_private (symState : EVM.State):
-  let ss := {symState with
-  stack := symStack,
-  pc := symPc
-  gasAvailable := symGasAvailable,
-  executionEnv := {symState.executionEnv with
-                  code := symCode,
-                  codeOwner := symCodeOwner
-                  perm := symPerm},
-  accountMap := symAccounts,
-  activeWords := symActiveWords,
-  memory := symMemory,
-  substate := {symState.substate with
-               accessedStorageKeys :=  symAccessedStorageKeys
-               refundBalance := symRefund}
-  returnData := symReturnData,
-  execLength := symExecLength}
-  EvmYul.step_mload ss =
-  EVM.binaryMachineStateOp EvmYul.MachineState.mload ss := rfl -/
-
-/-
-The new amount of `activeWords` based after running `MLOAD` with `offset`
-and `currentAC` amount of active words
--/
-/- def mload_activeWords :=
-  UInt256.ofNat (symActiveWords.toNat ⊔ (offset.toNat + 32 + 31) / 32) -/
-
 abbrev activeWords_comp := MstoreSummary.activeWords_comp
 
 theorem EvmYul.step_mload_summary (symState : EVM.State):
