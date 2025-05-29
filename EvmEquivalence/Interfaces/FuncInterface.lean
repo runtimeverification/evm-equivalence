@@ -256,4 +256,59 @@ theorem padToWidth32_asByteStack_rw
   all_goals rw [←List.toByteArray]; have: (toBytesBigEndian n).toByteArray = BE n := rfl; rw [this]
   all_goals rw [asByteStack_rw] at *; aesop
 
+/--
+ For any ByteArray `b`, `Bytes2Int b .bigEndianBytes .unsignedBytes`
+ computes the same as `fromByteArrayBigEndian b`
+
+ This should be proved at some point
+-/
+theorem Bytes2Int_fromByteArrayBigEndian_eq  (b : ByteArray) :
+  «Bytes2Int(_,_,_)_BYTES-HOOKED_Int_Bytes_Endianness_Signedness» b .bigEndianBytes .unsignedBytes =
+  Int.ofNat (fromByteArrayBigEndian b) := by
+  unfold «Bytes2Int(_,_,_)_BYTES-HOOKED_Int_Bytes_Endianness_Signedness»
+  unfold «Bytes2Int(_,_,_)_BYTES-HOOKED_Int_Bytes_Endianness_Signedness».unsigned
+  unfold «Bytes2Int(_,_,_)_BYTES-HOOKED_Int_Bytes_Endianness_Signedness».res
+  rcases b with ⟨⟨l⟩⟩; simp
+  induction l; simp [ByteArray.toList_empty, fromByteArrayBigEndian]; rfl
+  rename_i h t ih
+  rw [Axioms.ByteArray.toList_eq, List.foldr] at *
+  simp [Axioms.ByteArray.toList_eq, List.foldr]
+  sorry
+
+/--
+Friendlier interface for `#range`
+
+This should be proven at some point
+-/
+theorem range_rw  (b : SortBytes) (start : SortInt) (width : SortInt):
+  «#range» b start width =
+  if start < 0 ∨ width < 0 then some .empty else
+  if 0 ≤ start ∧ 0 ≤ width ∧ start < b.size then
+  let len := Int.ofNat b.size
+  let pad :=
+    «padRightBytes(_,_,_)_BYTES-HOOKED_Bytes_Bytes_Int_Int» b len 0
+    |>.get rfl
+  «substrBytes(_,_,_)_BYTES-HOOKED_Bytes_Bytes_Int_Int» pad start len
+  else some .empty := by sorry
+
+@[simp]
+theorem asWord_empty : asWord .empty = some 0 := by
+  simp [asWord, _ef5332a]
+  simp [«Bytes2Int(_,_,_)_BYTES-HOOKED_Int_Bytes_Endianness_Signedness»]
+  simp [chop, _85aa67b, _modInt_]
+  simp [«Bytes2Int(_,_,_)_BYTES-HOOKED_Int_Bytes_Endianness_Signedness».unsigned]
+  simp [«Bytes2Int(_,_,_)_BYTES-HOOKED_Int_Bytes_Endianness_Signedness».res]
+  simp [ByteArray.empty, ByteArray.mkEmpty, ByteArray.toList_empty, ByteArray.toList_empty]
+  aesop
+
+/--
+Converting a 32-byte chunk of memory into an unsigned integer never overflows `chop`
+-/
+theorem chop_self_eq
+  {LM b : SortBytes}
+  {start n: SortInt}
+  (defn_b : «#range» LM start 32 = some b)
+  (defn_n : «Bytes2Int(_,_,_)_BYTES-HOOKED_Int_Bytes_Endianness_Signedness» b .bigEndianBytes .unsignedBytes = some n):
+  chop n = n := by sorry
+
 end KEVMInterface

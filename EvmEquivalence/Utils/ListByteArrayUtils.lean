@@ -13,6 +13,18 @@ theorem push_size (b : ByteArray) (u : UInt8) :
 
 theorem append_empty (b : ByteArray) : b  ++ .empty = b := by aesop
 
+theorem cons_eq_append (h : UInt8) (t : List UInt8) :
+  ({ data := { toList := h :: t } } : ByteArray) =
+  { data := { toList := [h] } } ++ { data := { toList := t } } := by aesop
+
+theorem toList_loop_empty :
+  toList.loop { data := { toList := [] } } 0 [] = [] := by
+  rw [toList.loop]; simp [size]
+
+theorem toList_empty :
+  ({ data := { toList := [] } } : ByteArray).toList = [] := by
+  simp [toList, toList_loop_empty]
+
 end ByteArray
 
 namespace Array
@@ -43,3 +55,16 @@ theorem size_length_eq (l : List UInt8) :
   induction l <;> aesop (add simp [toByteArray_cons_size])
 
 end List
+
+namespace Axioms
+
+namespace ByteArray
+
+/--
+ This should be proved at some point
+-/
+axiom toList_eq (l : List UInt8) : ByteArray.toList ⟨⟨l⟩⟩ = l
+
+end ByteArray
+
+end Axioms

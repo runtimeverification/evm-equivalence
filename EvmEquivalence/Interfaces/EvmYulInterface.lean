@@ -95,6 +95,10 @@ theorem zeroes_size_eq_32 {n : ℕ} (n_small : n < UInt256.size) :
   have := BE_size_le_32 n n_small; rw [@Nat.mod_eq_of_lt (BE n).size] <;>
   cases (System.Platform.numBits_eq) <;> simp_all <;> omega
 
+@[simp]
+theorem fromByteArrayBigEndian_empty : fromByteArrayBigEndian .empty = 0 := by
+  aesop (add simp [fromByteArrayBigEndian, ByteArray.empty, ByteArray.mkEmpty, ByteArray.toList_empty])
+
 namespace UInt256
 
 section

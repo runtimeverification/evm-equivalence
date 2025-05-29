@@ -6,11 +6,6 @@ inductive SortStatusCode : Type where
   | EVMC_REJECTED_NETWORK_StatusCode : SortStatusCode
   deriving BEq, DecidableEq
 
-inductive SortSignedness : Type where
-  | signedBytes : SortSignedness
-  | unsignedBytes : SortSignedness
-  deriving BEq, DecidableEq
-
 inductive SortScheduleConst : Type where
   | Gaccesslistaddress_SCHEDULE_ScheduleConst : SortScheduleConst
   | Gaccessliststoragekey_SCHEDULE_ScheduleConst : SortScheduleConst
@@ -91,6 +86,7 @@ inductive SortSchedule : Type where
   deriving BEq, DecidableEq
 
 inductive SortUnStackOp : Type where
+  | MLOAD_EVM_UnStackOp : SortUnStackOp
   | SLOAD_EVM_UnStackOp : SortUnStackOp
   deriving BEq, DecidableEq
 
