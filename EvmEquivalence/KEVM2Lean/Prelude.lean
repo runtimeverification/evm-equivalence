@@ -240,15 +240,18 @@ def «_+Int_» (x0 x1 : SortInt) : Option SortInt := some (x0 + x1)
 def «_-Int_» (x0 x1 : SortInt) : Option SortInt := some (x0 - x1)
 def «_*Int_» (x0 x1 : SortInt) : Option SortInt := some (x0 * x1)
 def «_/Int_» (x0 x1 : SortInt) : Option SortInt :=
-  if x1 == 0 then none else some (Int.tdiv x0 x1)
+  ite (x1 == 0) none (Int.tdiv x0 x1)
+def _modInt_ (x0 : SortInt) (x1 : SortInt) : Option SortInt :=
+  ite (x1 == 0) none (Int.emod x0 x1)
 def «maxInt(_,_)_INT-COMMON_Int_Int_Int» (x0 x1 : SortInt) :=
   some (ite (x0 < x1) x1 x0)
 def «log2Int(_)_INT-COMMON_Int_Int» (x0 : SortInt) : Option SortInt :=
-  ite (0 < x0) (some (Nat.log2 x0.toNat)) none
+  ite (0 < x0) ((Nat.log2 x0.toNat) : Int) none
 def «~Int_» (x0 : SortInt) : Option SortInt := some (.not x0)
 
 -- Comparisons
 def «_<=Int_» (x0 x1 : SortInt) : Option SortBool := some (x0 <= x1)
+def «_>=Int_» (x0 x1 : SortInt) : Option SortBool := some (x0 >= x1)
 def «_<Int_» (x0 x1 : SortInt) : Option SortBool := some (x0 < x1)
 def «_>Int_» (x0 x1 : SortInt) : Option SortBool := some (x0 > x1)
 def «_==Int_» (x0 x1 : SortInt) : Option SortBool := some (x0 == x1)
@@ -295,7 +298,6 @@ def «Bytes2Int(_,_,_)_BYTES-HOOKED_Int_Bytes_Endianness_Signedness» (bytes : S
   unsigned : Nat := res.2
   res : Nat×Nat :=
     let littleEndian := match endian with
-                        -- We're not using ByteArray.toList for eas of reasoning
                         | .littleEndianBytes => bytes.toList
                             --match bytes with |⟨⟨l⟩⟩ => l
                         | .bigEndianBytes => bytes.toList.reverse
@@ -335,3 +337,12 @@ def «replaceAtBytes(_,_,_)_BYTES-HOOKED_Bytes_Bytes_Int_Bytes» (dest : SortByt
   let init := dest.data.extract 0 index.toNat
   let rem := dest.data.extract (index.toNat + src.size) dest.size
   some { data := init ++ src.data ++ rem }
+
+/--
+Get a new `Bytes` object containing a range of bytes from the input `Bytes`
+-/
+def «substrBytes(_,_,_)_BYTES-HOOKED_Bytes_Bytes_Int_Int» (b : SortBytes) (startIndex : SortInt) (endIndex : SortInt) : Option SortBytes :=
+  if startIndex < 0 then none else
+  if endIndex < startIndex then none else
+  if b.size < endIndex then none else
+  b.extract startIndex.toNat endIndex.toNat
