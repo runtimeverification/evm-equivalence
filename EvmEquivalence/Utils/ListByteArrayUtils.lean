@@ -55,3 +55,16 @@ theorem size_length_eq (l : List UInt8) :
   induction l <;> aesop (add simp [toByteArray_cons_size])
 
 end List
+
+namespace Axioms
+
+namespace ByteArray
+
+/--
+ This should be proved at some point
+-/
+axiom toList_eq (l : List UInt8) : ByteArray.toList ⟨⟨l⟩⟩ = l
+
+end ByteArray
+
+end Axioms
