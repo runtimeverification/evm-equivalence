@@ -496,7 +496,8 @@ EVM.step_mload (Int.toNat GAS_CELL) gasCost (stateMap symState lhs) =
   simp [MachineState.lookupMemory, /- activeWords_comp -//- , mstore_memory_write -/]
   constructor <;> constructor <;> try constructor
   . sorry -- Gas goals are for now unproven
-  . rw [MloadSummary.activeWords_comp, MstoreOpcodeEquivalence.activeWords_eq defn_Val24] <;> assumption
+  . have := MstoreOpcodeEquivalence.activeWords_eq .mstore defn_Val24
+    rw [MloadSummary.activeWords_comp]; aesop
   . rw [←UInt256.add_succ_mod_size, intMap_add_dist] <;> aesop
   . apply range_lookupMemory_eq defn_Val14 defn_Val15 <;> aesop
 
@@ -609,7 +610,8 @@ theorem X_mload_equiv
   . simp; constructor <;> try constructor <;> try constructor
     . -- The deducted amount of gas coincides
       sorry
-    . rw [MloadSummary.activeWords_comp, MstoreOpcodeEquivalence.activeWords_eq defn_Val24] <;> assumption
+    . have := MstoreOpcodeEquivalence.activeWords_eq .mstore defn_Val24
+      rw [MloadSummary.activeWords_comp]; aesop
     . rw [←UInt256.add_succ_mod_size, intMap_add_dist] <;> aesop
     . simp [MachineState.lookupMemory]
       apply range_lookupMemory_eq defn_Val14 defn_Val15 <;> aesop
