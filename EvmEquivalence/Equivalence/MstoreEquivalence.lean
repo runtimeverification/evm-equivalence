@@ -514,7 +514,7 @@ theorem step_mstore_equiv
   -- "Due to [the fee shceme] it is highly unlikely [memory] addresses will ever go above 32-bit bounds"
   -- It seems we need this hypothesis to achieve equivalence of behavior from the EVMYul side
   -- We keep the original `W0small` for convenience
-  (W0small_realpolitik : W0 < UInt32.size):
+  (W0small_realpolitik : W0 < UInt32.size) :
   EVM.step_mstore op.from_k (Int.toNat GAS_CELL) gasCost (stateMap symState (@mstoreLHS op GAS_CELL MEMORYUSED_CELL PC_CELL W0 W1 LOCALMEM_CELL SCHEDULE_CELL USEGAS_CELL WS _DotVar0 _DotVar2 _Gen0 _Gen1 _Gen10 _Gen11 _Gen12 _Gen13 _Gen14 _Gen15 _Gen16 _Gen17 _Gen18 _Gen19 _Gen2 _Gen20 _Gen21 _Gen3 _Gen4 _Gen5 _Gen6 _Gen7 _Gen8 _Gen9 _K_CELL)) =
   .ok (stateMap {symState with execLength := symState.execLength + 1} (@mstoreRHS _Val17 _Val24 _Val25 _Val16 SCHEDULE_CELL WS _DotVar0 _DotVar2 _Gen0 _Gen1 _Gen10 _Gen11 _Gen12 _Gen13 _Gen14 _Gen15 _Gen16 _Gen17 _Gen18 _Gen19 _Gen2 _Gen20 _Gen21 _Gen3 _Gen4 _Gen5 _Gen6 _Gen7 _Gen8 _Gen9 _K_CELL))
   := by
