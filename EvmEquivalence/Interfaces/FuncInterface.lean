@@ -193,9 +193,11 @@ theorem accountAddressIsSome (n : ℕ) (size : n < AccountAddress.size) : Accoun
   simp [AccountAddress.ofNat, Fin.ofNat]; aesop
 
 attribute [local simp] «_<Int_» «_+Int_» «_<=Int_» «_-Int_» «_/Int_» «_=/=Int_» «_==Int_»
-theorem memoryUsageUpdate_rw (MEMORYUSED_CELL offset : SortInt) :
-  «#memoryUsageUpdate» MEMORYUSED_CELL offset 32 =
-  some (MEMORYUSED_CELL ⊔ Int.tdiv (offset + 32 + 31) 32) := by
+theorem memoryUsageUpdate_rw
+  (MEMORYUSED_CELL offset width : SortInt)
+  (width_pos : 0 < width):
+  «#memoryUsageUpdate» MEMORYUSED_CELL offset width =
+  some (MEMORYUSED_CELL ⊔ Int.tdiv (offset + width + 31) 32) := by
   simp [«#memoryUsageUpdate», _8096892, _86ca6df, notBool_def, Option.bind]
   simp [«maxInt(_,_)_INT-COMMON_Int_Int_Int», «_up/Int__EVM-TYPES_Int_Int_Int»]
   simp [_091b7da, _50d266e, _e985b28, _5321d80 ]
