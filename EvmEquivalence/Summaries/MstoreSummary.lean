@@ -8,8 +8,14 @@ open EvmYul.State
 
 namespace MstoreSummary
 
+inductive mstore_op where
+ | mstore
+ | mstore8
+
 section
 
+/- It's more handy to have the `op` variable at the top -/
+variable (op : mstore_op)
 variable (gas gasCost : ℕ)
 variable (symStack : Stack UInt256)
 variable (symPc symGasAvailable symRefund offset value : UInt256)
@@ -20,7 +26,6 @@ variable (symAccessedStorageKeys : Batteries.RBSet (AccountAddress × UInt256) S
 variable (symAccounts : AccountMap)
 variable (symCodeOwner : AccountAddress)
 variable (symPerm : Bool)
-
 variable (symValidJumps : Array UInt256)
 
 @[simp]
@@ -37,22 +42,18 @@ abbrev mstore_instr : Option (Operation .EVM × Option (UInt256 × Nat)) :=
 abbrev mstore8_instr : Option (Operation .EVM × Option (UInt256 × Nat)) :=
   some ⟨mstore8EVM, none⟩
 
-inductive mstore_op : (Option (Operation .EVM × Option (UInt256 × Nat))) → Type  where
- | mstore  : mstore_op mstore_instr
- | mstore8 : mstore_op mstore8_instr
-
-variable {mstore : (Option (Operation .EVM × Option (UInt256 × Nat)))}
-variable (op : mstore_op mstore)
-
 @[simp]
-def mstore_op.get {mstore : (Option (Operation .EVM × Option (UInt256 × Nat)))} (_ : mstore_op mstore) : (Option (Operation .EVM × Option (UInt256 × Nat))) := mstore
+def mstore_op.get : (Option (Operation .EVM × Option (UInt256 × Nat))) :=
+  match op with
+  | .mstore => mstore_instr
+  | .mstore8 => mstore8_instr
 
---@[simp]
 def mstore_op.t : Operation OperationType.EVM :=
   match op with
   | .mstore => (mstore_instr.get rfl).1
   | .mstore8 => (mstore8_instr.get rfl).1
-/-
+
+/--
 Getter for the `MachineStateOps.mstore*` function
 -/
 @[simp]
@@ -68,6 +69,15 @@ abbrev EVM.step_mstore : Transformer :=
 @[simp]
 abbrev EvmYul.step_mstore : Transformer :=
   EvmYul.step op.t
+
+/--
+Different cases for the `activeWords` update
+-/
+@[simp]
+def mstore_op.to_l : ℕ :=
+  match op with
+  | .mstore => 32
+  | .mstore8 => 1
 
 /--
 Theorem needed to bypass the `private` attribute of `EVM.dispatchBinaryMachineStateOp`
@@ -101,15 +111,6 @@ def activeWords_comp (l : ℕ) :=
   UInt256.ofNat (symActiveWords.toNat ⊔ (offset.toNat + l + 31) / 32)
 
 /--
-Different cases for the `activeWords` update
--/
-@[simp]
-def mstore_op.to_l : ℕ :=
-  match op with
-  | .mstore => 32
-  | .mstore8 => 1
-
-/--
 Writing `value` to `symMemory` starting at `offset`
 -/
 def mstore_memory_write : ByteArray :=
@@ -120,7 +121,6 @@ Writing `value` to `symMemory` starting at `offset`
 -/
 def mstore8_memory_write : ByteArray :=
 (⟨#[UInt8.ofNat value.toNat]⟩ :ByteArray).write 0 symMemory offset.toNat 1
---value.toByteArray.write 0 symMemory offset.toNat 32
 
 /--
 Different cases to write to memory depending on the `mstore*` opcode
@@ -155,7 +155,9 @@ theorem EvmYul.step_mstore_summary (symState : EVM.State):
     memory := op.to_write offset value symMemory,
     activeWords := activeWords_comp offset symActiveWords op.to_l} := by aesop
 
-theorem EVM.step_mstore_summary (gas_pos : 0 < gas) (symState : EVM.State):
+theorem EVM.step_mstore_summary
+  (gas_pos : 0 < gas)
+  (symState : EVM.State):
   let ss := {symState with
     stack := offset :: value :: symStack,
     pc := symPc
@@ -172,7 +174,7 @@ theorem EVM.step_mstore_summary (gas_pos : 0 < gas) (symState : EVM.State):
                  refundBalance := symRefund}
     returnData := symReturnData,
     execLength := symExecLength}
-  EVM.step_mstore gas gasCost op ss =
+  EVM.step_mstore op gas gasCost ss =
     .ok {ss with
           stack := symStack,
           pc := symPc + (.ofNat 1),
@@ -182,7 +184,7 @@ theorem EVM.step_mstore_summary (gas_pos : 0 < gas) (symState : EVM.State):
           execLength := symExecLength + 1} := by
   cases gas; contradiction
   simp [step_mstore, EVM.step]
-  have srw := EvmYul.step_mstore_summary symStack symPc (symGasAvailable - UInt256.ofNat gasCost) symRefund offset value symActiveWords (symExecLength + 1) symReturnData symCode symMemory
+  have srw := EvmYul.step_mstore_summary op symStack symPc (symGasAvailable - UInt256.ofNat gasCost) symRefund offset value symActiveWords (symExecLength + 1) symReturnData symCode symMemory
   simp [EvmYul.step_mstore, Operation.MSTORE] at srw
   cases op <;> aesop
 
@@ -207,7 +209,7 @@ theorem memoryExpansionCost_mstore (symState : EVM.State)
   (stack_ok : symState.stack = offset :: value :: symStack)
   (symWords_ok : symState.activeWords = symActiveWords):
   memoryExpansionCost symState op.t =
-  Cₘ (value_and_activeWords_gas offset symActiveWords op) -
+  Cₘ (value_and_activeWords_gas op offset symActiveWords) -
   Cₘ symActiveWords := by
   cases op <;>
   aesop (add simp [memoryExpansionCost, memoryExpansionCost.μᵢ'])
@@ -277,7 +279,7 @@ theorem X_mstore_summary (symState : EVM.State)
   simp [fls2, ss]
   have g_pos0 : 0 < g_pos := by omega
   have g_pos1 : 1 < g_pos := by omega
-  have step_rw (g : UInt256) := (EVM.step_mstore_summary g_pos GasConstants.Gverylow symStack (.ofNat 0) (symGasAvailable - g) symRefund offset value symActiveWords symExecLength symReturnData op.to_bin symMemory symAccessedStorageKeys symAccounts symCodeOwner symPerm op g_pos0 symState)
+  have step_rw (g : UInt256) := (EVM.step_mstore_summary op g_pos GasConstants.Gverylow symStack (.ofNat 0) (symGasAvailable - g) symRefund offset value symActiveWords symExecLength symReturnData op.to_bin symMemory symAccessedStorageKeys symAccounts symCodeOwner symPerm g_pos0 symState)
   let op_stack := match op with | .mstore => 1024 | .mstore8 => 1025
   have : (op_stack < List.length symStack) = False := by aesop
   cases cop : op <;> simp [δ] <;>
