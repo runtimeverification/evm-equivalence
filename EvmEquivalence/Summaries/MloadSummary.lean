@@ -62,7 +62,7 @@ theorem EvmYul.step_mload_summary (symState : EVM.State):
   .ok {ss with
     stack := (EvmYul.MachineState.lookupMemory ss.toMachineState offset) :: symStack,
     pc := symPc + .ofNat 1,
-    activeWords := activeWords_comp offset symActiveWords} := by aesop
+    activeWords := activeWords_comp offset symActiveWords 32} := by aesop
 
 theorem EVM.step_mload_summary (gas_pos : 0 < gas) (symState : EVM.State):
   let ss := {symState with
@@ -86,7 +86,7 @@ theorem EVM.step_mload_summary (gas_pos : 0 < gas) (symState : EVM.State):
           stack := (EvmYul.MachineState.lookupMemory ss.toMachineState offset) :: symStack
           pc := symPc + (.ofNat 1),
           gasAvailable := symGasAvailable - UInt256.ofNat gasCost,
-          activeWords := activeWords_comp offset symActiveWords
+          activeWords := activeWords_comp offset symActiveWords 32
           execLength := symExecLength + 1} := by
   cases gas; contradiction
   simp [step_mload, EVM.step]
@@ -136,7 +136,7 @@ theorem X_mload_summary (symState : EVM.State)
           stack := (EvmYul.MachineState.lookupMemory ss.toMachineState offset) :: symStack,
           pc := .ofNat 1,
           gasAvailable := symGasAvailable - .ofNat (memoryExpansionCost ss mloadEVM) - .ofNat GasConstants.Gverylow,
-          activeWords := activeWords_comp offset symActiveWords
+          activeWords := activeWords_comp offset symActiveWords 32
           returnData := .empty,
           execLength := symExecLength + 2} .empty) := by
   intro ss enoughGas mec_small
@@ -167,6 +167,7 @@ theorem X_mload_summary (symState : EVM.State)
   split; aesop (add safe (by omega)) (add safe (by linarith)) (add safe (by contradiction))
   next state n state_ok =>
   repeat split at state_ok <;>
+  -- It is known that `aesop` doesn't fully close the goal in the follwing line
   try aesop (add safe (by omega)) (add safe (by linarith)) (add safe (by contradiction))
   cases state_ok
   have g_pos_pos : 0 < g_pos := by omega

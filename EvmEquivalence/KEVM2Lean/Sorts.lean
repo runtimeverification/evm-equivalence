@@ -132,6 +132,7 @@ inductive SortScheduleFlag : Type where
 inductive SortBinStackOp : Type where
   | ADD_EVM_BinStackOp : SortBinStackOp
   | MSTORE_EVM_BinStackOp : SortBinStackOp
+  | MSTORE8_EVM_BinStackOp : SortBinStackOp
   | SSTORE_EVM_BinStackOp : SortBinStackOp
   deriving BEq, DecidableEq
 

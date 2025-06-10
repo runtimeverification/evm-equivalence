@@ -12,6 +12,50 @@ open MstoreSummary
 
 namespace MstoreOpcodeEquivalence
 
+inductive mstore_op where
+  | mstore
+  | mstore8
+
+variable (op : mstore_op)
+
+@[simp]
+def mstore_op.to_binop : mstore_op → SortBinStackOp
+  | .mstore  => .MSTORE_EVM_BinStackOp
+  | .mstore8 => .MSTORE8_EVM_BinStackOp
+
+def mstore_op.from_k : mstore_op → MstoreSummary.mstore_op
+  | .mstore  => .mstore
+  | .mstore8 => .mstore8
+
+@[simp]
+def mstore_op.to_width: mstore_op → ℕ
+  | .mstore  => 32
+  | .mstore8 => 1
+
+/--
+Assigns `defn_Val14` to the following propositions depending on the opcode:
+`«#asByteStack» W1 = some _Val14` for `MSTORE`
+`_modInt_ W1 256 = some _Val14` for `MSTORE8`
+ -/
+def mstore_op.to_defn_Val14
+  (v14Bytes : SortBytes)
+  (v14Int W1 : SortInt) : Prop :=
+  match op with
+  | .mstore => «#asByteStack» W1 = some v14Bytes
+  | .mstore8 => _modInt_ W1 256 = some v14Int
+
+/--
+Assigns `defn_Val15` to the following propositions depending on the opcode:
+`«#asByteStack» W1 = some _Val14` for `MSTORE`
+`_modInt_ W1 256 = some _Val14` for `MSTORE8`
+ -/
+def mstore_op.to_defn_Val15
+  (v14Bytes _Val15 : SortBytes)
+  (v14Int : SortInt) : Prop :=
+  match op with
+  | .mstore => «#padToWidth» 32 v14Bytes = some _Val15
+  | .mstore8 => buf 1 v14Int = some _Val15
+
 def mstoreLHS
   {GAS_CELL MEMORYUSED_CELL PC_CELL W0 W1 : SortInt}
   {LOCALMEM_CELL : SortBytes}
@@ -44,7 +88,7 @@ def mstoreLHS
   {_Gen9 : SortOutputCell}
   {_K_CELL : SortK} : SortGeneratedTopCell :=
   { kevm := {
-      k := { val := SortK.kseq ((@inj SortInternalOp SortKItem) (SortInternalOp.«#next[_]_EVM_InternalOp_MaybeOpCode» ((@inj SortBinStackOp SortMaybeOpCode) SortBinStackOp.MSTORE_EVM_BinStackOp))) _K_CELL },
+      k := { val := SortK.kseq ((@inj SortInternalOp SortKItem) (SortInternalOp.«#next[_]_EVM_InternalOp_MaybeOpCode» ((@inj SortBinStackOp SortMaybeOpCode) op.to_binop))) _K_CELL },
       exitCode := _Gen20,
       mode := _Gen21,
       schedule := { val := SCHEDULE_CELL },
@@ -148,8 +192,8 @@ def mstoreRHS
     generatedCounter := _DotVar0 }
 
 theorem rw_mstoreLHS_mstoreRHS
-  {GAS_CELL MEMORYUSED_CELL PC_CELL W0 W1 _Val0 _Val1 _Val10 _Val17 _Val18 _Val19 _Val2 _Val20 _Val21 _Val22 _Val23 _Val24 _Val25 _Val3 _Val5 _Val6 _Val7 _Val8 _Val9 : SortInt}
-  {LOCALMEM_CELL _Val14 _Val15 _Val16 : SortBytes}
+  {GAS_CELL MEMORYUSED_CELL PC_CELL W0 W1 _Val0 _Val1 _Val10 _Val14mstore8 _Val17 _Val18 _Val19 _Val2 _Val20 _Val21 _Val22 _Val23 _Val24 _Val25 _Val3 _Val5 _Val6 _Val7 _Val8 _Val9 : SortInt}
+  {LOCALMEM_CELL _Val14mstore _Val15 _Val16 : SortBytes}
   {SCHEDULE_CELL : SortSchedule}
   {USEGAS_CELL _Val11 _Val12 _Val13 _Val4 : SortBool}
   {WS : SortWordStack}
@@ -178,13 +222,13 @@ theorem rw_mstoreLHS_mstoreRHS
   {_Gen8 : SortCallDepthCell}
   {_Gen9 : SortOutputCell}
   {_K_CELL : SortK}
-  (defn_Val0 : «#memoryUsageUpdate» MEMORYUSED_CELL W0 32 = some _Val0)
+  (defn_Val0 : «#memoryUsageUpdate» MEMORYUSED_CELL W0 op.to_width = some _Val0)
   (defn_Val1 : Cmem SCHEDULE_CELL _Val0 = some _Val1)
   (defn_Val2 : Cmem SCHEDULE_CELL MEMORYUSED_CELL = some _Val2)
   (defn_Val3 : «_-Int_» _Val1 _Val2 = some _Val3)
   (defn_Val4 : «_<=Int_» _Val3 GAS_CELL = some _Val4)
   (defn_Val5 : «_<_>_SCHEDULE_Int_ScheduleConst_Schedule» SortScheduleConst.Gverylow_SCHEDULE_ScheduleConst SCHEDULE_CELL = some _Val5)
-  (defn_Val6 : «#memoryUsageUpdate» MEMORYUSED_CELL W0 32 = some _Val6)
+  (defn_Val6 : «#memoryUsageUpdate» MEMORYUSED_CELL W0 op.to_width = some _Val6)
   (defn_Val7 : Cmem SCHEDULE_CELL _Val6 = some _Val7)
   (defn_Val8 : Cmem SCHEDULE_CELL MEMORYUSED_CELL = some _Val8)
   (defn_Val9 : «_-Int_» _Val7 _Val8 = some _Val9)
@@ -192,24 +236,28 @@ theorem rw_mstoreLHS_mstoreRHS
   (defn_Val11 : «_<=Int_» _Val5 _Val10 = some _Val11)
   (defn_Val12 : _andBool_ _Val4 _Val11 = some _Val12)
   (defn_Val13 : _andBool_ USEGAS_CELL _Val12 = some _Val13)
-  (defn_Val14 : «#asByteStack» W1 = some _Val14)
-  (defn_Val15 : «#padToWidth» 32 _Val14 = some _Val15)
+  (defn_Val14 : op.to_defn_Val14 _Val14mstore _Val14mstore8 W1)
+  (defn_Val15 : op.to_defn_Val15 _Val14mstore _Val15 _Val14mstore8)
   (defn_Val16 : mapWriteRange LOCALMEM_CELL W0 _Val15 = some _Val16)
   (defn_Val17 : «_+Int_» PC_CELL 1 = some _Val17)
-  (defn_Val18 : «#memoryUsageUpdate» MEMORYUSED_CELL W0 32 = some _Val18)
+  (defn_Val18 : «#memoryUsageUpdate» MEMORYUSED_CELL W0 op.to_width = some _Val18)
   (defn_Val19 : Cmem SCHEDULE_CELL _Val18 = some _Val19)
   (defn_Val20 : Cmem SCHEDULE_CELL MEMORYUSED_CELL = some _Val20)
   (defn_Val21 : «_-Int_» _Val19 _Val20 = some _Val21)
   (defn_Val22 : «_-Int_» GAS_CELL _Val21 = some _Val22)
   (defn_Val23 : «_<_>_SCHEDULE_Int_ScheduleConst_Schedule» SortScheduleConst.Gverylow_SCHEDULE_ScheduleConst SCHEDULE_CELL = some _Val23)
   (defn_Val24 : «_-Int_» _Val22 _Val23 = some _Val24)
-  (defn_Val25 : «#memoryUsageUpdate» MEMORYUSED_CELL W0 32 = some _Val25)
+  (defn_Val25 : «#memoryUsageUpdate» MEMORYUSED_CELL W0 op.to_width = some _Val25)
   (req : _Val13 = true) :
   Rewrites
-  (@mstoreLHS GAS_CELL MEMORYUSED_CELL PC_CELL W0 W1 LOCALMEM_CELL SCHEDULE_CELL USEGAS_CELL WS _DotVar0 _DotVar2 _Gen0 _Gen1 _Gen10 _Gen11 _Gen12 _Gen13 _Gen14 _Gen15 _Gen16 _Gen17 _Gen18 _Gen19 _Gen2 _Gen20 _Gen21 _Gen3 _Gen4 _Gen5 _Gen6 _Gen7 _Gen8 _Gen9 _K_CELL)
+  (@mstoreLHS op GAS_CELL MEMORYUSED_CELL PC_CELL W0 W1 LOCALMEM_CELL SCHEDULE_CELL USEGAS_CELL WS _DotVar0 _DotVar2 _Gen0 _Gen1 _Gen10 _Gen11 _Gen12 _Gen13 _Gen14 _Gen15 _Gen16 _Gen17 _Gen18 _Gen19 _Gen2 _Gen20 _Gen21 _Gen3 _Gen4 _Gen5 _Gen6 _Gen7 _Gen8 _Gen9 _K_CELL)
   (@mstoreRHS _Val17 _Val24 _Val25 _Val16 SCHEDULE_CELL WS _DotVar0 _DotVar2 _Gen0 _Gen1 _Gen10 _Gen11 _Gen12 _Gen13 _Gen14 _Gen15 _Gen16 _Gen17 _Gen18 _Gen19 _Gen2 _Gen20 _Gen21 _Gen3 _Gen4 _Gen5 _Gen6 _Gen7 _Gen8 _Gen9 _K_CELL)
-  := by apply (@Rewrites.MSTORE_SUMMARY_MSTORE_SUMMARY_USEGAS GAS_CELL MEMORYUSED_CELL PC_CELL W0 W1 _Val0 _Val1 _Val10 _Val17 _Val18 _Val19 _Val2 _Val20 _Val21 _Val22 _Val23 _Val24 _Val25 _Val3 _Val5 _Val6 _Val7 _Val8)
-  <;> assumption
+  := by
+  cases op
+  . apply (@Rewrites.MSTORE_SUMMARY_MSTORE_SUMMARY_USEGAS GAS_CELL MEMORYUSED_CELL PC_CELL W0 W1 _Val0 _Val1 _Val10 _Val17 _Val18 _Val19 _Val2 _Val20 _Val21 _Val22 _Val23 _Val24 _Val25 _Val3 _Val5 _Val6 _Val7 _Val8)
+    <;> assumption
+  . apply (@Rewrites.MSTORE8_SUMMARY_MSTORE8_SUMMARY_USEGAS GAS_CELL MEMORYUSED_CELL PC_CELL W0 W1 _Val0 _Val1 _Val10 _Val14mstore8 _Val17 _Val18 _Val19 _Val2 _Val20 _Val21 _Val22 _Val23 _Val24 _Val25 _Val3 _Val5 _Val6 _Val7 _Val8)
+    <;> assumption
 
 theorem mstore_prestate_equiv
   {GAS_CELL MEMORYUSED_CELL PC_CELL W0 W1 : SortInt}
@@ -243,7 +291,7 @@ theorem mstore_prestate_equiv
   {_Gen9 : SortOutputCell}
   {_K_CELL : SortK}
   (symState : EVM.State) :
-  let lhs := (@mstoreLHS GAS_CELL MEMORYUSED_CELL PC_CELL W0 W1 LOCALMEM_CELL SCHEDULE_CELL USEGAS_CELL WS _DotVar0 _DotVar2 _Gen0 _Gen1 _Gen10 _Gen11 _Gen12 _Gen13 _Gen14 _Gen15 _Gen16 _Gen17 _Gen18 _Gen19 _Gen2 _Gen20 _Gen21 _Gen3 _Gen4 _Gen5 _Gen6 _Gen7 _Gen8 _Gen9 _K_CELL)
+  let lhs := (@mstoreLHS op GAS_CELL MEMORYUSED_CELL PC_CELL W0 W1 LOCALMEM_CELL SCHEDULE_CELL USEGAS_CELL WS _DotVar0 _DotVar2 _Gen0 _Gen1 _Gen10 _Gen11 _Gen12 _Gen13 _Gen14 _Gen15 _Gen16 _Gen17 _Gen18 _Gen19 _Gen2 _Gen20 _Gen21 _Gen3 _Gen4 _Gen5 _Gen6 _Gen7 _Gen8 _Gen9 _K_CELL)
   stateMap symState lhs =
   {symState with
     stack := (intMap W0) :: (intMap W1) :: wordStackMap WS
@@ -306,18 +354,20 @@ theorem mstore_poststate_equiv
 
 theorem activeWords_eq
   {MEMORYUSED_CELL W0 _Val25: SortInt}
-  (defn_Val25 : «#memoryUsageUpdate» MEMORYUSED_CELL W0 32 = some _Val25)
+  (defn_Val25 : «#memoryUsageUpdate» MEMORYUSED_CELL W0 op.to_width = some _Val25)
   (W0ge0 : 0 ≤ W0)
   (W0small : W0 < UInt256.size)
   (mucge0 : 0 ≤ MEMORYUSED_CELL)
   (mucsmall : MEMORYUSED_CELL < UInt256.size) :
-  activeWords_comp (intMap W0) (intMap MEMORYUSED_CELL) = intMap _Val25 := by
+  activeWords_comp (intMap W0) (intMap MEMORYUSED_CELL) op.to_width = intMap _Val25 := by
   unfold activeWords_comp
   rw [memoryUsageUpdate_rw, Option.some.injEq] at defn_Val25
+  case width_pos => aesop
   simp [←defn_Val25, intMap]; rw [UInt256.ofNat_toSigned]
   simp [UInt256.toSigned]; cases mucc: MEMORYUSED_CELL
   <;> try (rw [mucc] at mucge0; contradiction)
   cases wc: W0 <;> try (rw [wc] at W0ge0; contradiction)
+  cases op <;>
   aesop (add simp [UInt256.ofNat_toNat]) (add safe (by omega)) (add safe (by congr))
 
 theorem mstore_memory_write_eq
@@ -388,8 +438,8 @@ theorem mstore_memory_write_eq
   aesop (add simp [UInt32.size]) (add safe (by omega))
 
 theorem step_mstore_equiv
-  {GAS_CELL MEMORYUSED_CELL PC_CELL W0 W1 _Val0 _Val1 _Val10 _Val17 _Val18 _Val19 _Val2 _Val20 _Val21 _Val22 _Val23 _Val24 _Val25 _Val3 _Val5 _Val6 _Val7 _Val8 _Val9 : SortInt}
-  {LOCALMEM_CELL _Val14 _Val15 _Val16 : SortBytes}
+  {GAS_CELL MEMORYUSED_CELL PC_CELL W0 W1 _Val0 _Val1 _Val10 _Val14mstore8 _Val17 _Val18 _Val19 _Val2 _Val20 _Val21 _Val22 _Val23 _Val24 _Val25 _Val3 _Val5 _Val6 _Val7 _Val8 _Val9 : SortInt}
+  {LOCALMEM_CELL _Val14mstore _Val15 _Val16 : SortBytes}
   {SCHEDULE_CELL : SortSchedule}
   {USEGAS_CELL _Val11 _Val12 _Val13 _Val4 : SortBool}
   {WS : SortWordStack}
@@ -418,13 +468,13 @@ theorem step_mstore_equiv
   {_Gen8 : SortCallDepthCell}
   {_Gen9 : SortOutputCell}
   {_K_CELL : SortK}
-  (defn_Val0 : «#memoryUsageUpdate» MEMORYUSED_CELL W0 32 = some _Val0)
+  (defn_Val0 : «#memoryUsageUpdate» MEMORYUSED_CELL W0 op.to_width = some _Val0)
   (defn_Val1 : Cmem SCHEDULE_CELL _Val0 = some _Val1)
   (defn_Val2 : Cmem SCHEDULE_CELL MEMORYUSED_CELL = some _Val2)
   (defn_Val3 : «_-Int_» _Val1 _Val2 = some _Val3)
   (defn_Val4 : «_<=Int_» _Val3 GAS_CELL = some _Val4)
   (defn_Val5 : «_<_>_SCHEDULE_Int_ScheduleConst_Schedule» SortScheduleConst.Gverylow_SCHEDULE_ScheduleConst SCHEDULE_CELL = some _Val5)
-  (defn_Val6 : «#memoryUsageUpdate» MEMORYUSED_CELL W0 32 = some _Val6)
+  (defn_Val6 : «#memoryUsageUpdate» MEMORYUSED_CELL W0 op.to_width = some _Val6)
   (defn_Val7 : Cmem SCHEDULE_CELL _Val6 = some _Val7)
   (defn_Val8 : Cmem SCHEDULE_CELL MEMORYUSED_CELL = some _Val8)
   (defn_Val9 : «_-Int_» _Val7 _Val8 = some _Val9)
@@ -432,18 +482,18 @@ theorem step_mstore_equiv
   (defn_Val11 : «_<=Int_» _Val5 _Val10 = some _Val11)
   (defn_Val12 : _andBool_ _Val4 _Val11 = some _Val12)
   (defn_Val13 : _andBool_ USEGAS_CELL _Val12 = some _Val13)
-  (defn_Val14 : «#asByteStack» W1 = some _Val14)
-  (defn_Val15 : «#padToWidth» 32 _Val14 = some _Val15)
+  (defn_Val14 : op.to_defn_Val14 _Val14mstore _Val14mstore8 W1)
+  (defn_Val15 : op.to_defn_Val15 _Val14mstore _Val15 _Val14mstore8)
   (defn_Val16 : mapWriteRange LOCALMEM_CELL W0 _Val15 = some _Val16)
   (defn_Val17 : «_+Int_» PC_CELL 1 = some _Val17)
-  (defn_Val18 : «#memoryUsageUpdate» MEMORYUSED_CELL W0 32 = some _Val18)
+  (defn_Val18 : «#memoryUsageUpdate» MEMORYUSED_CELL W0 op.to_width = some _Val18)
   (defn_Val19 : Cmem SCHEDULE_CELL _Val18 = some _Val19)
   (defn_Val20 : Cmem SCHEDULE_CELL MEMORYUSED_CELL = some _Val20)
   (defn_Val21 : «_-Int_» _Val19 _Val20 = some _Val21)
   (defn_Val22 : «_-Int_» GAS_CELL _Val21 = some _Val22)
   (defn_Val23 : «_<_>_SCHEDULE_Int_ScheduleConst_Schedule» SortScheduleConst.Gverylow_SCHEDULE_ScheduleConst SCHEDULE_CELL = some _Val23)
   (defn_Val24 : «_-Int_» _Val22 _Val23 = some _Val24)
-  (defn_Val25 : «#memoryUsageUpdate» MEMORYUSED_CELL W0 32 = some _Val25)
+  (defn_Val25 : «#memoryUsageUpdate» MEMORYUSED_CELL W0 op.to_width = some _Val25)
   (req : _Val13 = true)
   (symState : EVM.State)
   -- Necessary for EVM.step
@@ -465,27 +515,39 @@ theorem step_mstore_equiv
   -- It seems we need this hypothesis to achieve equivalence of behavior from the EVMYul side
   -- We keep the original `W0small` for convenience
   (W0small_realpolitik : W0 < UInt32.size) :
-  EVM.step_mstore (Int.toNat GAS_CELL) gasCost (stateMap symState (@mstoreLHS GAS_CELL MEMORYUSED_CELL PC_CELL W0 W1 LOCALMEM_CELL SCHEDULE_CELL USEGAS_CELL WS _DotVar0 _DotVar2 _Gen0 _Gen1 _Gen10 _Gen11 _Gen12 _Gen13 _Gen14 _Gen15 _Gen16 _Gen17 _Gen18 _Gen19 _Gen2 _Gen20 _Gen21 _Gen3 _Gen4 _Gen5 _Gen6 _Gen7 _Gen8 _Gen9 _K_CELL)) =
+  EVM.step_mstore op.from_k (Int.toNat GAS_CELL) gasCost (stateMap symState (@mstoreLHS op GAS_CELL MEMORYUSED_CELL PC_CELL W0 W1 LOCALMEM_CELL SCHEDULE_CELL USEGAS_CELL WS _DotVar0 _DotVar2 _Gen0 _Gen1 _Gen10 _Gen11 _Gen12 _Gen13 _Gen14 _Gen15 _Gen16 _Gen17 _Gen18 _Gen19 _Gen2 _Gen20 _Gen21 _Gen3 _Gen4 _Gen5 _Gen6 _Gen7 _Gen8 _Gen9 _K_CELL)) =
   .ok (stateMap {symState with execLength := symState.execLength + 1} (@mstoreRHS _Val17 _Val24 _Val25 _Val16 SCHEDULE_CELL WS _DotVar0 _DotVar2 _Gen0 _Gen1 _Gen10 _Gen11 _Gen12 _Gen13 _Gen14 _Gen15 _Gen16 _Gen17 _Gen18 _Gen19 _Gen2 _Gen20 _Gen21 _Gen3 _Gen4 _Gen5 _Gen6 _Gen7 _Gen8 _Gen9 _K_CELL))
   := by
   cases cg: (Int.toNat GAS_CELL)
   next =>
     rw [Int.toNat_eq_zero] at cg
     have _ := Int.lt_of_lt_of_le gavailEnough cg; contradiction
-  cases _Gen15; rw [mstore_prestate_equiv]; simp [mstoreLHS]
-  rw [←EVM.step_mstore, EVM.step_mstore_summary] <;> first | assumption | try simp
+  rename_i g
+  cases _Gen15 with
+  | mk selfDestruct log refund accessedAccounts accessedStorage createdAccounts =>
+  rw [mstore_prestate_equiv]; simp [mstoreLHS]
+  have ms_rw := EVM.step_mstore_summary op.from_k
+  unfold EVM.step_mstore mstore_op.get at ms_rw
+  rw [ms_rw] <;> first | assumption | try simp
   rw [mstore_poststate_equiv, mstoreRHS] <;> first | assumption | try simp
   simp [activeWords_comp, mstore_memory_write]
   constructor; constructor <;> try constructor
   . sorry -- Gas goals are for now unproven
-  . rw [←activeWords_comp, activeWords_eq defn_Val25] <;> assumption
-  . rw [←mstore_memory_write, mstore_memory_write_eq defn_Val14 defn_Val15 defn_Val16]
-    <;> assumption
+  . have aw_rw := activeWords_eq op defn_Val25
+    cases op <;> simp [mstore_op.from_k] <;> aesop
+  . cases op <;> simp [mstore_op.from_k]
+    . rw [mstore_memory_write_eq defn_Val14 defn_Val15 defn_Val16] <;> assumption
+    . -- `mstore8_memory_write (intMap W0) (intMap W1) LOCALMEM_CELL = _Val16`
+      sorry
+      -- We need to provde a `mstore8_memory_write_eq` theorem
+      -- similar to `mstore_memory_write_eq`.
+      -- Then, something like the following should solve it:
+      -- `rw [mstore8_memory_write_eq defn_Val14 defn_Val15 defn_Val16] <;> assumption`
   . rw [←UInt256.add_succ_mod_size, intMap_add_dist] <;> aesop
 
 theorem X_mstore_equiv
-  {GAS_CELL MEMORYUSED_CELL PC_CELL W0 W1 _Val0 _Val1 _Val10 _Val17 _Val18 _Val19 _Val2 _Val20 _Val21 _Val22 _Val23 _Val24 _Val25 _Val3 _Val5 _Val6 _Val7 _Val8 _Val9 : SortInt}
-  {LOCALMEM_CELL _Val14 _Val15 _Val16 : SortBytes}
+  {GAS_CELL MEMORYUSED_CELL PC_CELL W0 W1 _Val0 _Val1 _Val10 _Val14mstore8 _Val17 _Val18 _Val19 _Val2 _Val20 _Val21 _Val22 _Val23 _Val24 _Val25 _Val3 _Val5 _Val6 _Val7 _Val8 _Val9 : SortInt}
+  {LOCALMEM_CELL _Val14mstore _Val15 _Val16 : SortBytes}
   {SCHEDULE_CELL : SortSchedule}
   {USEGAS_CELL _Val11 _Val12 _Val13 _Val4 : SortBool}
   {WS : SortWordStack}
@@ -514,13 +576,13 @@ theorem X_mstore_equiv
   {_Gen8 : SortCallDepthCell}
   {_Gen9 : SortOutputCell}
   {_K_CELL : SortK}
-  (defn_Val0 : «#memoryUsageUpdate» MEMORYUSED_CELL W0 32 = some _Val0)
+  (defn_Val0 : «#memoryUsageUpdate» MEMORYUSED_CELL W0 op.to_width = some _Val0)
   (defn_Val1 : Cmem SCHEDULE_CELL _Val0 = some _Val1)
   (defn_Val2 : Cmem SCHEDULE_CELL MEMORYUSED_CELL = some _Val2)
   (defn_Val3 : «_-Int_» _Val1 _Val2 = some _Val3)
   (defn_Val4 : «_<=Int_» _Val3 GAS_CELL = some _Val4)
   (defn_Val5 : «_<_>_SCHEDULE_Int_ScheduleConst_Schedule» SortScheduleConst.Gverylow_SCHEDULE_ScheduleConst SCHEDULE_CELL = some _Val5)
-  (defn_Val6 : «#memoryUsageUpdate» MEMORYUSED_CELL W0 32 = some _Val6)
+  (defn_Val6 : «#memoryUsageUpdate» MEMORYUSED_CELL W0 op.to_width = some _Val6)
   (defn_Val7 : Cmem SCHEDULE_CELL _Val6 = some _Val7)
   (defn_Val8 : Cmem SCHEDULE_CELL MEMORYUSED_CELL = some _Val8)
   (defn_Val9 : «_-Int_» _Val7 _Val8 = some _Val9)
@@ -528,18 +590,18 @@ theorem X_mstore_equiv
   (defn_Val11 : «_<=Int_» _Val5 _Val10 = some _Val11)
   (defn_Val12 : _andBool_ _Val4 _Val11 = some _Val12)
   (defn_Val13 : _andBool_ USEGAS_CELL _Val12 = some _Val13)
-  (defn_Val14 : «#asByteStack» W1 = some _Val14)
-  (defn_Val15 : «#padToWidth» 32 _Val14 = some _Val15)
+  (defn_Val14 : op.to_defn_Val14 _Val14mstore _Val14mstore8 W1)
+  (defn_Val15 : op.to_defn_Val15 _Val14mstore _Val15 _Val14mstore8)
   (defn_Val16 : mapWriteRange LOCALMEM_CELL W0 _Val15 = some _Val16)
   (defn_Val17 : «_+Int_» PC_CELL 1 = some _Val17)
-  (defn_Val18 : «#memoryUsageUpdate» MEMORYUSED_CELL W0 32 = some _Val18)
+  (defn_Val18 : «#memoryUsageUpdate» MEMORYUSED_CELL W0 op.to_width = some _Val18)
   (defn_Val19 : Cmem SCHEDULE_CELL _Val18 = some _Val19)
   (defn_Val20 : Cmem SCHEDULE_CELL MEMORYUSED_CELL = some _Val20)
   (defn_Val21 : «_-Int_» _Val19 _Val20 = some _Val21)
   (defn_Val22 : «_-Int_» GAS_CELL _Val21 = some _Val22)
   (defn_Val23 : «_<_>_SCHEDULE_Int_ScheduleConst_Schedule» SortScheduleConst.Gverylow_SCHEDULE_ScheduleConst SCHEDULE_CELL = some _Val23)
   (defn_Val24 : «_-Int_» _Val22 _Val23 = some _Val24)
-  (defn_Val25 : «#memoryUsageUpdate» MEMORYUSED_CELL W0 32 = some _Val25)
+  (defn_Val25 : «#memoryUsageUpdate» MEMORYUSED_CELL W0 op.to_width = some _Val25)
   (req : _Val13 = true)
   (symState : EVM.State)
   (symValidJumps : Array UInt256) -- TODO: Revisit
@@ -555,7 +617,7 @@ theorem X_mstore_equiv
   (W1small : W1 < UInt256.size)
   (mucge0 : 0 ≤ MEMORYUSED_CELL)
   (mucsmall : MEMORYUSED_CELL < UInt256.size)
-  (codeMstore : _Gen0 = ⟨⟨#[(0x52 : UInt8)]⟩⟩)
+  (codeMstore : _Gen0 = ⟨op.from_k.to_bin⟩)
   (pcZero : PC_CELL = 0)
   -- TODO: Replace with a native measure for `SortWordStack` and
   -- prove this assumption via an equality theorem stating that
@@ -567,7 +629,7 @@ theorem X_mstore_equiv
   -- We keep the original `W0small` for convenience
   (W0small_realpolitik : W0 < UInt32.size) :
   EVM.X (UInt256.toNat (intMap GAS_CELL)) symValidJumps
-  (stateMap symState (@mstoreLHS GAS_CELL MEMORYUSED_CELL PC_CELL W0 W1 LOCALMEM_CELL SCHEDULE_CELL USEGAS_CELL WS _DotVar0 _DotVar2 _Gen0 _Gen1 _Gen10 _Gen11 _Gen12 _Gen13 _Gen14 _Gen15 _Gen16 _Gen17 _Gen18 _Gen19 _Gen2 _Gen20 _Gen21 _Gen3 _Gen4 _Gen5 _Gen6 _Gen7 _Gen8 _Gen9 _K_CELL)) =
+  (stateMap symState (@mstoreLHS op GAS_CELL MEMORYUSED_CELL PC_CELL W0 W1 LOCALMEM_CELL SCHEDULE_CELL USEGAS_CELL WS _DotVar0 _DotVar2 _Gen0 _Gen1 _Gen10 _Gen11 _Gen12 _Gen13 _Gen14 _Gen15 _Gen16 _Gen17 _Gen18 _Gen19 _Gen2 _Gen20 _Gen21 _Gen3 _Gen4 _Gen5 _Gen6 _Gen7 _Gen8 _Gen9 _K_CELL)) =
   .ok (.success (stateMap {symState with execLength := symState.execLength + 2} (@mstoreRHS _Val17 _Val24 _Val25 _Val16 SCHEDULE_CELL WS _DotVar0 _DotVar2 _Gen0 _Gen1 _Gen10 _Gen11 _Gen12 _Gen13 _Gen14 _Gen15 _Gen16 _Gen17 _Gen18 _Gen19 _Gen2 _Gen20 _Gen21 _Gen3 _Gen4 _Gen5 _Gen6 _Gen7 _Gen8 ⟨.empty⟩ _K_CELL)) .empty)
   := by
   cases cg: (Int.toNat GAS_CELL)
@@ -582,17 +644,26 @@ theorem X_mstore_equiv
   simp [mstoreLHS, mstoreRHS]; rw [pc_equiv, X_mstore_summary] <;> try assumption
   . simp; constructor <;> try constructor <;> try constructor
     . -- Gas correctness goal
-      simp [memoryExpansionCost_mstore _ (intMap W0) (intMap MEMORYUSED_CELL)]
-      simp [EVM.Cₘ]
+      /- rw [memoryExpansionCost_mstore op (wordStackMap WS) (intMap W0) (intMap MEMORYUSED_CELL)]
+      simp [EVM.Cₘ] -/
       sorry
-    . rw [activeWords_eq defn_Val25] <;> assumption
-    . rw [mstore_memory_write_eq defn_Val14 defn_Val15 defn_Val16] <;> assumption
+    . have aw_rw := activeWords_eq op defn_Val25
+      cases op <;> simp [mstore_op.from_k] <;> aesop
+    . cases op <;> simp [mstore_op.from_k]
+      . rw [mstore_memory_write_eq defn_Val14 defn_Val15 defn_Val16] <;> assumption
+      . -- `mstore8_memory_write (intMap W0) (intMap W1) LOCALMEM_CELL = _Val16`
+        sorry
+      -- We need to provde a `mstore8_memory_write_eq` theorem
+      -- similar to `mstore_memory_write_eq`.
+      -- Then, something like the following should solve it:
+      -- `rw [mstore8_memory_write_eq defn_Val14 defn_Val15 defn_Val16] <;> assumption`
     . aesop
   . -- Enough Gas
-    simp [EVM.memoryExpansionCost, EVM.Cₘ, EVM.memoryExpansionCost.μᵢ', MachineState.M]
     sorry
   . -- Gas is not greater than `UInt256.size`
     simp [EVM.memoryExpansionCost, EVM.Cₘ, EVM.memoryExpansionCost.μᵢ', MachineState.M]
+    sorry
+  . -- `memoryExpansionCost < UInt256.size`
     sorry
 
 end MstoreOpcodeEquivalence
