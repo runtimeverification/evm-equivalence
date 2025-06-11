@@ -48,8 +48,7 @@ def «_*Int'_» (n m : SortInt) : SortInt :=
 theorem mulInt_def : «_*Int'_» n m = n * m := rfl
 
 -- Behavior for `chop`
---`_modInt_` is still uninterpreted
-theorem chopIsSome : chop n = some (n % UInt256.size) := by sorry
+theorem chopIsSome : chop n = some (n % UInt256.size) := rfl
 
 noncomputable def chop' (n : SortInt) : SortInt :=
   (chop n).get (by simp [chopIsSome])
