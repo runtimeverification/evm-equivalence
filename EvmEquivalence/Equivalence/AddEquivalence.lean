@@ -10,6 +10,21 @@ open KEVMInterface
 
 namespace AddOpcodeEquivalence
 
+inductive arith_op where
+  | add
+  | sub
+
+variable (op : arith_op)
+
+@[simp]
+def arith_op.to_binop : arith_op → SortBinStackOp
+  | .add => .ADD_EVM_BinStackOp
+  | .sub => .SUB_EVM_BinStackOp
+
+def arith_op.from_k : arith_op → AddSummary.arith_op
+ | .add => .add
+ | .sub => .sub
+
 def addLHS
   {GAS_CELL PC_CELL W0 W1 : SortInt}
   {K_CELL : SortK}
@@ -43,7 +58,7 @@ def addLHS
   {_Gen8 : SortCallGasCell}
   {_Gen9 : SortStaticCell} : SortGeneratedTopCell :=
   { kevm := {
-      k := { val := SortK.kseq ((@inj SortInternalOp SortKItem) (SortInternalOp.«#next[_]_EVM_InternalOp_MaybeOpCode» ((@inj SortBinStackOp SortMaybeOpCode) SortBinStackOp.ADD_EVM_BinStackOp))) K_CELL },
+      k := { val := SortK.kseq ((@inj SortInternalOp SortKItem) (SortInternalOp.«#next[_]_EVM_InternalOp_MaybeOpCode» ((@inj SortBinStackOp SortMaybeOpCode) op.to_binop))) K_CELL },
       exitCode := _Gen22,
       mode := _Gen23,
       schedule := { val := SCHEDULE_CELL },
@@ -148,6 +163,12 @@ def addRHS
         network := _DotVar2 } },
     generatedCounter := _DotVar0 }
 
+
+def arith_op.to_defn_Val3 (W0 W1 _Val3 : SortInt) : Prop :=
+  match op with
+  | .add => «_+Int_» W0 W1 = some _Val3
+  | .sub => «_-Int_» W0 W1 = some _Val3
+
 theorem rw_addLHS_addRHS
   {GAS_CELL PC_CELL W0 W1 _Val0 _Val3 _Val4 _Val5 _Val6 _Val7 : SortInt}
   {K_CELL : SortK}
@@ -183,17 +204,20 @@ theorem rw_addLHS_addRHS
   (defn_Val0 : «_<_>_SCHEDULE_Int_ScheduleConst_Schedule» SortScheduleConst.Gverylow_SCHEDULE_ScheduleConst SCHEDULE_CELL = some _Val0)
   (defn_Val1 : «_<=Int_» _Val0 GAS_CELL = some _Val1)
   (defn_Val2 : _andBool_ USEGAS_CELL _Val1 = some _Val2)
-  (defn_Val3 : «_+Int_» W0 W1 = some _Val3)
+  (defn_Val3 : op.to_defn_Val3 W0 W1 _Val3)
   (defn_Val4 : chop _Val3 = some _Val4)
   (defn_Val5 : «_+Int_» PC_CELL 1 = some _Val5)
   (defn_Val6 : «_<_>_SCHEDULE_Int_ScheduleConst_Schedule» SortScheduleConst.Gverylow_SCHEDULE_ScheduleConst SCHEDULE_CELL = some _Val6)
   (defn_Val7 : «_-Int_» GAS_CELL _Val6 = some _Val7)
   (req : _Val2 = true):
   Rewrites
-  (@addLHS GAS_CELL PC_CELL W0 W1 K_CELL SCHEDULE_CELL USEGAS_CELL WS _DotVar0 _DotVar2 _Gen0 _Gen1 _Gen10 _Gen11 _Gen12 _Gen13 _Gen14 _Gen15 _Gen16 _Gen17 _Gen18 _Gen19 _Gen2 _Gen20 _Gen21 _Gen22 _Gen23 _Gen3 _Gen4 _Gen5 _Gen6 _Gen7 _Gen8 _Gen9)
+  (@addLHS op GAS_CELL PC_CELL W0 W1 K_CELL SCHEDULE_CELL USEGAS_CELL WS _DotVar0 _DotVar2 _Gen0 _Gen1 _Gen10 _Gen11 _Gen12 _Gen13 _Gen14 _Gen15 _Gen16 _Gen17 _Gen18 _Gen19 _Gen2 _Gen20 _Gen21 _Gen22 _Gen23 _Gen3 _Gen4 _Gen5 _Gen6 _Gen7 _Gen8 _Gen9)
   (@addRHS _Val0 _Val3 _Val4 _Val5 _Val6 _Val7 K_CELL SCHEDULE_CELL _Val1 _Val2 WS _DotVar0 _DotVar2 _Gen0 _Gen1 _Gen10 _Gen11 _Gen12 _Gen13 _Gen14 _Gen15 _Gen16 _Gen17 _Gen18 _Gen19 _Gen2 _Gen20 _Gen21 _Gen22 _Gen23 _Gen3 _Gen4 _Gen5 _Gen6 _Gen7 _Gen8 _Gen9) := by
-  apply Rewrites.ADD_SUMMARY_ADD_SUMMARY_USEGAS <;> try assumption
-  simp_all
+  cases op
+  . apply (@Rewrites.ADD_SUMMARY_ADD_SUMMARY_USEGAS GAS_CELL PC_CELL W0 W1 _Val0)
+    <;> assumption
+  . apply (@Rewrites.SUB_SUMMARY_SUB_SUMMARY_USEGAS GAS_CELL PC_CELL W0 W1 _Val0 _Val3 _Val4 _Val5 _Val6 _Val7 SCHEDULE_CELL USEGAS_CELL _Val1 _Val2 WS _DotVar0 _DotVar2 _Gen0 _Gen1 _Gen10 _Gen11 _Gen12 _Gen13 _Gen14 _Gen15 _Gen16 _Gen17 _Gen18 _Gen19 _Gen2 _Gen20 _Gen21 _Gen22 _Gen23 _Gen3 _Gen4 _Gen5 _Gen6 _Gen7 _Gen8 _Gen9)
+    <;> try assumption
 
 theorem add_prestate_equiv
   {GAS_CELL PC_CELL W0 W1 : SortInt}
@@ -228,7 +252,7 @@ theorem add_prestate_equiv
   {_Gen8 : SortCallGasCell}
   {_Gen9 : SortStaticCell}
   (symState : EVM.State):
-  let lhs := (@addLHS GAS_CELL PC_CELL W0 W1 K_CELL SCHEDULE_CELL USEGAS_CELL WS _DotVar0 _DotVar2 _Gen0 _Gen1 _Gen10 _Gen11 _Gen12 _Gen13 _Gen14 _Gen15 _Gen16 _Gen17 _Gen18 _Gen19 _Gen2 _Gen20 _Gen21 _Gen22 _Gen23 _Gen3 _Gen4 _Gen5 _Gen6 _Gen7 _Gen8 _Gen9)
+  let lhs := (@addLHS op GAS_CELL PC_CELL W0 W1 K_CELL SCHEDULE_CELL USEGAS_CELL WS _DotVar0 _DotVar2 _Gen0 _Gen1 _Gen10 _Gen11 _Gen12 _Gen13 _Gen14 _Gen15 _Gen16 _Gen17 _Gen18 _Gen19 _Gen2 _Gen20 _Gen21 _Gen22 _Gen23 _Gen3 _Gen4 _Gen5 _Gen6 _Gen7 _Gen8 _Gen9)
   stateMap symState lhs =
   {symState with
     stack := (intMap W0) :: (intMap W1) :: wordStackMap WS
@@ -247,6 +271,12 @@ theorem add_prestate_equiv
            }
     returnData := _Gen11.val
     } := rfl
+
+@[simp]
+def arith_op.do : SortInt → SortInt → SortInt :=
+  match op with
+  | .add => (· + ·)
+  | .sub => (· - ·)
 
 theorem add_poststate_equiv
   {PC_CELL W0 W1 _Val0 _Val3 _Val4 _Val5 _Val6 _Val7 : SortInt}
@@ -280,15 +310,15 @@ theorem add_poststate_equiv
   {_Gen7 : SortMemoryUsedCell}
   {_Gen8 : SortCallGasCell}
   {_Gen9 : SortStaticCell}
-  (defn_Val3 : «_+Int_» W0 W1 = some _Val3)
+  (defn_Val3 : op.to_defn_Val3 W0 W1 _Val3)
   (defn_Val4 : chop _Val3 = some _Val4)
   (defn_Val5 : «_+Int_» PC_CELL 1 = some _Val5)
   (symState : EVM.State):
   let rhs := (@addRHS _Val0 _Val3 _Val4 _Val5 _Val6 _Val7 K_CELL SCHEDULE_CELL _Val1 _Val2 WS _DotVar0 _DotVar2 _Gen0 _Gen1 _Gen10 _Gen11 _Gen12 _Gen13 _Gen14 _Gen15 _Gen16 _Gen17 _Gen18 _Gen19 _Gen2 _Gen20 _Gen21 _Gen22 _Gen23 _Gen3 _Gen4 _Gen5 _Gen6 _Gen7 _Gen8 _Gen9)
   stateMap symState rhs =
   {symState with
-    stack := (intMap (chop' («_+Int'_» W0 W1))) :: wordStackMap WS
-    pc := intMap («_+Int'_» PC_CELL 1)
+    stack := (intMap (chop' (op.do W0 W1))) :: wordStackMap WS
+    pc := intMap (PC_CELL + 1)
     gasAvailable := intMap _Val7
     executionEnv := {symState.executionEnv with
                   code := _Gen0.val,
@@ -302,7 +332,8 @@ theorem add_poststate_equiv
             refundBalance := intMap _Gen17.refund.val
            }
     returnData := _Gen11.val
-    } := by aesop (add simp [«_+Int'_», chop'])
+    } := by
+    aesop (add simp [«_-Int_»,«_+Int_», chop', arith_op.to_defn_Val3, addRHS, stateMap])
 
 
 open AddSummary
@@ -344,7 +375,7 @@ theorem step_add_equiv
   (defn_Val0 : «_<_>_SCHEDULE_Int_ScheduleConst_Schedule» SortScheduleConst.Gverylow_SCHEDULE_ScheduleConst SCHEDULE_CELL = some _Val0)
   (defn_Val1 : «_<=Int_» _Val0 GAS_CELL = some _Val1)
   (defn_Val2 : _andBool_ USEGAS_CELL _Val1 = some _Val2)
-  (defn_Val3 : «_+Int_» W0 W1 = some _Val3)
+  (defn_Val3 : op.to_defn_Val3 W0 W1 _Val3)
   (defn_Val4 : chop _Val3 = some _Val4)
   (defn_Val5 : «_+Int_» PC_CELL 1 = some _Val5)
   (defn_Val6 : «_<_>_SCHEDULE_Int_ScheduleConst_Schedule» SortScheduleConst.Gverylow_SCHEDULE_ScheduleConst SCHEDULE_CELL = some _Val6)
@@ -363,16 +394,24 @@ theorem step_add_equiv
   (pcountNonneg : 0 ≤ PC_CELL)
   (W0ge0 : 0 ≤ W0)
   (W1ge0 : 0 ≤ W1):
-  EVM.step_add gas gasCost (stateMap symState (@addLHS GAS_CELL PC_CELL W0 W1 K_CELL SCHEDULE_CELL USEGAS_CELL WS _DotVar0 _DotVar2 _Gen0 _Gen1 _Gen10 _Gen11 _Gen12 _Gen13 _Gen14 _Gen15 _Gen16 _Gen17 _Gen18 _Gen19 _Gen2 _Gen20 _Gen21 _Gen22 _Gen23 _Gen3 _Gen4 _Gen5 _Gen6 _Gen7 _Gen8 _Gen9)) =
+  EVM.step_arith op.from_k gas gasCost (stateMap symState (@addLHS op GAS_CELL PC_CELL W0 W1 K_CELL SCHEDULE_CELL USEGAS_CELL WS _DotVar0 _DotVar2 _Gen0 _Gen1 _Gen10 _Gen11 _Gen12 _Gen13 _Gen14 _Gen15 _Gen16 _Gen17 _Gen18 _Gen19 _Gen2 _Gen20 _Gen21 _Gen22 _Gen23 _Gen3 _Gen4 _Gen5 _Gen6 _Gen7 _Gen8 _Gen9)) =
   .ok (stateMap {symState with execLength := symState.execLength + 1} (@addRHS _Val0 _Val3 _Val4 _Val5 _Val6 _Val7 K_CELL SCHEDULE_CELL _Val1 _Val2 WS _DotVar0 _DotVar2 _Gen0 _Gen1 _Gen10 _Gen11 _Gen12 _Gen13 _Gen14 _Gen15 _Gen16 _Gen17 _Gen18 _Gen19 _Gen2 _Gen20 _Gen21 _Gen22 _Gen23 _Gen3 _Gen4 _Gen5 _Gen6 _Gen7 _Gen8 _Gen9)) := by
-  rw [add_prestate_equiv, add_poststate_equiv] <;> try assumption
+  rw [add_prestate_equiv, @add_poststate_equiv _ _ W0 W1 _ _Val3]
+  <;> try assumption
   cases gas; contradiction
   case succ gas =>
     rw [EVM.step_add_summary] <;> try assumption
     simp [addLHS, addRHS]; constructor <;> try constructor
     . aesop (add simp [GasInterface.cancun_def, «_-Int_», intMap_sub_dist])
-    . rw [plusInt_def, ←UInt256.add_succ_mod_size, intMap_add_dist] <;> aesop
-    . aesop (add simp [intMap, chop_def, plusInt_def, intMap_add_dist])
+    . rw [←UInt256.add_succ_mod_size, intMap_add_dist] <;> aesop
+    . cases op <;> simp [arith_op.from_k]
+      . -- `add` case
+        aesop (add simp [intMap, chop_def, plusInt_def, intMap_add_dist])
+      . -- `sub` case
+        sorry
+
+
+
 
 /- Deviations from the KEVM produced specifications:
  1. The program is not symbolic, it is instead a 1-opcode (`ADD`) program
@@ -417,7 +456,7 @@ theorem X_add_equiv
   (defn_Val0 : «_<_>_SCHEDULE_Int_ScheduleConst_Schedule» SortScheduleConst.Gverylow_SCHEDULE_ScheduleConst SCHEDULE_CELL = some _Val0)
   (defn_Val1 : «_<=Int_» _Val0 GAS_CELL = some _Val1)
   (defn_Val2 : _andBool_ USEGAS_CELL _Val1 = some _Val2)
-  (defn_Val3 : «_+Int_» W0 W1 = some _Val3)
+  (defn_Val3 : op.to_defn_Val3 W0 W1 _Val3)
   (defn_Val4 : chop _Val3 = some _Val4)
   (defn_Val5 : «_+Int_» PC_CELL 1 = some _Val5)
   (defn_Val6 : «_<_>_SCHEDULE_Int_ScheduleConst_Schedule» SortScheduleConst.Gverylow_SCHEDULE_ScheduleConst SCHEDULE_CELL = some _Val6)
@@ -427,7 +466,7 @@ theorem X_add_equiv
   (symValidJumps : Array UInt256) -- TODO: Revisit
   -- Necessary assumptions for equivalence
   (cancun : SCHEDULE_CELL = .CANCUN_EVM)
-  (codeAdd : _Gen0 = ⟨⟨#[(1 : UInt8)]⟩⟩)
+  (codeAdd : _Gen0 = ⟨op.from_k.to_bin⟩)
   (pcZero : PC_CELL = 0)
   (enoughGas : 3 < GAS_CELL)
   (boundedGas : GAS_CELL < ↑UInt256.size)
@@ -436,15 +475,21 @@ theorem X_add_equiv
   -- There's no #sizeWordStack
   (wordStackOk : sizeWordStackAux WS 0 < some 1024):
   EVM.X (UInt256.toNat (intMap GAS_CELL)) symValidJumps
-  (stateMap symState (@addLHS GAS_CELL PC_CELL W0 W1 K_CELL SCHEDULE_CELL USEGAS_CELL WS _DotVar0 _DotVar2 _Gen0 _Gen1 _Gen10 _Gen11 _Gen12 _Gen13 _Gen14 _Gen15 _Gen16 _Gen17 _Gen18 _Gen19 _Gen2 _Gen20 _Gen21 _Gen22 _Gen23 _Gen3 _Gen4 _Gen5 _Gen6 _Gen7 _Gen8 _Gen9)) =
+  (stateMap symState (@addLHS op GAS_CELL PC_CELL W0 W1 K_CELL SCHEDULE_CELL USEGAS_CELL WS _DotVar0 _DotVar2 _Gen0 _Gen1 _Gen10 _Gen11 _Gen12 _Gen13 _Gen14 _Gen15 _Gen16 _Gen17 _Gen18 _Gen19 _Gen2 _Gen20 _Gen21 _Gen22 _Gen23 _Gen3 _Gen4 _Gen5 _Gen6 _Gen7 _Gen8 _Gen9)) =
   .ok (.success (stateMap {symState with execLength := symState.execLength + 2} (@addRHS _Val0 _Val3 _Val4 _Val5 _Val6 _Val7 K_CELL SCHEDULE_CELL _Val1 _Val2 WS _DotVar0 _DotVar2 _Gen0 _Gen1 _Gen10 ⟨ByteArray.empty⟩ _Gen12 _Gen13 _Gen14 _Gen15 _Gen16 _Gen17 _Gen18 _Gen19 _Gen2 _Gen20 _Gen21 _Gen22 _Gen23 _Gen3 _Gen4 _Gen5 _Gen6 _Gen7 _Gen8 _Gen9)) ByteArray.empty) := by
   -- With `simp` doesn't work
-  rw [codeAdd, pcZero, add_prestate_equiv, add_poststate_equiv] <;> try assumption
+  rw [codeAdd, pcZero]
+  rw [add_prestate_equiv, @add_poststate_equiv _ _ W0 W1 _ _Val3]
+  <;> try assumption
   -- If we don't apply this lemma we cannot rewrite X_add_summary
   have pc_equiv : intMap 0 = UInt256.ofNat 0 := rfl
-  rw [pc_equiv, X_add_summary]
-  · aesop (add simp [GasInterface.cancun_def, «_-Int_», chop_def, plusInt_def, intMap_add_dist, addLHS, addRHS])
+  rw [pc_equiv, X_arith_summary]
+  · cases op <;> simp [arith_op.from_k]
+    . -- `add` case
+      aesop (add simp [GasInterface.cancun_def, «_-Int_», chop_def, plusInt_def, intMap_add_dist, addLHS, addRHS])
       (add safe (by rw [intMap_sub_dist])) (add safe (by apply le_of_lt))
+    . -- `sub` case
+      sorry
   · aesop (add simp [GasConstants.Gverylow, intMap, UInt256.toSigned])
       (add simp [intMap_toNat, UInt256.ofNat_toNat])
       (add safe (by contradiction))
