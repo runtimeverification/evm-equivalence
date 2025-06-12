@@ -490,9 +490,8 @@ theorem X_add_equiv
       (add safe (by rw [intMap_sub_dist])) (add safe (by apply le_of_lt))
     . -- `sub` case
       sorry
-  · aesop (add simp [GasConstants.Gverylow, intMap, UInt256.toSigned])
-      (add simp [intMap_toNat, UInt256.ofNat_toNat])
-      (add safe (by contradiction))
+  · cases op <;> simp [C'_comp, arith_op.from_k] <;>
+    rw [intMap_toNat] <;> aesop (add safe (by linarith))
   · simp_all [sizeWordStack_def]
 
 end AddOpcodeEquivalence
