@@ -13,6 +13,7 @@ inductive arith_op where
 | add
 | sub
 | div
+| sdiv
 deriving BEq, DecidableEq
 
 section
@@ -34,24 +35,28 @@ variable (symValidJumps : Array UInt256)
 abbrev addEVM := @Operation.ADD .EVM
 abbrev subEVM := @Operation.SUB .EVM
 abbrev divEVM := @Operation.DIV .EVM
+abbrev sdivEVM := @Operation.SDIV .EVM
 
 abbrev add_instr : Option (Operation .EVM × Option (UInt256 × Nat)) := some ⟨addEVM, none⟩
 abbrev sub_instr : Option (Operation .EVM × Option (UInt256 × Nat)) := some ⟨subEVM, none⟩
 abbrev div_instr : Option (Operation .EVM × Option (UInt256 × Nat)) := some ⟨divEVM, none⟩
+abbrev sdiv_instr : Option (Operation .EVM × Option (UInt256 × Nat)) := some ⟨sdivEVM, none⟩
 
 @[simp]
 def arith_op.get : (Option (Operation .EVM × Option (UInt256 × Nat))) :=
   match op with
-  | .add => add_instr
-  | .sub => sub_instr
-  | .div => div_instr
+  | .add  => add_instr
+  | .sub  => sub_instr
+  | .div  => div_instr
+  | .sdiv => sdiv_instr
 
 --@[simp]
 def arith_op.t : Operation .EVM :=
   match op with
-  | .add => (add_instr.get rfl).1
-  | .sub => (sub_instr.get rfl).1
-  | .div => (div_instr.get rfl).1
+  | .add  => (add_instr.get rfl).1
+  | .sub  => (sub_instr.get rfl).1
+  | .div  => (div_instr.get rfl).1
+  | .sdiv => (sdiv_instr.get rfl).1
 
 def EVM.step_arith : Transformer := EVM.step gas gasCost op.get
 
@@ -60,9 +65,10 @@ def EvmYul.step_arith : Transformer := @EvmYul.step .EVM op.t
 @[simp]
 def arith_op.do :=
   match op with
-  | .add => word₁ + word₂
-  | .sub => word₁ - word₂
-  | .div => word₁ / word₂
+  | .add  => word₁ + word₂
+  | .sub  => word₁ - word₂
+  | .div  => word₁ / word₂
+  | .sdiv => word₁.sdiv word₂
 
 theorem EvmYul.step_sub_summary (symState : EVM.State):
   EvmYul.step_arith op {symState with
@@ -180,9 +186,10 @@ theorem array_append_size_le {α : Type} (a1 a2 : Array α) :
 @[simp]
 def arith_op.to_bin : ByteArray :=
   match op with
-  | .add => ⟨#[0x1]⟩
-  | .sub => ⟨#[0x3]⟩
-  | .div => ⟨#[0x4]⟩
+  | .add  => ⟨#[0x1]⟩
+  | .sub  => ⟨#[0x3]⟩
+  | .div  => ⟨#[0x4]⟩
+  | .sdiv => ⟨#[0x5]⟩
 
 @[simp]
 theorem decode_singleton_add :
@@ -193,6 +200,9 @@ theorem decode_singleton_sub :
 @[simp]
 theorem decode_singleton_div :
   decode ⟨#[0x4]⟩ (.ofNat 0) = some ⟨divEVM, none⟩ := rfl
+@[simp]
+theorem decode_singleton_sdiv :
+  decode ⟨#[0x5]⟩ (.ofNat 0) = some ⟨sdivEVM, none⟩ := rfl
 
 @[simp]
 theorem decode_singleton_arith :
