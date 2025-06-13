@@ -134,6 +134,7 @@ inductive SortBinStackOp : Type where
   | DIV_EVM_BinStackOp : SortBinStackOp
   | MSTORE_EVM_BinStackOp : SortBinStackOp
   | MSTORE8_EVM_BinStackOp : SortBinStackOp
+  | SDIV_EVM_BinStackOp : SortBinStackOp
   | SSTORE_EVM_BinStackOp : SortBinStackOp
   | SUB_EVM_BinStackOp : SortBinStackOp
   deriving BEq, DecidableEq
