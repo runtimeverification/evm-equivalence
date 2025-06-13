@@ -12,15 +12,18 @@ namespace DivOpcodeEquivalence
 
 inductive arith_op where
   | div
+  | sdiv
 
 variable (op : arith_op)
 
 @[simp]
 def arith_op.to_binop : arith_op → SortBinStackOp
-  | .div => .DIV_EVM_BinStackOp
+  | .div  => .DIV_EVM_BinStackOp
+  | .sdiv => .SDIV_EVM_BinStackOp
 
 def arith_op.from_k : arith_op → AddSummary.arith_op
- | .div => .div
+ | .div  => .div
+ | .sdiv => .sdiv
 
 def divLHS
   {GAS_CELL PC_CELL W0 W1 : SortInt}
@@ -163,7 +166,8 @@ def divRHS
 
 def arith_op.to_defn_Val3 (W0 W1 _Val3 : SortInt) : Prop :=
   match op with
-  | .div => «_/Word__EVM-TYPES_Int_Int_Int» W0 W1 = some _Val3
+  | .div  => «_/Word__EVM-TYPES_Int_Int_Int» W0 W1 = some _Val3
+  | .sdiv => «_/sWord__EVM-TYPES_Int_Int_Int» W0 W1 = some _Val3
 
 theorem rw_addLHS_addRHS
   {GAS_CELL PC_CELL W0 W1 _Val0 _Val3 _Val4 _Val5 _Val6 : SortInt}
@@ -200,7 +204,7 @@ theorem rw_addLHS_addRHS
   (defn_Val0 : «_<_>_SCHEDULE_Int_ScheduleConst_Schedule» SortScheduleConst.Glow_SCHEDULE_ScheduleConst SCHEDULE_CELL = some _Val0)
   (defn_Val1 : «_<=Int_» _Val0 GAS_CELL = some _Val1)
   (defn_Val2 : _andBool_ USEGAS_CELL _Val1 = some _Val2)
-  (defn_Val3 : «_/Word__EVM-TYPES_Int_Int_Int» W0 W1 = some _Val3)
+  (defn_Val3 : op.to_defn_Val3 W0 W1 _Val3)
   (defn_Val4 : «_+Int_» PC_CELL 1 = some _Val4)
   (defn_Val5 : «_<_>_SCHEDULE_Int_ScheduleConst_Schedule» SortScheduleConst.Glow_SCHEDULE_ScheduleConst SCHEDULE_CELL = some _Val5)
   (defn_Val6 : «_-Int_» GAS_CELL _Val5 = some _Val6)
@@ -216,6 +220,8 @@ theorem rw_addLHS_addRHS
   _Gen23 _Gen3 _Gen4 _Gen5 _Gen6 _Gen7 _Gen8 _Gen9 _K_CELL) := by
   cases op
   . apply (@Rewrites.DIV_SUMMARY_DIV_SUMMARY_USEGAS GAS_CELL PC_CELL W0 W1 _Val0)
+    <;> assumption
+  . apply (@Rewrites.SDIV_SUMMARY_SDIV_SUMMARY_USEGAS GAS_CELL PC_CELL W0 W1 _Val0)
     <;> assumption
 
 theorem div_prestate_equiv
@@ -291,6 +297,7 @@ theorem divWord_divInt_eq (n m : SortInt):
 def arith_op.do : SortInt → SortInt → SortInt :=
   match op with
   | .div => (divWord · ·)
+  | .sdiv => (divWord · ·) -- Blatantly wrong
 
 theorem div_poststate_equiv
   {PC_CELL W0 W1 _Val3 _Val4 _Val5 _Val6 : SortInt}
@@ -350,15 +357,21 @@ theorem div_poststate_equiv
            }
     returnData := _Gen11.val
     } := by
-    aesop (add simp [«_-Int_»,«_+Int_», chop'])
+    cases op
+    . -- `div`
+      aesop (add simp [«_-Int_»,«_+Int_», chop'])
     (add simp [arith_op.to_defn_Val3, divRHS, stateMap, divWord_divInt_eq])
+    . -- `sdiv`
+      -- To prove this, first `arith_op.do` needs to be fixed for `sdiv`
+      sorry
 
 
 open AddSummary
 
 def arith_op.gas :=
   match op with
-  | .div => GasConstants.Glow
+  | .div  => GasConstants.Glow
+  | .sdiv => GasConstants.Glow
 
 -- We cannot prove full equivalence for the `EVM.step` function
 -- This is because it doesn't include all semantics such as gas computation
@@ -397,7 +410,7 @@ theorem step_add_equiv
   (defn_Val0 : «_<_>_SCHEDULE_Int_ScheduleConst_Schedule» SortScheduleConst.Glow_SCHEDULE_ScheduleConst SCHEDULE_CELL = some _Val0)
   (defn_Val1 : «_<=Int_» _Val0 GAS_CELL = some _Val1)
   (defn_Val2 : _andBool_ USEGAS_CELL _Val1 = some _Val2)
-  (defn_Val3 : «_/Word__EVM-TYPES_Int_Int_Int» W0 W1 = some _Val3)
+  (defn_Val3 : op.to_defn_Val3 W0 W1 _Val3)
   (defn_Val4 : «_+Int_» PC_CELL 1 = some _Val4)
   (defn_Val5 : «_<_>_SCHEDULE_Int_ScheduleConst_Schedule» SortScheduleConst.Glow_SCHEDULE_ScheduleConst SCHEDULE_CELL = some _Val5)
   (defn_Val6 : «_-Int_» GAS_CELL _Val5 = some _Val6)
@@ -438,6 +451,9 @@ theorem step_add_equiv
     . rw [←UInt256.add_succ_mod_size, intMap_add_dist] <;> aesop
     . cases op <;> simp [arith_op.from_k]
       . -- `div` case
+        sorry
+      . -- `sdiv`
+      -- To prove this, first `arith_op.do` needs to be fixed for `sdiv`
         sorry
 
 attribute [local simp] GasConstants.Glow
@@ -485,7 +501,7 @@ theorem X_add_equiv
   (defn_Val0 : «_<_>_SCHEDULE_Int_ScheduleConst_Schedule» SortScheduleConst.Glow_SCHEDULE_ScheduleConst SCHEDULE_CELL = some _Val0)
   (defn_Val1 : «_<=Int_» _Val0 GAS_CELL = some _Val1)
   (defn_Val2 : _andBool_ USEGAS_CELL _Val1 = some _Val2)
-  (defn_Val3 : «_/Word__EVM-TYPES_Int_Int_Int» W0 W1 = some _Val3)
+  (defn_Val3 : op.to_defn_Val3 W0 W1 _Val3)
   (defn_Val4 : «_+Int_» PC_CELL 1 = some _Val4)
   (defn_Val5 : «_<_>_SCHEDULE_Int_ScheduleConst_Schedule» SortScheduleConst.Glow_SCHEDULE_ScheduleConst SCHEDULE_CELL = some _Val5)
   (defn_Val6 : «_-Int_» GAS_CELL _Val5 = some _Val6)
@@ -528,8 +544,13 @@ theorem X_add_equiv
       aesop (add simp [GasInterface.cancun_def, «_-Int_», chop_def, plusInt_def, intMap_add_dist, divLHS, divRHS])
       (add safe (by rw [intMap_sub_dist])) (add safe (by apply le_of_lt))
       sorry
+    . -- `sdiv`
+      -- To prove this, first `arith_op.do` needs to be fixed for `sdiv`
+      aesop (add simp [GasInterface.cancun_def, «_-Int_», chop_def, plusInt_def, intMap_add_dist, divLHS, divRHS])
+      (add safe (by rw [intMap_sub_dist])) (add safe (by apply le_of_lt))
+      sorry
   · cases op <;> simp [C'_comp, arith_op.from_k] <;>
     rw [intMap_toNat] <;> aesop (add safe (by linarith))
   · simp_all [sizeWordStack_def]
 
-end AddOpcodeEquivalence
+end DivOpcodeEquivalence
