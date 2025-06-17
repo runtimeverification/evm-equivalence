@@ -15,6 +15,7 @@ inductive arith_op where
 | div
 | sdiv
 | mod
+| smod
 deriving BEq, DecidableEq
 
 section
@@ -38,12 +39,14 @@ abbrev subEVM := @Operation.SUB .EVM
 abbrev divEVM := @Operation.DIV .EVM
 abbrev sdivEVM := @Operation.SDIV .EVM
 abbrev modEVM := @Operation.MOD .EVM
+abbrev smodEVM := @Operation.SMOD .EVM
 
 abbrev add_instr : Option (Operation .EVM × Option (UInt256 × Nat)) := some ⟨addEVM, none⟩
 abbrev sub_instr : Option (Operation .EVM × Option (UInt256 × Nat)) := some ⟨subEVM, none⟩
 abbrev div_instr : Option (Operation .EVM × Option (UInt256 × Nat)) := some ⟨divEVM, none⟩
 abbrev sdiv_instr : Option (Operation .EVM × Option (UInt256 × Nat)) := some ⟨sdivEVM, none⟩
 abbrev mod_instr : Option (Operation .EVM × Option (UInt256 × Nat)) := some ⟨modEVM, none⟩
+abbrev smod_instr : Option (Operation .EVM × Option (UInt256 × Nat)) := some ⟨smodEVM, none⟩
 
 @[simp]
 def arith_op.get : (Option (Operation .EVM × Option (UInt256 × Nat))) :=
@@ -53,6 +56,7 @@ def arith_op.get : (Option (Operation .EVM × Option (UInt256 × Nat))) :=
   | .div  => div_instr
   | .sdiv => sdiv_instr
   | .mod  => mod_instr
+  | .smod => smod_instr
 
 --@[simp]
 def arith_op.t : Operation .EVM :=
@@ -62,6 +66,7 @@ def arith_op.t : Operation .EVM :=
   | .div  => (div_instr.get rfl).1
   | .sdiv => (sdiv_instr.get rfl).1
   | .mod => (mod_instr.get rfl).1
+  | .smod => (smod_instr.get rfl).1
 
 def EVM.step_arith : Transformer := EVM.step gas gasCost op.get
 
@@ -75,6 +80,7 @@ def arith_op.do :=
   | .div  => word₁ / word₂
   | .sdiv => word₁.sdiv word₂
   | .mod  => word₁.mod word₂
+  | .smod  => word₁.smod word₂
 
 theorem EvmYul.step_sub_summary (symState : EVM.State):
   EvmYul.step_arith op {symState with
@@ -197,6 +203,7 @@ def arith_op.to_bin : ByteArray :=
   | .div  => ⟨#[0x4]⟩
   | .sdiv => ⟨#[0x5]⟩
   | .mod  => ⟨#[0x6]⟩
+  | .smod => ⟨#[0x7]⟩
 
 @[simp]
 theorem decode_singleton_add :
@@ -213,6 +220,9 @@ theorem decode_singleton_sdiv :
 @[simp]
 theorem decode_singleton_mod :
   decode ⟨#[0x6]⟩ (.ofNat 0) = some ⟨modEVM, none⟩ := rfl
+@[simp]
+theorem decode_singleton_smod :
+  decode ⟨#[0x7]⟩ (.ofNat 0) = some ⟨smodEVM, none⟩ := rfl
 
 @[simp]
 theorem decode_singleton_arith :
