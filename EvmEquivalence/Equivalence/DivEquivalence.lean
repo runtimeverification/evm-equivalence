@@ -14,6 +14,7 @@ inductive arith_op where
   | div
   | sdiv
   | mod
+  | smod
 
 variable (op : arith_op)
 
@@ -22,11 +23,13 @@ def arith_op.to_binop : arith_op → SortBinStackOp
   | .div  => .DIV_EVM_BinStackOp
   | .sdiv => .SDIV_EVM_BinStackOp
   | .mod  => .MOD_EVM_BinStackOp
+  | .smod => .SMOD_EVM_BinStackOp
 
 def arith_op.from_k : arith_op → AddSummary.arith_op
  | .div  => .div
  | .sdiv => .sdiv
  | .mod  => .mod
+ | .smod => .smod
 
 def divLHS
   {GAS_CELL PC_CELL W0 W1 : SortInt}
@@ -169,9 +172,10 @@ def divRHS
 
 def arith_op.to_defn_Val3 (W0 W1 _Val3 : SortInt) : Prop :=
   match op with
-  | .div  => «_/Word__EVM-TYPES_Int_Int_Int» W0 W1 = some _Val3
+  | .div  => «_/Word__EVM-TYPES_Int_Int_Int» W0 W1  = some _Val3
   | .sdiv => «_/sWord__EVM-TYPES_Int_Int_Int» W0 W1 = some _Val3
-  | .mod  => «_%Word__EVM-TYPES_Int_Int_Int» W0 W1 = some _Val3
+  | .mod  => «_%Word__EVM-TYPES_Int_Int_Int» W0 W1  = some _Val3
+  | .smod => «_%sWord__EVM-TYPES_Int_Int_Int» W0 W1 = some _Val3
 
 theorem rw_addLHS_addRHS
   {GAS_CELL PC_CELL W0 W1 _Val0 _Val3 _Val4 _Val5 _Val6 : SortInt}
@@ -228,6 +232,8 @@ theorem rw_addLHS_addRHS
   . apply (@Rewrites.SDIV_SUMMARY_SDIV_SUMMARY_USEGAS GAS_CELL PC_CELL W0 W1 _Val0)
     <;> assumption
   . apply (@Rewrites.MOD_SUMMARY_MOD_SUMMARY_USEGAS GAS_CELL PC_CELL W0 W1 _Val0)
+    <;> assumption
+  . apply (@Rewrites.SMOD_SUMMARY_SMOD_SUMMARY_USEGAS GAS_CELL PC_CELL W0 W1 _Val0)
     <;> assumption
 
 theorem div_prestate_equiv
@@ -305,6 +311,7 @@ def arith_op.do : SortInt → SortInt → SortInt :=
   | .div  => (divWord · ·)
   | .sdiv => (divWord · ·) -- Blatantly wrong
   | .mod  => (divWord · ·) -- Blatantly wrong
+  | .smod => (divWord · ·) -- Blatantly wrong
 
 theorem div_poststate_equiv
   {PC_CELL W0 W1 _Val3 _Val4 _Val5 _Val6 : SortInt}
@@ -376,6 +383,10 @@ theorem div_poststate_equiv
       -- To prove this, first `arith_op.do` needs to be fixed for `mod`
       aesop (add simp [«_-Int_»,«_+Int_», arith_op.to_defn_Val3, divRHS, stateMap])
       sorry
+    . -- `smod`
+      -- To prove this, first `arith_op.do` needs to be fixed for `smod`
+      aesop (add simp [«_-Int_»,«_+Int_», arith_op.to_defn_Val3, divRHS, stateMap])
+      sorry
 
 
 open AddSummary
@@ -385,6 +396,7 @@ def arith_op.gas :=
   | .div  => GasConstants.Glow
   | .sdiv => GasConstants.Glow
   | .mod  => GasConstants.Glow
+  | .smod => GasConstants.Glow
 
 -- We cannot prove full equivalence for the `EVM.step` function
 -- This is because it doesn't include all semantics such as gas computation
@@ -470,6 +482,9 @@ theorem step_add_equiv
         sorry
       .  -- `mod`
       -- To prove this, first `arith_op.do` needs to be fixed for `mod`
+        sorry
+      .  -- `smod`
+      -- To prove this, first `arith_op.do` needs to be fixed for `smod`
         sorry
 
 attribute [local simp] GasConstants.Glow
@@ -567,6 +582,11 @@ theorem X_add_equiv
       sorry
     . -- `mod`
       -- To prove this, first `arith_op.do` needs to be fixed for `mod`
+      aesop (add simp [GasInterface.cancun_def, «_-Int_», chop_def, plusInt_def, intMap_add_dist, divLHS, divRHS])
+      (add safe (by rw [intMap_sub_dist])) (add safe (by apply le_of_lt))
+      sorry
+    . -- `smod`
+      -- To prove this, first `arith_op.do` needs to be fixed for `smod`
       aesop (add simp [GasInterface.cancun_def, «_-Int_», chop_def, plusInt_def, intMap_add_dist, divLHS, divRHS])
       (add safe (by rw [intMap_sub_dist])) (add safe (by apply le_of_lt))
       sorry
