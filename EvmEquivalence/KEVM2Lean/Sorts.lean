@@ -8,6 +8,7 @@ inductive SortStatusCode : Type where
 
 inductive SortTernStackOp : Type where
   | ADDMOD_EVM_TernStackOp : SortTernStackOp
+  | MULMOD_EVM_TernStackOp : SortTernStackOp
   deriving BEq, DecidableEq
 
 inductive SortScheduleConst : Type where
