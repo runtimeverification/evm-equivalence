@@ -17,6 +17,7 @@ inductive arith_op where
 | mod
 | smod
 | addmod
+| mulmod
 | signextend
 deriving BEq, DecidableEq
 
@@ -43,6 +44,7 @@ abbrev sdivEVM := @Operation.SDIV .EVM
 abbrev modEVM := @Operation.MOD .EVM
 abbrev smodEVM := @Operation.SMOD .EVM
 abbrev addmodEVM := @Operation.ADDMOD .EVM
+abbrev mulmodEVM := @Operation.MULMOD .EVM
 abbrev signextendEVM := @Operation.SIGNEXTEND .EVM
 
 abbrev add_instr : Option (Operation .EVM × Option (UInt256 × Nat)) := some ⟨addEVM, none⟩
@@ -52,6 +54,7 @@ abbrev sdiv_instr : Option (Operation .EVM × Option (UInt256 × Nat)) := some �
 abbrev mod_instr : Option (Operation .EVM × Option (UInt256 × Nat)) := some ⟨modEVM, none⟩
 abbrev smod_instr : Option (Operation .EVM × Option (UInt256 × Nat)) := some ⟨smodEVM, none⟩
 abbrev addmod_instr : Option (Operation .EVM × Option (UInt256 × Nat)) := some ⟨addmodEVM, none⟩
+abbrev mulmod_instr : Option (Operation .EVM × Option (UInt256 × Nat)) := some ⟨mulmodEVM, none⟩
 abbrev signextend_instr : Option (Operation .EVM × Option (UInt256 × Nat)) := some ⟨signextendEVM, none⟩
 
 @[simp]
@@ -64,6 +67,7 @@ def arith_op.get : (Option (Operation .EVM × Option (UInt256 × Nat))) :=
   | .mod  => mod_instr
   | .smod => smod_instr
   | .addmod => addmod_instr
+  | .mulmod => mulmod_instr
   | .signextend => signextend_instr
 
 --@[simp]
@@ -76,6 +80,7 @@ def arith_op.t : Operation .EVM :=
   | .mod => (mod_instr.get rfl).1
   | .smod => (smod_instr.get rfl).1
   | .addmod => (addmod_instr.get rfl).1
+  | .mulmod => (mulmod_instr.get rfl).1
   | .signextend => (signextend_instr.get rfl).1
 
 def EVM.step_arith : Transformer := EVM.step gas gasCost op.get
@@ -92,12 +97,13 @@ def arith_op.do :=
   | .mod  => word₁.mod word₂
   | .smod  => word₁.smod word₂
   | .addmod => word₁.addMod word₂ word₃
+  | .mulmod => word₁.mulMod word₂ word₃
   | .signextend => word₁.signextend word₂
 
 @[simp]
 def arith_op.stack :=
   match op with
-  | .addmod => word₁ :: word₂ :: word₃ :: symStack
+  | .addmod | .mulmod => word₁ :: word₂ :: word₃ :: symStack
   | _ => word₁ :: word₂ :: symStack
 
 theorem EvmYul.step_sub_summary (symState : EVM.State):
@@ -223,6 +229,7 @@ def arith_op.to_bin : ByteArray :=
   | .mod  => ⟨#[0x6]⟩
   | .smod => ⟨#[0x7]⟩
   | .addmod => ⟨#[0x8]⟩
+  | .mulmod => ⟨#[0x9]⟩
   | .signextend => ⟨#[0xB]⟩
 
 @[simp]
@@ -247,6 +254,9 @@ theorem decode_singleton_smod :
 theorem decode_singleton_addmod :
   decode ⟨#[0x8]⟩ (.ofNat 0) = some ⟨addmodEVM, none⟩ := rfl
 @[simp]
+theorem decode_singleton_mulmod :
+  decode ⟨#[0x9]⟩ (.ofNat 0) = some ⟨mulmodEVM, none⟩ := rfl
+@[simp]
 theorem decode_singleton_signextend :
   decode ⟨#[0xB]⟩ (.ofNat 0) = some ⟨signextendEVM, none⟩ := rfl
 
@@ -262,7 +272,7 @@ theorem memoryExpansionCost_arith (symState : EVM.State) :
 def arith_op.C'_comp :=
   match op with
   | .add | .sub => GasConstants.Gverylow
-  | .addmod => GasConstants.Gmid
+  | .addmod | .mulmod => GasConstants.Gmid
   | _ => GasConstants.Glow
 
 @[simp]
@@ -272,7 +282,7 @@ theorem C'_arith (symState : EVM.State) :
 @[simp]
 def arith_op.to_stack_length :=
   match op with
-  | .addmod => 1023
+  | .addmod | .mulmod => 1023
   | _ => 1024
 
 attribute [local simp] GasConstants.Gverylow GasConstants.Glow GasConstants.Gmid
