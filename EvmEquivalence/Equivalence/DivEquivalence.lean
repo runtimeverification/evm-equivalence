@@ -481,6 +481,10 @@ theorem step_add_equiv
   <;> try assumption
   cases gas; contradiction
   case succ gas =>
+    have : intMap W0 :: intMap W1 :: wordStackMap WS =
+    op.from_k.stack (intMap W0) (intMap W1) (intMap W1) (wordStackMap WS) := by
+      cases op <;> aesop
+    rw [this]
     rw [EVM.step_add_summary] <;> try assumption
     simp [divLHS, divRHS]; constructor <;> try constructor
     . aesop (add simp [arith_op.gas, GasConstants.Glow, GasInterface.cancun_def, «_-Int_», intMap_sub_dist])
@@ -583,7 +587,10 @@ theorem X_add_equiv
   <;> try assumption
   -- If we don't apply this lemma we cannot rewrite X_add_summary
   have pc_equiv : intMap 0 = UInt256.ofNat 0 := rfl
-  rw [pc_equiv, X_arith_summary]
+  have : intMap W0 :: intMap W1 :: wordStackMap WS =
+    op.from_k.stack (intMap W0) (intMap W1) (intMap W1) (wordStackMap WS) := by
+      cases op <;> aesop
+  rw [this, pc_equiv, X_arith_summary]
   · cases op <;> simp [arith_op.from_k]
     . -- `div` case
       aesop (add simp [GasInterface.cancun_def, «_-Int_», chop_def, plusInt_def, intMap_add_dist, divLHS, divRHS])
@@ -609,8 +616,8 @@ theorem X_add_equiv
       aesop (add simp [GasInterface.cancun_def, «_-Int_», chop_def, plusInt_def, intMap_add_dist, divLHS, divRHS])
       (add safe (by rw [intMap_sub_dist])) (add safe (by apply le_of_lt))
       sorry
-  · cases op <;> simp [C'_comp, arith_op.from_k] <;>
+  · cases op <;> simp [arith_op.C'_comp, arith_op.from_k] <;>
     rw [intMap_toNat] <;> aesop (add safe (by linarith))
-  · simp_all [sizeWordStack_def]
+  · cases op <;> simp_all [arith_op.from_k, sizeWordStack_def]
 
 end DivOpcodeEquivalence
