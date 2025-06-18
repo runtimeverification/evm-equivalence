@@ -14,6 +14,7 @@ inductive arith_op where
   | add
   | sub
   | addmod
+  | mulmod
 
 variable (op : arith_op)
 
@@ -22,6 +23,7 @@ def arith_op.to_binop : arith_op → SortBinStackOp ⊕ SortTernStackOp
   | .add => .inl .ADD_EVM_BinStackOp
   | .sub => .inl .SUB_EVM_BinStackOp
   | .addmod => .inr .ADDMOD_EVM_TernStackOp
+  | .mulmod => .inr .MULMOD_EVM_TernStackOp
 
 @[simp]
 def arith_op.to_maybeOpcode : SortMaybeOpCode :=
@@ -33,6 +35,7 @@ def arith_op.from_k : arith_op → AddSummary.arith_op
  | .add => .add
  | .sub => .sub
  | .addmod => .addmod
+ | .mulmod => .mulmod
 
 @[simp]
 def arith_op.to_stack (W0 W1 W2 : SortInt) (WS : SortWordStack) : SortWordStack :=
@@ -183,16 +186,17 @@ def arith_op.to_defn_Val3 (W0 W1 _Val3 : SortInt) : Prop :=
   match op with
   | .add | .addmod => «_+Int_» W0 W1 = some _Val3
   | .sub => «_-Int_» W0 W1 = some _Val3
+  | .mulmod => «_*Int_» W0 W1 = some _Val3
 
 def arith_op.to_defn_Val4 (_Val3 _Val4 W2: SortInt) : Prop :=
   match op with
   | .add | .sub => chop _Val3 = some _Val4
-  | .addmod => «_%Word__EVM-TYPES_Int_Int_Int» _Val3 W2 = some _Val4
+  | .addmod | .mulmod => «_%Word__EVM-TYPES_Int_Int_Int» _Val3 W2 = some _Val4
 
 @[simp]
 def arith_op.to_gas : arith_op → SortScheduleConst
  | .add | .sub => .Gverylow_SCHEDULE_ScheduleConst
- | .addmod => .Gmid_SCHEDULE_ScheduleConst
+ | .addmod | .mulmod => .Gmid_SCHEDULE_ScheduleConst
 
 theorem rw_addLHS_addRHS
   {GAS_CELL PC_CELL W0 W1 W2 _Val0 _Val3 _Val4 _Val5 _Val6 _Val7 : SortInt}
@@ -244,6 +248,8 @@ theorem rw_addLHS_addRHS
   . apply (@Rewrites.SUB_SUMMARY_SUB_SUMMARY_USEGAS GAS_CELL PC_CELL W0 W1 _Val0)
     <;> assumption
   . apply (@Rewrites.ADDMOD_SUMMARY_ADDMOD_SUMMARY_USEGAS GAS_CELL PC_CELL W0 W1 W2 _Val0)
+    <;> assumption
+  . apply (@Rewrites.MULMOD_SUMMARY_MULMOD_SUMMARY_USEGAS GAS_CELL PC_CELL W0 W1 W2 _Val0)
     <;> assumption
 
 theorem add_prestate_equiv
@@ -316,11 +322,12 @@ def arith_op.do (W0 W1 W2 : SortInt) : SortInt :=
   | .add => chop' (W0 + W1)
   | .sub => chop' (W0 - W1)
   | .addmod => modWord (W0 + W1) W2
+  | .mulmod => modWord (W0 * W1) W2
 
 @[simp]
 def arith_op.gas_comp : arith_op → SortInt
   | .add | .sub => 3
-  | .addmod => 8
+  | .addmod | .mulmod => 8
 
 theorem add_poststate_equiv
   {PC_CELL W0 W1 W2 _Val0 _Val3 _Val4 _Val5 _Val6 _Val7 : SortInt}
@@ -377,8 +384,8 @@ theorem add_poststate_equiv
            }
     returnData := _Gen11.val
     } := by
-    aesop (add simp [«_-Int_»,«_+Int_»,chop', chopIsSome, arith_op.to_defn_Val3])
-    (add simp [arith_op.to_defn_Val4, addRHS, stateMap])
+    aesop (add simp [«_-Int_», «_+Int_», «_*Int_», chop', chopIsSome])
+    (add simp [arith_op.to_defn_Val3, arith_op.to_defn_Val4, addRHS, stateMap])
 
 open AddSummary
 
@@ -460,6 +467,8 @@ theorem step_add_equiv
       . -- `sub` case
         sorry
       . -- `addmod` case
+        sorry
+      . -- `mulmod` case
         sorry
 
 
@@ -548,6 +557,8 @@ theorem X_add_equiv
     . -- `sub` case
       sorry
     . -- `addmod` case
+      sorry
+    . -- `mulmod` case
       sorry
   · simp [GasInterface.cancun_def] at defn_Val6 defn_Val0
     simp [defn_Val6] at defn_Val0
