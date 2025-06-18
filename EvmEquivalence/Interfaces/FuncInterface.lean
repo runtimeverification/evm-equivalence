@@ -50,7 +50,7 @@ theorem mulInt_def : «_*Int'_» n m = n * m := rfl
 -- Behavior for `chop`
 theorem chopIsSome : chop n = some (n % UInt256.size) := rfl
 
-noncomputable def chop' (n : SortInt) : SortInt :=
+def chop' (n : SortInt) : SortInt :=
   (chop n).get (by simp [chopIsSome])
 
 theorem chop_def (n : SortInt) : chop' n = n % UInt256.size := by
