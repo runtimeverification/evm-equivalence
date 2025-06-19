@@ -591,7 +591,7 @@ theorem X_add_equiv
     op.from_k.stack (intMap W0) (intMap W1) (intMap W1) (wordStackMap WS) := by
       cases op <;> aesop
   rw [this, pc_equiv, X_arith_summary]
-  · cases op <;> simp [arith_op.from_k]
+  · cases op <;> simp [arith_op.from_k, arith_op.C'_comp, arith_op.C'_noexp]
     . -- `div` case
       aesop (add simp [GasInterface.cancun_def, «_-Int_», chop_def, plusInt_def, intMap_add_dist, divLHS, divRHS])
       (add safe (by rw [intMap_sub_dist])) (add safe (by apply le_of_lt))
@@ -616,8 +616,8 @@ theorem X_add_equiv
       aesop (add simp [GasInterface.cancun_def, «_-Int_», chop_def, plusInt_def, intMap_add_dist, divLHS, divRHS])
       (add safe (by rw [intMap_sub_dist])) (add safe (by apply le_of_lt))
       sorry
+  · cases op <;> simp_all [arith_op.from_k, sizeWordStack_def]
   · cases op <;> simp [arith_op.C'_comp, arith_op.from_k] <;>
     rw [intMap_toNat] <;> aesop (add safe (by linarith))
-  · cases op <;> simp_all [arith_op.from_k, sizeWordStack_def]
 
 end DivOpcodeEquivalence
