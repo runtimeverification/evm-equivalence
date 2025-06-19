@@ -441,7 +441,7 @@ theorem step_add_equiv
   (cancun : SCHEDULE_CELL = .CANCUN_EVM)
   (gasEnough : 0 < gas)
   (gavailSmall : GAS_CELL < ↑UInt256.size)
-  (gasCostValue : gasCost = op.from_k.C'_comp)
+  (gasCostValue : gasCost = op.from_k.C'_noexp)
   (pcountSmall : PC_CELL + 1 < UInt256.size)
   (pcountNonneg : 0 ≤ PC_CELL)
   (W0ge0 : 0 ≤ W0)
@@ -560,10 +560,10 @@ theorem X_add_equiv
       sorry
     . -- `mulmod` case
       sorry
+  · simp_all [sizeWordStack_def]
   · simp [GasInterface.cancun_def] at defn_Val6 defn_Val0
     simp [defn_Val6] at defn_Val0
     cases op <;> simp [arith_op.from_k] <;>
     rw [intMap_toNat] <;> aesop (add safe (by linarith))
-  · simp_all [sizeWordStack_def]
 
 end AddOpcodeEquivalence
