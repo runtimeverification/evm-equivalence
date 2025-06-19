@@ -18,6 +18,7 @@ inductive arith_op where
 | smod
 | addmod
 | mulmod
+| exp
 | signextend
 deriving BEq, DecidableEq
 
@@ -45,6 +46,7 @@ abbrev modEVM := @Operation.MOD .EVM
 abbrev smodEVM := @Operation.SMOD .EVM
 abbrev addmodEVM := @Operation.ADDMOD .EVM
 abbrev mulmodEVM := @Operation.MULMOD .EVM
+abbrev expEVM := @Operation.EXP .EVM
 abbrev signextendEVM := @Operation.SIGNEXTEND .EVM
 
 abbrev add_instr : Option (Operation .EVM × Option (UInt256 × Nat)) := some ⟨addEVM, none⟩
@@ -55,6 +57,7 @@ abbrev mod_instr : Option (Operation .EVM × Option (UInt256 × Nat)) := some �
 abbrev smod_instr : Option (Operation .EVM × Option (UInt256 × Nat)) := some ⟨smodEVM, none⟩
 abbrev addmod_instr : Option (Operation .EVM × Option (UInt256 × Nat)) := some ⟨addmodEVM, none⟩
 abbrev mulmod_instr : Option (Operation .EVM × Option (UInt256 × Nat)) := some ⟨mulmodEVM, none⟩
+abbrev exp_instr : Option (Operation .EVM × Option (UInt256 × Nat)) := some ⟨expEVM, none⟩
 abbrev signextend_instr : Option (Operation .EVM × Option (UInt256 × Nat)) := some ⟨signextendEVM, none⟩
 
 @[simp]
@@ -68,6 +71,7 @@ def arith_op.get : (Option (Operation .EVM × Option (UInt256 × Nat))) :=
   | .smod => smod_instr
   | .addmod => addmod_instr
   | .mulmod => mulmod_instr
+  | .exp => exp_instr
   | .signextend => signextend_instr
 
 --@[simp]
@@ -81,6 +85,7 @@ def arith_op.t : Operation .EVM :=
   | .smod => (smod_instr.get rfl).1
   | .addmod => (addmod_instr.get rfl).1
   | .mulmod => (mulmod_instr.get rfl).1
+  | .exp => (exp_instr.get rfl).1
   | .signextend => (signextend_instr.get rfl).1
 
 def EVM.step_arith : Transformer := EVM.step gas gasCost op.get
@@ -98,6 +103,7 @@ def arith_op.do :=
   | .smod  => word₁.smod word₂
   | .addmod => word₁.addMod word₂ word₃
   | .mulmod => word₁.mulMod word₂ word₃
+  | .exp => word₁.exp word₂
   | .signextend => word₁.signextend word₂
 
 @[simp]
@@ -230,6 +236,7 @@ def arith_op.to_bin : ByteArray :=
   | .smod => ⟨#[0x7]⟩
   | .addmod => ⟨#[0x8]⟩
   | .mulmod => ⟨#[0x9]⟩
+  | .exp => ⟨#[0xA]⟩
   | .signextend => ⟨#[0xB]⟩
 
 @[simp]
@@ -257,6 +264,9 @@ theorem decode_singleton_addmod :
 theorem decode_singleton_mulmod :
   decode ⟨#[0x9]⟩ (.ofNat 0) = some ⟨mulmodEVM, none⟩ := rfl
 @[simp]
+theorem decode_singleton_exp :
+  decode ⟨#[0xA]⟩ (.ofNat 0) = some ⟨expEVM, none⟩ := rfl
+@[simp]
 theorem decode_singleton_signextend :
   decode ⟨#[0xB]⟩ (.ofNat 0) = some ⟨signextendEVM, none⟩ := rfl
 
@@ -269,15 +279,28 @@ theorem memoryExpansionCost_arith (symState : EVM.State) :
   memoryExpansionCost symState op.t = 0 := by
   cases op <;> simp [arith_op.t, memoryExpansionCost, memoryExpansionCost.μᵢ']
 
-def arith_op.C'_comp :=
+@[simp]
+def C'_exp (symState : EVM.State) :=
+  if (symState.stack[1]?.getD default == { val := 0 }) = true then GasConstants.Gexp
+  else GasConstants.Gexp + GasConstants.Gexpbyte * (1 + Nat.log 256 (symState.stack[1]?.getD default).toNat)
+
+def arith_op.C'_noexp :=
   match op with
   | .add | .sub => GasConstants.Gverylow
   | .addmod | .mulmod => GasConstants.Gmid
   | _ => GasConstants.Glow
 
+def arith_op.C'_comp (symState : EVM.State) :=
+  match op with
+  | .exp => C'_exp symState
+  | _ => op.C'_noexp
+
 @[simp]
 theorem C'_arith (symState : EVM.State) :
-  C' symState op.t =  op.C'_comp := by cases op <;> rfl
+  C' symState op.t = op.C'_comp symState := by
+  cases op <;> aesop (add simp [C', arith_op.t, arith_op.C'_comp, C'_exp])
+
+
 
 @[simp]
 def arith_op.to_stack_length :=
@@ -285,10 +308,10 @@ def arith_op.to_stack_length :=
   | .addmod | .mulmod => 1023
   | _ => 1024
 
-attribute [local simp] GasConstants.Gverylow GasConstants.Glow GasConstants.Gmid
+attribute [local simp] GasConstants.Gverylow GasConstants.Glow GasConstants.Gmid GasConstants.Gexp GasConstants.Gexpbyte
 
 theorem X_arith_summary
-                      (enoughGas : op.C'_comp < symGasAvailable.toNat)
+                      /- (enoughGas : op.C'_comp < symGasAvailable.toNat) -/
                       (symStack_ok : symStack.length < op.to_stack_length)
                       (symState : EVM.State):
   let ss :=
@@ -310,15 +333,15 @@ theorem X_arith_summary
            }
     returnData := symReturnData}
   -- `enoughGas` hypothesis
-  /- C'_comp op < symGasAvailable.toNat → -/
+  op.C'_comp ss < symGasAvailable.toNat →
   X symGasAvailable.toNat symValidJumps ss =
   Except.ok (.success {ss with
         stack := op.do word₁ word₂ word₃ :: symStack,
         pc := .ofNat 1,
-        gasAvailable := symGasAvailable - .ofNat op.C'_comp,
+        gasAvailable := symGasAvailable - .ofNat (op.C'_comp ss),
         returnData := ByteArray.empty,
         execLength := symExecLength + 2} ByteArray.empty):= by
-  intro ss
+  intro ss enoughGas
   cases g_case : symGasAvailable.toNat; rw [g_case] at enoughGas; contradiction
   case succ g_pos =>
   have ss_lt2_f  (n : ℕ) : (n + 1 + 1 < 2) = False := by simp
@@ -326,18 +349,18 @@ theorem X_arith_summary
   have stack_ok_rw : (1024 < List.length symStack + 1) = False := by
     aesop (add safe (by omega))
   have enough_gas_rw : (symGasAvailable.toNat < GasConstants.Gverylow) = False :=
-    by aesop (add simp [arith_op.C'_comp])
+    by aesop (add simp [arith_op.C'_comp, arith_op.C'_noexp])
     (add safe (by omega))
   simp [α, stack_ok_rw, enough_gas_rw]
   have : ((decode ss.executionEnv.code ss.pc).getD (Operation.STOP, none)).1 = op.t := by
     cases op <;> simp [ss, arith_op.t]
   simp [this]
-  have : (ss.gasAvailable.toNat < op.C'_comp) = False := by
+  have : (ss.gasAvailable.toNat < op.C'_comp ss) = False := by
     aesop (add simp [arith_op.C'_comp, ss]) (add safe (by linarith))
   simp [this]
   have gPos : (0 < g_pos) := by
     revert enoughGas; simp [arith_op.C'_comp]
-    cases op <;> simp <;> omega
+    cases op <;> simp [ss] <;> aesop (add safe (by omega))
   have step_rw (cost : ℕ) := (EVM.step_add_summary op word₁ word₂ word₃ g_pos cost symStack (.ofNat 0) symGasAvailable symRefund symActiveWords symExecLength symReturnData op.to_bin symMemory symAccessedStorageKeys symAccounts symCodeOwner symPerm gPos)
   cases cop: op <;> simp [cop] at symStack_ok <;>
   split <;> rename_i evm cost exec <;> try contradiction
