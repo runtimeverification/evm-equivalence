@@ -85,17 +85,26 @@ end -/
 axiom Keq_def (k₁ k₂ : SortK) : «_==K_» k₁ k₂ = some (k₁ == k₂)
 axiom Kneq_def (k₁ k₂ : SortK) : «_=/=K_» k₁ k₂ = some (k₁ != k₂)
 
+-- Behavior of `_orBool_`, `_andBool_` and `notBool_`
+@[simp]
+theorem orBool_def (b₁ b₂ : SortBool) : _orBool_ b₁ b₂ = some (b₁ || b₂) := by
+  aesop (add simp [_orBool_, _7174452])
+@[simp]
+theorem andBool_def (b₁ b₂ : SortBool) : _andBool_ b₁ b₂ = some (b₁ && b₂) := by
+  aesop (add simp [_andBool_, _5b9db8d])
+@[simp]
+theorem notBool_def (b : SortBool) : notBool_ b = some (!b) := by
+  aesop (add simp [notBool_, _17ebc68])
+
 -- Behavior of `==Int` and `=/=Int`
-axiom IntEq_def (n m : SortInt) : «_==Int_» n m = some (n == m)
-axiom IntNEq_def (n m : SortInt) : «_=/=Int_» n m = some (n != m)
+@[simp]
+theorem eqInt_def (n m : SortInt) : «_==Int_» n m = some (n == m) := by aesop
+@[simp]
+theorem neqInt_def (n m : SortInt) : «_=/=Int_» n m = some (n != m) := by
+  aesop (add simp [«_=/=Int_», _4de6e05, Option.bind, not])
+@[simp]
+theorem ltInt_def (n m : SortInt) : «_<Int_» n m = some (decide (n < m)) := rfl
 
--- Behavior of `_orBool_` and `_andBool_`
-axiom orBool_def (b₁ b₂ : SortBool) : _orBool_ b₁ b₂ = some (b₁ || b₂)
-axiom andBool_def (b₁ b₂ : SortBool) : _andBool_ b₁ b₂ = some (b₁ && b₂)
-axiom notBool_def (b : SortBool) : notBool_ b = some (!b)
-
--- Behavior of arithmetical comparisons
-axiom ltInt_def (n m : SortInt) : «_<Int_» n m = some (decide (n < m))
 
 -- Behavior of `«#sizeWordStack»`
 -- Reasoning-friendly #sizeWordStack
