@@ -8,7 +8,9 @@ open EvmYul
 open StateMap
 open KEVMInterface
 
-namespace DivOpcodeEquivalence
+namespace OneOpEquivalence
+
+/- Equivalence proofs for arithmetic opcodes that take one operation to summarize -/
 
 inductive arith_op where
   | div
@@ -34,7 +36,7 @@ def arith_op.from_k : arith_op → AddSummary.arith_op
  | .smod => .smod
  | .signext => .signextend
 
-def divLHS
+def oneOpLHS
   {GAS_CELL PC_CELL W0 W1 : SortInt}
   {SCHEDULE_CELL : SortSchedule}
   {USEGAS_CELL : SortBool}
@@ -103,7 +105,7 @@ def divLHS
         network := _DotVar2 } },
     generatedCounter := _DotVar0 }
 
-def divRHS
+def oneOpRHS
   {_Val3 _Val4 _Val5 _Val6 : SortInt}
   {SCHEDULE_CELL : SortSchedule}
   {_Val1 _Val2 : SortBool}
@@ -180,7 +182,7 @@ def arith_op.to_defn_Val3 (W0 W1 _Val3 : SortInt) : Prop :=
   | .smod => «_%sWord__EVM-TYPES_Int_Int_Int» W0 W1 = some _Val3
   | .signext => «signextend» W0 W1 = some _Val3
 
-theorem rw_addLHS_addRHS
+theorem rw_oneOpLHS_oneOpRHS
   {GAS_CELL PC_CELL W0 W1 _Val0 _Val3 _Val4 _Val5 _Val6 : SortInt}
   {SCHEDULE_CELL : SortSchedule}
   {USEGAS_CELL _Val1 _Val2 : SortBool}
@@ -221,11 +223,11 @@ theorem rw_addLHS_addRHS
   (defn_Val6 : «_-Int_» GAS_CELL _Val5 = some _Val6)
   (req : _Val2 = true):
   Rewrites
-  (@divLHS op GAS_CELL PC_CELL W0 W1 SCHEDULE_CELL USEGAS_CELL WS
+  (@oneOpLHS op GAS_CELL PC_CELL W0 W1 SCHEDULE_CELL USEGAS_CELL WS
   _DotVar0 _DotVar2 _Gen0 _Gen1 _Gen10 _Gen11 _Gen12 _Gen13 _Gen14
   _Gen15 _Gen16 _Gen17 _Gen18 _Gen19 _Gen2 _Gen20 _Gen21 _Gen22
   _Gen23 _Gen3 _Gen4 _Gen5 _Gen6 _Gen7 _Gen8 _Gen9 _K_CELL)
-  (@divRHS _Val3 _Val4 _Val5 _Val6 SCHEDULE_CELL _Val1 _Val2 WS
+  (@oneOpRHS _Val3 _Val4 _Val5 _Val6 SCHEDULE_CELL _Val1 _Val2 WS
   _DotVar0 _DotVar2 _Gen0 _Gen1 _Gen10 _Gen11 _Gen12 _Gen13 _Gen14
   _Gen15 _Gen16 _Gen17 _Gen18 _Gen19 _Gen2 _Gen20 _Gen21 _Gen22
   _Gen23 _Gen3 _Gen4 _Gen5 _Gen6 _Gen7 _Gen8 _Gen9 _K_CELL) := by
@@ -241,7 +243,7 @@ theorem rw_addLHS_addRHS
   . apply (@Rewrites.SIGNEXTEND_SUMMARY_SIGNEXTEND_SUMMARY_USEGAS GAS_CELL PC_CELL W0 W1 _Val0)
     <;> assumption
 
-theorem div_prestate_equiv
+theorem oneOp_prestate_equiv
   {GAS_CELL PC_CELL W0 W1 : SortInt}
   {SCHEDULE_CELL : SortSchedule}
   {USEGAS_CELL : SortBool}
@@ -274,7 +276,7 @@ theorem div_prestate_equiv
   {_Gen9 : SortStaticCell}
   {_K_CELL : SortK}
   (symState : EVM.State):
-  let lhs := (@divLHS op GAS_CELL PC_CELL W0 W1 SCHEDULE_CELL
+  let lhs := (@oneOpLHS op GAS_CELL PC_CELL W0 W1 SCHEDULE_CELL
    USEGAS_CELL WS _DotVar0 _DotVar2 _Gen0 _Gen1 _Gen10 _Gen11
    _Gen12 _Gen13 _Gen14 _Gen15 _Gen16 _Gen17 _Gen18 _Gen19 _Gen2
    _Gen20 _Gen21 _Gen22 _Gen23 _Gen3 _Gen4 _Gen5 _Gen6 _Gen7 _Gen8
@@ -317,7 +319,7 @@ def arith_op.do : SortInt → SortInt → SortInt :=
   | .smod => (divWord · ·) -- Blatantly wrong
   | .signext => (divWord · ·) -- Blatantly wrong
 
-theorem div_poststate_equiv
+theorem oneOp_poststate_equiv
   {PC_CELL W0 W1 _Val3 _Val4 _Val5 _Val6 : SortInt}
   {SCHEDULE_CELL : SortSchedule}
   {_Val1 _Val2 : SortBool}
@@ -352,7 +354,7 @@ theorem div_poststate_equiv
   (defn_Val3 : op.to_defn_Val3 W0 W1 _Val3)
   (defn_Val4 : «_+Int_» PC_CELL 1 = some _Val4)
   (symState : EVM.State):
-  let rhs := (@divRHS _Val3 _Val4 _Val5 _Val6 SCHEDULE_CELL _Val1
+  let rhs := (@oneOpRHS _Val3 _Val4 _Val5 _Val6 SCHEDULE_CELL _Val1
   _Val2 WS _DotVar0 _DotVar2 _Gen0 _Gen1 _Gen10 _Gen11 _Gen12
   _Gen13 _Gen14 _Gen15 _Gen16 _Gen17 _Gen18 _Gen19 _Gen2 _Gen20
   _Gen21 _Gen22 _Gen23 _Gen3 _Gen4 _Gen5 _Gen6 _Gen7 _Gen8 _Gen9
@@ -377,23 +379,23 @@ theorem div_poststate_equiv
     } := by
     cases op
     . -- `div`
-      aesop (add simp [«_-Int_»,«_+Int_», arith_op.to_defn_Val3, divRHS, stateMap])
+      aesop (add simp [«_-Int_»,«_+Int_», arith_op.to_defn_Val3, oneOpRHS, stateMap])
     (add simp [divWord_divInt_eq])
     . -- `sdiv`
       -- To prove this, first `arith_op.do` needs to be fixed for `sdiv`
-      aesop (add simp [«_-Int_»,«_+Int_», arith_op.to_defn_Val3, divRHS, stateMap])
+      aesop (add simp [«_-Int_»,«_+Int_», arith_op.to_defn_Val3, oneOpRHS, stateMap])
       sorry
     . -- `mod`
       -- To prove this, first `arith_op.do` needs to be fixed for `mod`
-      aesop (add simp [«_-Int_»,«_+Int_», arith_op.to_defn_Val3, divRHS, stateMap])
+      aesop (add simp [«_-Int_»,«_+Int_», arith_op.to_defn_Val3, oneOpRHS, stateMap])
       sorry
     . -- `smod`
       -- To prove this, first `arith_op.do` needs to be fixed for `smod`
-      aesop (add simp [«_-Int_»,«_+Int_», arith_op.to_defn_Val3, divRHS, stateMap])
+      aesop (add simp [«_-Int_»,«_+Int_», arith_op.to_defn_Val3, oneOpRHS, stateMap])
       sorry
     . -- `signextend`
       -- To prove this, first `arith_op.do` needs to be fixed for `signextend`
-      aesop (add simp [«_-Int_»,«_+Int_», arith_op.to_defn_Val3, divRHS, stateMap])
+      aesop (add simp [«_-Int_»,«_+Int_», arith_op.to_defn_Val3, oneOpRHS, stateMap])
       sorry
 
 
@@ -409,7 +411,7 @@ def arith_op.gas :=
 
 -- We cannot prove full equivalence for the `EVM.step` function
 -- This is because it doesn't include all semantics such as gas computation
-theorem step_add_equiv
+theorem step_oneOp_equiv
   {GAS_CELL PC_CELL W0 W1 _Val0 _Val3 _Val4 _Val5 _Val6 : SortInt}
   {SCHEDULE_CELL : SortSchedule}
   {USEGAS_CELL _Val1 _Val2 : SortBool}
@@ -462,12 +464,12 @@ theorem step_add_equiv
   (pcountNonneg : 0 ≤ PC_CELL)
   (W0ge0 : 0 ≤ W0)
   (W1ge0 : 0 ≤ W1):
-  let lhs := (@divLHS op GAS_CELL PC_CELL W0 W1 SCHEDULE_CELL
+  let lhs := (@oneOpLHS op GAS_CELL PC_CELL W0 W1 SCHEDULE_CELL
    USEGAS_CELL WS _DotVar0 _DotVar2 _Gen0 _Gen1 _Gen10 _Gen11
    _Gen12 _Gen13 _Gen14 _Gen15 _Gen16 _Gen17 _Gen18 _Gen19 _Gen2
    _Gen20 _Gen21 _Gen22 _Gen23 _Gen3 _Gen4 _Gen5 _Gen6 _Gen7 _Gen8
    _Gen9 _K_CELL)
-  let rhs := (@divRHS _Val3 _Val4 _Val5 _Val6 SCHEDULE_CELL _Val1
+  let rhs := (@oneOpRHS _Val3 _Val4 _Val5 _Val6 SCHEDULE_CELL _Val1
   _Val2 WS _DotVar0 _DotVar2 _Gen0 _Gen1 _Gen10 _Gen11 _Gen12
   _Gen13 _Gen14 _Gen15 _Gen16 _Gen17 _Gen18 _Gen19 _Gen2 _Gen20
   _Gen21 _Gen22 _Gen23 _Gen3 _Gen4 _Gen5 _Gen6 _Gen7 _Gen8 _Gen9
@@ -475,7 +477,7 @@ theorem step_add_equiv
   EVM.step_arith op.from_k gas gasCost (stateMap symState lhs) =
   .ok (stateMap {symState with execLength := symState.execLength + 1} rhs) := by
   intro lhs rhs
-  rw [div_prestate_equiv, @div_poststate_equiv _ _ W0 W1 _Val3]
+  rw [oneOp_prestate_equiv, @oneOp_poststate_equiv _ _ W0 W1 _Val3]
   <;> try assumption
   cases gas; contradiction
   case succ gas =>
@@ -484,7 +486,7 @@ theorem step_add_equiv
       cases op <;> aesop
     rw [this]
     rw [EVM.step_add_summary] <;> try assumption
-    simp [divLHS, divRHS]; constructor <;> try constructor
+    simp [oneOpLHS, oneOpRHS]; constructor <;> try constructor
     . aesop (add simp [arith_op.gas, GasConstants.Glow, GasInterface.cancun_def, «_-Int_», intMap_sub_dist])
     . rw [←UInt256.add_succ_mod_size, intMap_add_dist] <;> aesop
     . cases op <;> simp [arith_op.from_k]
@@ -506,14 +508,14 @@ theorem step_add_equiv
 attribute [local simp] GasConstants.Glow
 
 /- Deviations from the KEVM produced specifications:
- 1. The program is not symbolic, it is instead a 1-opcode (`ADD`) program
+ 1. The program is not symbolic, it is instead a 1-opcode program
  2. The program counter is also not symbolic, and it is set to 0
  3. In the RHS, the output cell (mapped to `returnData`) is set to `ByteArray.empty`
  4. The schedule is set to `CANCUN`
  5. `GAVAIL` is in the `UInt256` range
  6. `W0` and `W1` are nonnegative
  -/
-theorem X_add_equiv
+theorem X_oneOp_equiv
   {GAS_CELL PC_CELL W0 W1 _Val0 _Val3 _Val4 _Val5 _Val6 : SortInt}
   {SCHEDULE_CELL : SortSchedule}
   {USEGAS_CELL _Val1 _Val2 : SortBool}
@@ -565,12 +567,12 @@ theorem X_add_equiv
   (W1ge0 : 0 ≤ W1)
   -- There's no #sizeWordStack
   (wordStackOk : sizeWordStackAux WS 0 < some 1024):
-  let lhs := (@divLHS op GAS_CELL PC_CELL W0 W1 SCHEDULE_CELL
+  let lhs := (@oneOpLHS op GAS_CELL PC_CELL W0 W1 SCHEDULE_CELL
    USEGAS_CELL WS _DotVar0 _DotVar2 _Gen0 _Gen1 _Gen10 _Gen11
    _Gen12 _Gen13 _Gen14 _Gen15 _Gen16 _Gen17 _Gen18 _Gen19 _Gen2
    _Gen20 _Gen21 _Gen22 _Gen23 _Gen3 _Gen4 _Gen5 _Gen6 _Gen7 _Gen8
    _Gen9 _K_CELL)
-  let rhs := (@divRHS _Val3 _Val4 _Val5 _Val6 SCHEDULE_CELL _Val1
+  let rhs := (@oneOpRHS _Val3 _Val4 _Val5 _Val6 SCHEDULE_CELL _Val1
   _Val2 WS _DotVar0 _DotVar2 _Gen0 _Gen1 _Gen10 ⟨.empty⟩ _Gen12
   _Gen13 _Gen14 _Gen15 _Gen16 _Gen17 _Gen18 _Gen19 _Gen2 _Gen20
   _Gen21 _Gen22 _Gen23 _Gen3 _Gen4 _Gen5 _Gen6 _Gen7 _Gen8 _Gen9
@@ -581,7 +583,7 @@ theorem X_add_equiv
   intro lhs rhs; simp [lhs, rhs]
   -- With `simp` doesn't work
   rw [codeDiv, pcZero]
-  rw [div_prestate_equiv, @div_poststate_equiv _ _ W0 W1 _Val3]
+  rw [oneOp_prestate_equiv, @oneOp_poststate_equiv _ _ W0 W1 _Val3]
   <;> try assumption
   -- If we don't apply this lemma we cannot rewrite X_add_summary
   have pc_equiv : intMap 0 = UInt256.ofNat 0 := rfl
@@ -591,31 +593,31 @@ theorem X_add_equiv
   rw [this, pc_equiv, X_arith_summary]
   · cases op <;> simp [arith_op.from_k, arith_op.C'_comp, arith_op.C'_noexp]
     . -- `div` case
-      aesop (add simp [GasInterface.cancun_def, «_-Int_», chop_def, plusInt_def, intMap_add_dist, divLHS, divRHS])
+      aesop (add simp [GasInterface.cancun_def, «_-Int_», chop_def, plusInt_def, intMap_add_dist, oneOpLHS, oneOpRHS])
       (add safe (by rw [intMap_sub_dist])) (add safe (by apply le_of_lt))
       sorry
     . -- `sdiv`
       -- To prove this, first `arith_op.do` needs to be fixed for `sdiv`
-      aesop (add simp [GasInterface.cancun_def, «_-Int_», chop_def, plusInt_def, intMap_add_dist, divLHS, divRHS])
+      aesop (add simp [GasInterface.cancun_def, «_-Int_», chop_def, plusInt_def, intMap_add_dist, oneOpLHS, oneOpRHS])
       (add safe (by rw [intMap_sub_dist])) (add safe (by apply le_of_lt))
       sorry
     . -- `mod`
       -- To prove this, first `arith_op.do` needs to be fixed for `mod`
-      aesop (add simp [GasInterface.cancun_def, «_-Int_», chop_def, plusInt_def, intMap_add_dist, divLHS, divRHS])
+      aesop (add simp [GasInterface.cancun_def, «_-Int_», chop_def, plusInt_def, intMap_add_dist, oneOpLHS, oneOpRHS])
       (add safe (by rw [intMap_sub_dist])) (add safe (by apply le_of_lt))
       sorry
     . -- `smod`
       -- To prove this, first `arith_op.do` needs to be fixed for `smod`
-      aesop (add simp [GasInterface.cancun_def, «_-Int_», chop_def, plusInt_def, intMap_add_dist, divLHS, divRHS])
+      aesop (add simp [GasInterface.cancun_def, «_-Int_», chop_def, plusInt_def, intMap_add_dist, oneOpLHS, oneOpRHS])
       (add safe (by rw [intMap_sub_dist])) (add safe (by apply le_of_lt))
       sorry
     . -- `signextend`
       -- To prove this, first `arith_op.do` needs to be fixed for `signextend`
-      aesop (add simp [GasInterface.cancun_def, «_-Int_», chop_def, plusInt_def, intMap_add_dist, divLHS, divRHS])
+      aesop (add simp [GasInterface.cancun_def, «_-Int_», chop_def, plusInt_def, intMap_add_dist, oneOpLHS, oneOpRHS])
       (add safe (by rw [intMap_sub_dist])) (add safe (by apply le_of_lt))
       sorry
   · cases op <;> simp_all [arith_op.from_k, sizeWordStack_def]
   · cases op <;> simp [arith_op.C'_comp, arith_op.from_k] <;>
     rw [intMap_toNat] <;> aesop (add safe (by linarith))
 
-end DivOpcodeEquivalence
+end OneOpEquivalence
