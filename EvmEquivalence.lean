@@ -35,6 +35,7 @@ import EvmEquivalence.Summaries.MloadSummary
 -- Equivalence
 import EvmEquivalence.Equivalence.AddEquivalence
 import EvmEquivalence.Equivalence.DivEquivalence
+import EvmEquivalence.Equivalence.ExpEquivalence
 import EvmEquivalence.Equivalence.Push0Equivalence
 import EvmEquivalence.Equivalence.SstoreEquivalence
 import EvmEquivalence.Equivalence.SloadEquivalence
