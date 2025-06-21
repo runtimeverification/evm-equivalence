@@ -306,9 +306,7 @@ theorem divWord_divInt_eq (n m : SortInt):
   «_/Word__EVM-TYPES_Int_Int_Int» n m = some (divWord n m) := by
   simp [«_/Word__EVM-TYPES_Int_Int_Int», _19cae79, _72d6664]
   simp [Option.bind]
-  cases m0: (m == 0) <;>
-  simp [«_=/=Int_», _4de6e05, «_==Int_», notBool_, _17ebc68, _53fc758, m0] <;>
-  simp [divWord] <;> aesop
+  cases m0: (m == 0) <;> aesop (add simp [«_/Int_», divWord])
 
 @[simp]
 def arith_op.do : SortInt → SortInt → SortInt :=
