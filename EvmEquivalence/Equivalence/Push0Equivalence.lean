@@ -364,7 +364,7 @@ theorem step_push0_equiv
   rw [EVM.step_push0_summary] <;> try assumption
   simp [push0LHS, push0RHS]; constructor <;> try constructor
   . aesop (add simp [GasConstants.Gbase, «_-Int_», cancun_def, intMap_sub_dist])
-  . rw [plusInt_def, ←UInt256.add_succ_mod_size, intMap_add_dist] <;> aesop
+  . rw [←UInt256.add_succ_mod_size, intMap_add_dist] <;> aesop
 
 attribute [local simp] GasConstants.Gbase
 

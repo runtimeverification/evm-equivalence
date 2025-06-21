@@ -392,7 +392,7 @@ theorem Csstore_def {value stor_val ostor_val : SortInt}:
   Csstore SortSchedule.CANCUN_EVM value stor_val ostor_val =
   some (Csstore_compute value stor_val ostor_val) := by
   unfold Csstore GAS_FEES_Csstore_new
-  simp [Option.bind, IntEq_def, IntNEq_def, orBool_def]; rfl
+  simp [Option.bind, orBool_def]; rfl
 
 /--
 Remaining gas after deducting to `gas` the cost of executing `sstore`
@@ -429,7 +429,7 @@ def rsstore (new current original: SortInt) : SortInt :=
 theorem rsstore_new_def {new current original} {sched} (h : sched = .CANCUN_EVM) :
   GAS_FEES_Rsstore_new sched new current original = some (rsstore new current original) := by
   unfold GAS_FEES_Rsstore_new rsstore; split; subst h
-  simp [Option.bind, IntEq_def, IntNEq_def, andBool_def, «_-Int_», «_+Int_»]
+  simp [Option.bind]
 
 /--
 `Rsstore` is `GAS_FEES_Rsstore_new` when schedule is `.CANCUN_EVM`
@@ -437,7 +437,7 @@ theorem rsstore_new_def {new current original} {sched} (h : sched = .CANCUN_EVM)
 theorem rsstore_def {new current original} {sched} (h : sched = .CANCUN_EVM) :
   Rsstore sched new current original = some (rsstore new current original) := by
   unfold Rsstore GAS_FEES_Rsstore_new rsstore; split; subst h
-  simp [Option.bind, IntEq_def, IntNEq_def, andBool_def, «_-Int_», «_+Int_»]
+  simp [Option.bind]
 
 section Aᵣ_equivalence
 variable (gas gasCost : ℕ)
@@ -732,7 +732,7 @@ theorem step_sstore_equiv
     rw [cancun, Csstore_def, Option.some.injEq] at defn_Val10 defn_Val3
     aesop (add safe (by rw [intMap_sub_dist])) (add simp [Csstore_compute])
   . rw [plusInt_def, ←UInt256.add_succ_mod_size, intMap_add_dist] <;> aesop
-  . aesop (add simp [ltInt_def, andBool_def]) (add safe (by linarith))
+  . aesop (add safe (by linarith))
 
 theorem X_sstore_equiv
   {ACCESSEDSTORAGE_CELL ORIG_STORAGE_CELL STORAGE_CELL _Val39 _Val40 : SortMap}
