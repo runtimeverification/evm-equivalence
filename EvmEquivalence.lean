@@ -25,7 +25,7 @@ import EvmEquivalence.Utils.ListByteArrayUtils
 
 -- Summaries
 import EvmEquivalence.Summaries.StopSummary
-import EvmEquivalence.Summaries.AddSummary
+import EvmEquivalence.Summaries.ArithmeticSummary
 import EvmEquivalence.Summaries.Push0Summary
 import EvmEquivalence.Summaries.SstoreSummary
 import EvmEquivalence.Summaries.SloadSummary

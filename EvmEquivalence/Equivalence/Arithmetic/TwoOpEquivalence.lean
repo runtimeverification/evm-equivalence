@@ -1,4 +1,4 @@
-import EvmEquivalence.Summaries.AddSummary
+import EvmEquivalence.Summaries.ArithmeticSummary
 import EvmEquivalence.StateMap
 import EvmEquivalence.Interfaces.FuncInterface
 import EvmEquivalence.Interfaces.GasInterface
@@ -33,7 +33,7 @@ def arith_op.to_maybeOpcode : SortMaybeOpCode :=
   | .inl op => (@inj SortBinStackOp SortMaybeOpCode) op
   | .inr op => (@inj SortTernStackOp SortMaybeOpCode) op
 
-def arith_op.from_k : arith_op → AddSummary.arith_op
+def arith_op.from_k : arith_op → ArithmeticSummary.arith_op
  | .add => .add
  | .sub => .sub
  | .addmod => .addmod
@@ -394,7 +394,7 @@ theorem twoOp_poststate_equiv
     aesop (add simp [«_-Int_», «_+Int_», «_*Int_», chop', chopIsSome])
     (add simp [arith_op.to_defn_Val3, arith_op.to_defn_Val4, twoOpRHS, stateMap])
 
-open AddSummary
+open ArithmeticSummary
 
 attribute [local simp] GasConstants.Gverylow GasConstants.Gmid
 
@@ -479,7 +479,7 @@ theorem step_twoOp_equiv
         sorry
 
 
-attribute [local simp] AddSummary.arith_op.C'_comp
+attribute [local simp] ArithmeticSummary.arith_op.C'_comp
 
 /- Deviations from the KEVM produced specifications:
  1. The program is not symbolic, it is instead a 1-opcode (`ADD`) program
