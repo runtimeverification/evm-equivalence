@@ -26,13 +26,16 @@ section
 variable {m n : SortInt}
 
 -- Behavior for `«_?Int_»`
+@[simp]
 theorem plusIntIsSome : «_+Int_» n m = some (n + m) := rfl
 
 def «_+Int'_» (n m : SortInt) : SortInt :=
   («_+Int_» n m).get rfl
 
+@[simp]
 theorem plusInt_def : «_+Int'_» n m = n + m := rfl
 
+@[simp]
 theorem subIntIsSome : «_-Int_» n m = some (n - m) := rfl
 
 def «_-Int'_» (n m : SortInt) : SortInt :=
