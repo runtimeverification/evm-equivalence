@@ -8,7 +8,9 @@ open EvmYul
 open StateMap
 open KEVMInterface
 
-namespace AddOpcodeEquivalence
+namespace TwoOpEquivalence
+
+/- Equivalence proofs for arithmetic opcodes that take two operations to summarize -/
 
 inductive arith_op where
   | add
@@ -43,7 +45,7 @@ def arith_op.to_stack (W0 W1 W2 : SortInt) (WS : SortWordStack) : SortWordStack 
   | .inl _ => SortWordStack.«_:__EVM-TYPES_WordStack_Int_WordStack» W0 (SortWordStack.«_:__EVM-TYPES_WordStack_Int_WordStack» W1 WS)
   | .inr _ => SortWordStack.«_:__EVM-TYPES_WordStack_Int_WordStack» W0 (SortWordStack.«_:__EVM-TYPES_WordStack_Int_WordStack» W1 (SortWordStack.«_:__EVM-TYPES_WordStack_Int_WordStack» W2 WS))
 
-def addLHS
+def twoOpLHS
   {GAS_CELL PC_CELL W0 W1 W2 : SortInt}
   {K_CELL : SortK}
   {SCHEDULE_CELL : SortSchedule}
@@ -112,7 +114,7 @@ def addLHS
         network := _DotVar2 } },
     generatedCounter := _DotVar0 }
 
-def addRHS
+def twoOpRHS
   {_Val0 _Val3 _Val4 _Val5 _Val6 _Val7 : SortInt}
   {K_CELL : SortK}
   {SCHEDULE_CELL : SortSchedule}
@@ -181,13 +183,18 @@ def addRHS
         network := _DotVar2 } },
     generatedCounter := _DotVar0 }
 
-
+/--
+First Op for summarization
+-/
 def arith_op.to_defn_Val3 (W0 W1 _Val3 : SortInt) : Prop :=
   match op with
   | .add | .addmod => «_+Int_» W0 W1 = some _Val3
   | .sub => «_-Int_» W0 W1 = some _Val3
   | .mulmod => «_*Int_» W0 W1 = some _Val3
 
+/--
+Second Op for summarization
+-/
 def arith_op.to_defn_Val4 (_Val3 _Val4 W2: SortInt) : Prop :=
   match op with
   | .add | .sub => chop _Val3 = some _Val4
@@ -198,7 +205,7 @@ def arith_op.to_gas : arith_op → SortScheduleConst
  | .add | .sub => .Gverylow_SCHEDULE_ScheduleConst
  | .addmod | .mulmod => .Gmid_SCHEDULE_ScheduleConst
 
-theorem rw_addLHS_addRHS
+theorem rw_twoOpLHS_twoOpRHS
   {GAS_CELL PC_CELL W0 W1 W2 _Val0 _Val3 _Val4 _Val5 _Val6 _Val7 : SortInt}
   {K_CELL : SortK}
   {SCHEDULE_CELL : SortSchedule}
@@ -240,8 +247,8 @@ theorem rw_addLHS_addRHS
   (defn_Val7 : «_-Int_» GAS_CELL _Val6 = some _Val7)
   (req : _Val2 = true):
   Rewrites
-  (@addLHS op GAS_CELL PC_CELL W0 W1 W2 K_CELL SCHEDULE_CELL USEGAS_CELL WS _DotVar0 _DotVar2 _Gen0 _Gen1 _Gen10 _Gen11 _Gen12 _Gen13 _Gen14 _Gen15 _Gen16 _Gen17 _Gen18 _Gen19 _Gen2 _Gen20 _Gen21 _Gen22 _Gen23 _Gen3 _Gen4 _Gen5 _Gen6 _Gen7 _Gen8 _Gen9)
-  (@addRHS _Val0 _Val3 _Val4 _Val5 _Val6 _Val7 K_CELL SCHEDULE_CELL _Val1 _Val2 WS _DotVar0 _DotVar2 _Gen0 _Gen1 _Gen10 _Gen11 _Gen12 _Gen13 _Gen14 _Gen15 _Gen16 _Gen17 _Gen18 _Gen19 _Gen2 _Gen20 _Gen21 _Gen22 _Gen23 _Gen3 _Gen4 _Gen5 _Gen6 _Gen7 _Gen8 _Gen9) := by
+  (@twoOpLHS op GAS_CELL PC_CELL W0 W1 W2 K_CELL SCHEDULE_CELL USEGAS_CELL WS _DotVar0 _DotVar2 _Gen0 _Gen1 _Gen10 _Gen11 _Gen12 _Gen13 _Gen14 _Gen15 _Gen16 _Gen17 _Gen18 _Gen19 _Gen2 _Gen20 _Gen21 _Gen22 _Gen23 _Gen3 _Gen4 _Gen5 _Gen6 _Gen7 _Gen8 _Gen9)
+  (@twoOpRHS _Val0 _Val3 _Val4 _Val5 _Val6 _Val7 K_CELL SCHEDULE_CELL _Val1 _Val2 WS _DotVar0 _DotVar2 _Gen0 _Gen1 _Gen10 _Gen11 _Gen12 _Gen13 _Gen14 _Gen15 _Gen16 _Gen17 _Gen18 _Gen19 _Gen2 _Gen20 _Gen21 _Gen22 _Gen23 _Gen3 _Gen4 _Gen5 _Gen6 _Gen7 _Gen8 _Gen9) := by
   cases op
   . apply (@Rewrites.ADD_SUMMARY_ADD_SUMMARY_USEGAS GAS_CELL PC_CELL W0 W1 _Val0)
     <;> assumption
@@ -252,7 +259,7 @@ theorem rw_addLHS_addRHS
   . apply (@Rewrites.MULMOD_SUMMARY_MULMOD_SUMMARY_USEGAS GAS_CELL PC_CELL W0 W1 W2 _Val0)
     <;> assumption
 
-theorem add_prestate_equiv
+theorem twoOp_prestate_equiv
   {GAS_CELL PC_CELL W0 W1 W2 : SortInt}
   {K_CELL : SortK}
   {SCHEDULE_CELL : SortSchedule}
@@ -285,7 +292,7 @@ theorem add_prestate_equiv
   {_Gen8 : SortCallGasCell}
   {_Gen9 : SortStaticCell}
   (symState : EVM.State):
-  let lhs := (@addLHS op GAS_CELL PC_CELL W0 W1 W2 K_CELL SCHEDULE_CELL USEGAS_CELL WS _DotVar0 _DotVar2 _Gen0 _Gen1 _Gen10 _Gen11 _Gen12 _Gen13 _Gen14 _Gen15 _Gen16 _Gen17 _Gen18 _Gen19 _Gen2 _Gen20 _Gen21 _Gen22 _Gen23 _Gen3 _Gen4 _Gen5 _Gen6 _Gen7 _Gen8 _Gen9)
+  let lhs := (@twoOpLHS op GAS_CELL PC_CELL W0 W1 W2 K_CELL SCHEDULE_CELL USEGAS_CELL WS _DotVar0 _DotVar2 _Gen0 _Gen1 _Gen10 _Gen11 _Gen12 _Gen13 _Gen14 _Gen15 _Gen16 _Gen17 _Gen18 _Gen19 _Gen2 _Gen20 _Gen21 _Gen22 _Gen23 _Gen3 _Gen4 _Gen5 _Gen6 _Gen7 _Gen8 _Gen9)
   stateMap symState lhs =
   {symState with
     stack := op.from_k.stack (intMap W0) (intMap W1) (intMap W2) (wordStackMap WS)
@@ -305,7 +312,7 @@ theorem add_prestate_equiv
     returnData := _Gen11.val
     } := by
     cases cop: op <;>
-    simp [addLHS, cop, stateMap, arith_op.from_k] <;> rfl
+    simp [twoOpLHS, cop, stateMap, arith_op.from_k] <;> rfl
 
 def modWord (n m : SortInt) := ite (m = 0) 0 n % m
 
@@ -329,7 +336,7 @@ def arith_op.gas_comp : arith_op → SortInt
   | .add | .sub => 3
   | .addmod | .mulmod => 8
 
-theorem add_poststate_equiv
+theorem twoOp_poststate_equiv
   {PC_CELL W0 W1 W2 _Val0 _Val3 _Val4 _Val5 _Val6 _Val7 : SortInt}
   {K_CELL : SortK}
   {SCHEDULE_CELL : SortSchedule}
@@ -365,7 +372,7 @@ theorem add_poststate_equiv
   (defn_Val4 : op.to_defn_Val4 _Val3 _Val4 W2)
   (defn_Val5 : «_+Int_» PC_CELL 1 = some _Val5)
   (symState : EVM.State):
-  let rhs := (@addRHS _Val0 _Val3 _Val4 _Val5 _Val6 _Val7 K_CELL SCHEDULE_CELL _Val1 _Val2 WS _DotVar0 _DotVar2 _Gen0 _Gen1 _Gen10 _Gen11 _Gen12 _Gen13 _Gen14 _Gen15 _Gen16 _Gen17 _Gen18 _Gen19 _Gen2 _Gen20 _Gen21 _Gen22 _Gen23 _Gen3 _Gen4 _Gen5 _Gen6 _Gen7 _Gen8 _Gen9)
+  let rhs := (@twoOpRHS _Val0 _Val3 _Val4 _Val5 _Val6 _Val7 K_CELL SCHEDULE_CELL _Val1 _Val2 WS _DotVar0 _DotVar2 _Gen0 _Gen1 _Gen10 _Gen11 _Gen12 _Gen13 _Gen14 _Gen15 _Gen16 _Gen17 _Gen18 _Gen19 _Gen2 _Gen20 _Gen21 _Gen22 _Gen23 _Gen3 _Gen4 _Gen5 _Gen6 _Gen7 _Gen8 _Gen9)
   stateMap symState rhs =
   {symState with
     stack := (intMap (op.do W0 W1 W2)) :: wordStackMap WS
@@ -385,7 +392,7 @@ theorem add_poststate_equiv
     returnData := _Gen11.val
     } := by
     aesop (add simp [«_-Int_», «_+Int_», «_*Int_», chop', chopIsSome])
-    (add simp [arith_op.to_defn_Val3, arith_op.to_defn_Val4, addRHS, stateMap])
+    (add simp [arith_op.to_defn_Val3, arith_op.to_defn_Val4, twoOpRHS, stateMap])
 
 open AddSummary
 
@@ -393,7 +400,7 @@ attribute [local simp] GasConstants.Gverylow GasConstants.Gmid
 
 -- We cannot prove full equivalence for the `EVM.step` function
 -- This is because it doesn't include all semantics such as gas computation
-theorem step_add_equiv
+theorem step_twoOp_equiv
   {GAS_CELL PC_CELL W0 W1 W2 _Val0 _Val3 _Val4 _Val5 _Val6 _Val7 : SortInt}
   {K_CELL : SortK}
   {SCHEDULE_CELL : SortSchedule}
@@ -446,16 +453,16 @@ theorem step_add_equiv
   (pcountNonneg : 0 ≤ PC_CELL)
   (W0ge0 : 0 ≤ W0)
   (W1ge0 : 0 ≤ W1):
-  EVM.step_arith op.from_k gas gasCost (stateMap symState (@addLHS op GAS_CELL PC_CELL W0 W1 W2 K_CELL SCHEDULE_CELL USEGAS_CELL WS _DotVar0 _DotVar2 _Gen0 _Gen1 _Gen10 _Gen11 _Gen12 _Gen13 _Gen14 _Gen15 _Gen16 _Gen17 _Gen18 _Gen19 _Gen2 _Gen20 _Gen21 _Gen22 _Gen23 _Gen3 _Gen4 _Gen5 _Gen6 _Gen7 _Gen8 _Gen9)) =
-  .ok (stateMap {symState with execLength := symState.execLength + 1} (@addRHS _Val0 _Val3 _Val4 _Val5 _Val6 _Val7 K_CELL SCHEDULE_CELL _Val1 _Val2 WS _DotVar0 _DotVar2 _Gen0 _Gen1 _Gen10 _Gen11 _Gen12 _Gen13 _Gen14 _Gen15 _Gen16 _Gen17 _Gen18 _Gen19 _Gen2 _Gen20 _Gen21 _Gen22 _Gen23 _Gen3 _Gen4 _Gen5 _Gen6 _Gen7 _Gen8 _Gen9)) := by
+  EVM.step_arith op.from_k gas gasCost (stateMap symState (@twoOpLHS op GAS_CELL PC_CELL W0 W1 W2 K_CELL SCHEDULE_CELL USEGAS_CELL WS _DotVar0 _DotVar2 _Gen0 _Gen1 _Gen10 _Gen11 _Gen12 _Gen13 _Gen14 _Gen15 _Gen16 _Gen17 _Gen18 _Gen19 _Gen2 _Gen20 _Gen21 _Gen22 _Gen23 _Gen3 _Gen4 _Gen5 _Gen6 _Gen7 _Gen8 _Gen9)) =
+  .ok (stateMap {symState with execLength := symState.execLength + 1} (@twoOpRHS _Val0 _Val3 _Val4 _Val5 _Val6 _Val7 K_CELL SCHEDULE_CELL _Val1 _Val2 WS _DotVar0 _DotVar2 _Gen0 _Gen1 _Gen10 _Gen11 _Gen12 _Gen13 _Gen14 _Gen15 _Gen16 _Gen17 _Gen18 _Gen19 _Gen2 _Gen20 _Gen21 _Gen22 _Gen23 _Gen3 _Gen4 _Gen5 _Gen6 _Gen7 _Gen8 _Gen9)) := by
   have gasAvailEnough : op.gas_comp ≤ GAS_CELL := by
    cases op <;> aesop (add simp [_andBool_, _5b9db8d, _61fbef3, «_<=Int_»])
-  rw [add_prestate_equiv, @add_poststate_equiv _ _ W0 W1 W2 _ _Val3]
+  rw [twoOp_prestate_equiv, @twoOp_poststate_equiv _ _ W0 W1 W2 _ _Val3]
   <;> try assumption
   cases gas; contradiction
   case succ gas =>
     rw [EVM.step_add_summary] <;> try assumption
-    simp [addLHS, addRHS]; constructor <;> try constructor
+    simp [twoOpLHS, twoOpRHS]; constructor <;> try constructor
     . simp [«_-Int_»] at defn_Val7; simp [←defn_Val7]
       simp [GasInterface.cancun_def] at defn_Val6 defn_Val0
       simp [defn_Val6] at defn_Val0
@@ -482,7 +489,7 @@ attribute [local simp] AddSummary.arith_op.C'_comp
  5. `GAVAIL` is in the `UInt256` range
  6. `W0` and `W1` are nonnegative
  -/
-theorem X_add_equiv
+theorem X_twoOp_equiv
   {GAS_CELL PC_CELL W0 W1 W2 _Val0 _Val3 _Val4 _Val5 _Val6 _Val7 : SortInt}
   {K_CELL : SortK}
   {SCHEDULE_CELL : SortSchedule}
@@ -527,7 +534,7 @@ theorem X_add_equiv
   (symValidJumps : Array UInt256) -- TODO: Revisit
   -- Necessary assumptions for equivalence
   (cancun : SCHEDULE_CELL = .CANCUN_EVM)
-  (codeAdd : _Gen0 = ⟨op.from_k.to_bin⟩)
+  (codeTwoOp : _Gen0 = ⟨op.from_k.to_bin⟩)
   (pcZero : PC_CELL = 0)
   -- We need the strict equality
   (enoughGas : op.gas_comp < GAS_CELL)
@@ -537,11 +544,11 @@ theorem X_add_equiv
   -- There's no #sizeWordStack
   (wordStackOk : sizeWordStackAux WS 0 < some op.from_k.to_stack_length):
   EVM.X (UInt256.toNat (intMap GAS_CELL)) symValidJumps
-  (stateMap symState (@addLHS op GAS_CELL PC_CELL W0 W1 W2 K_CELL SCHEDULE_CELL USEGAS_CELL WS _DotVar0 _DotVar2 _Gen0 _Gen1 _Gen10 _Gen11 _Gen12 _Gen13 _Gen14 _Gen15 _Gen16 _Gen17 _Gen18 _Gen19 _Gen2 _Gen20 _Gen21 _Gen22 _Gen23 _Gen3 _Gen4 _Gen5 _Gen6 _Gen7 _Gen8 _Gen9)) =
-  .ok (.success (stateMap {symState with execLength := symState.execLength + 2} (@addRHS _Val0 _Val3 _Val4 _Val5 _Val6 _Val7 K_CELL SCHEDULE_CELL _Val1 _Val2 WS _DotVar0 _DotVar2 _Gen0 _Gen1 _Gen10 ⟨ByteArray.empty⟩ _Gen12 _Gen13 _Gen14 _Gen15 _Gen16 _Gen17 _Gen18 _Gen19 _Gen2 _Gen20 _Gen21 _Gen22 _Gen23 _Gen3 _Gen4 _Gen5 _Gen6 _Gen7 _Gen8 _Gen9)) ByteArray.empty) := by
+  (stateMap symState (@twoOpLHS op GAS_CELL PC_CELL W0 W1 W2 K_CELL SCHEDULE_CELL USEGAS_CELL WS _DotVar0 _DotVar2 _Gen0 _Gen1 _Gen10 _Gen11 _Gen12 _Gen13 _Gen14 _Gen15 _Gen16 _Gen17 _Gen18 _Gen19 _Gen2 _Gen20 _Gen21 _Gen22 _Gen23 _Gen3 _Gen4 _Gen5 _Gen6 _Gen7 _Gen8 _Gen9)) =
+  .ok (.success (stateMap {symState with execLength := symState.execLength + 2} (@twoOpRHS _Val0 _Val3 _Val4 _Val5 _Val6 _Val7 K_CELL SCHEDULE_CELL _Val1 _Val2 WS _DotVar0 _DotVar2 _Gen0 _Gen1 _Gen10 ⟨ByteArray.empty⟩ _Gen12 _Gen13 _Gen14 _Gen15 _Gen16 _Gen17 _Gen18 _Gen19 _Gen2 _Gen20 _Gen21 _Gen22 _Gen23 _Gen3 _Gen4 _Gen5 _Gen6 _Gen7 _Gen8 _Gen9)) ByteArray.empty) := by
   -- With `simp` doesn't work
-  rw [codeAdd, pcZero]
-  rw [add_prestate_equiv, @add_poststate_equiv _ _ W0 W1 W2 _ _Val3]
+  rw [codeTwoOp, pcZero]
+  rw [twoOp_prestate_equiv, @twoOp_poststate_equiv _ _ W0 W1 W2 _ _Val3]
   <;> try assumption
   -- If we don't apply this lemma we cannot rewrite X_add_summary
   have pc_equiv : intMap 0 = UInt256.ofNat 0 := rfl
@@ -551,7 +558,7 @@ theorem X_add_equiv
       simp [«_-Int_»] at defn_Val7; simp [←defn_Val7]
       simp [GasInterface.cancun_def] at defn_Val6 defn_Val0
       simp [defn_Val6] at defn_Val0
-      aesop (add simp [GasInterface.cancun_def, «_-Int_», chop_def, plusInt_def, intMap_add_dist, addLHS, addRHS, arith_op.C'_comp])
+      aesop (add simp [GasInterface.cancun_def, «_-Int_», chop_def, plusInt_def, intMap_add_dist, twoOpLHS, twoOpRHS, arith_op.C'_comp])
       (add simp [arith_op.from_k])
       (add safe (by rw [intMap_sub_dist])) (add safe (by apply le_of_lt))
     . -- `sub` case
@@ -566,4 +573,4 @@ theorem X_add_equiv
     cases op <;> simp [arith_op.from_k] <;>
     rw [intMap_toNat] <;> aesop (add safe (by linarith))
 
-end AddOpcodeEquivalence
+end TwoOpEquivalence

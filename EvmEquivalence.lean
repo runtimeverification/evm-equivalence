@@ -33,7 +33,7 @@ import EvmEquivalence.Summaries.MstoreSummary
 import EvmEquivalence.Summaries.MloadSummary
 
 -- Equivalence
-import EvmEquivalence.Equivalence.AddEquivalence
+import EvmEquivalence.Equivalence.Arithmetic.TwoOpEquivalence
 import EvmEquivalence.Equivalence.DivEquivalence
 import EvmEquivalence.Equivalence.ExpEquivalence
 import EvmEquivalence.Equivalence.Push0Equivalence
