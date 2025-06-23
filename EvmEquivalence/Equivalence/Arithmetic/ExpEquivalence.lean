@@ -587,7 +587,7 @@ theorem X_exp_equiv
   (W1ge0 : 0 ≤ W1)
   (boundedW1 : W1 < ↑UInt256.size)
   -- There's no #sizeWordStack
-  (wordStackOk : sizeWordStackAux WS 0 < some 1024):
+  (wordStackOk : sizeWordStackAux WS 0 < some 1023):
   let lhs := (@expLHS GAS_CELL PC_CELL W0 W1 SCHEDULE_CELL
    USEGAS_CELL WS _DotVar0 _DotVar2 _Gen0 _Gen1 _Gen10 _Gen11
    _Gen12 _Gen13 _Gen14 _Gen15 _Gen16 _Gen17 _Gen18 _Gen19 _Gen2
