@@ -7,7 +7,7 @@ open EvmYul
 open EVM
 open StopSummary
 
-namespace ArithmeticSummary
+namespace StackOpsSummary
 
 inductive arith_op where
 | add
@@ -519,4 +519,4 @@ theorem X_arith_summary
 
 end
 
-end ArithmeticSummary
+end StackOpsSummary

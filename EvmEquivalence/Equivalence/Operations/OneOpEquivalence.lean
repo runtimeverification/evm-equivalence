@@ -1,4 +1,4 @@
-import EvmEquivalence.Summaries.ArithmeticSummary
+import EvmEquivalence.Summaries.StackOperationsSummary
 import EvmEquivalence.StateMap
 import EvmEquivalence.Interfaces.FuncInterface
 import EvmEquivalence.Interfaces.GasInterface
@@ -53,7 +53,7 @@ def arith_op.to_maybeOpcode : SortMaybeOpCode :=
   | .inl op => (@inj SortBinStackOp SortMaybeOpCode) op
   | .inr op => (@inj SortUnStackOp SortMaybeOpCode) op
 
-def arith_op.from_k : arith_op → ArithmeticSummary.arith_op
+def arith_op.from_k : arith_op → StackOpsSummary.arith_op
  | .div  => .div
  | .sdiv => .sdiv
  | .mod  => .mod
@@ -517,7 +517,7 @@ theorem oneOp_poststate_equiv
       sorry
 
 
-open ArithmeticSummary
+open StackOpsSummary
 
 def arith_op.gas :=
   match op with
