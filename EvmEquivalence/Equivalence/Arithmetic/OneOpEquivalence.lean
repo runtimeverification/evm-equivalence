@@ -566,7 +566,7 @@ theorem X_oneOp_equiv
   (W0ge0 : 0 ≤ W0)
   (W1ge0 : 0 ≤ W1)
   -- There's no #sizeWordStack
-  (wordStackOk : sizeWordStackAux WS 0 < some 1024):
+  (wordStackOk : sizeWordStackAux WS 0 < some op.from_k.to_stack_length):
   let lhs := (@oneOpLHS op GAS_CELL PC_CELL W0 W1 SCHEDULE_CELL
    USEGAS_CELL WS _DotVar0 _DotVar2 _Gen0 _Gen1 _Gen10 _Gen11
    _Gen12 _Gen13 _Gen14 _Gen15 _Gen16 _Gen17 _Gen18 _Gen19 _Gen2
