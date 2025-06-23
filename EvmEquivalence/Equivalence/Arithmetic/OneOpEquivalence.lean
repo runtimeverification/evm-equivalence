@@ -1,4 +1,4 @@
-import EvmEquivalence.Summaries.AddSummary
+import EvmEquivalence.Summaries.ArithmeticSummary
 import EvmEquivalence.StateMap
 import EvmEquivalence.Interfaces.FuncInterface
 import EvmEquivalence.Interfaces.GasInterface
@@ -29,7 +29,7 @@ def arith_op.to_binop : arith_op → SortBinStackOp
   | .smod => .SMOD_EVM_BinStackOp
   | .signext => .SIGNEXTEND_EVM_BinStackOp
 
-def arith_op.from_k : arith_op → AddSummary.arith_op
+def arith_op.from_k : arith_op → ArithmeticSummary.arith_op
  | .div  => .div
  | .sdiv => .sdiv
  | .mod  => .mod
@@ -399,7 +399,7 @@ theorem oneOp_poststate_equiv
       sorry
 
 
-open AddSummary
+open ArithmeticSummary
 
 def arith_op.gas :=
   match op with
