@@ -91,7 +91,9 @@ inductive SortSchedule : Type where
   deriving BEq, DecidableEq
 
 inductive SortUnStackOp : Type where
+  | ISZERO_EVM_UnStackOp : SortUnStackOp
   | MLOAD_EVM_UnStackOp : SortUnStackOp
+  | NOT_EVM_UnStackOp : SortUnStackOp
   | SLOAD_EVM_UnStackOp : SortUnStackOp
   deriving BEq, DecidableEq
 
@@ -136,16 +138,27 @@ inductive SortScheduleFlag : Type where
 
 inductive SortBinStackOp : Type where
   | ADD_EVM_BinStackOp : SortBinStackOp
+  | AND_EVM_BinStackOp : SortBinStackOp
+  | BYTE_EVM_BinStackOp : SortBinStackOp
   | DIV_EVM_BinStackOp : SortBinStackOp
+  | EQ_EVM_BinStackOp : SortBinStackOp
   | EXP_EVM_BinStackOp : SortBinStackOp
+  | GT_EVM_BinStackOp : SortBinStackOp
+  | LT_EVM_BinStackOp : SortBinStackOp
   | MOD_EVM_BinStackOp : SortBinStackOp
   | MSTORE_EVM_BinStackOp : SortBinStackOp
   | MSTORE8_EVM_BinStackOp : SortBinStackOp
+  | SAR_EVM_BinStackOp : SortBinStackOp
   | SDIV_EVM_BinStackOp : SortBinStackOp
+  | SGT_EVM_BinStackOp : SortBinStackOp
+  | SHL_EVM_BinStackOp : SortBinStackOp
+  | SHR_EVM_BinStackOp : SortBinStackOp
   | SIGNEXTEND_EVM_BinStackOp : SortBinStackOp
+  | SLT_EVM_BinStackOp : SortBinStackOp
   | SMOD_EVM_BinStackOp : SortBinStackOp
   | SSTORE_EVM_BinStackOp : SortBinStackOp
   | SUB_EVM_BinStackOp : SortBinStackOp
+  | XOR_EVM_BinStackOp : SortBinStackOp
   deriving BEq, DecidableEq
 
 inductive SortMode : Type where
