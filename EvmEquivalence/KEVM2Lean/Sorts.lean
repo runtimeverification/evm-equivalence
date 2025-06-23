@@ -6,6 +6,11 @@ inductive SortStatusCode : Type where
   | EVMC_REJECTED_NETWORK_StatusCode : SortStatusCode
   deriving BEq, DecidableEq
 
+inductive SortTernStackOp : Type where
+  | ADDMOD_EVM_TernStackOp : SortTernStackOp
+  | MULMOD_EVM_TernStackOp : SortTernStackOp
+  deriving BEq, DecidableEq
+
 inductive SortScheduleConst : Type where
   | Gaccesslistaddress_SCHEDULE_ScheduleConst : SortScheduleConst
   | Gaccessliststoragekey_SCHEDULE_ScheduleConst : SortScheduleConst
@@ -131,9 +136,16 @@ inductive SortScheduleFlag : Type where
 
 inductive SortBinStackOp : Type where
   | ADD_EVM_BinStackOp : SortBinStackOp
+  | DIV_EVM_BinStackOp : SortBinStackOp
+  | EXP_EVM_BinStackOp : SortBinStackOp
+  | MOD_EVM_BinStackOp : SortBinStackOp
   | MSTORE_EVM_BinStackOp : SortBinStackOp
   | MSTORE8_EVM_BinStackOp : SortBinStackOp
+  | SDIV_EVM_BinStackOp : SortBinStackOp
+  | SIGNEXTEND_EVM_BinStackOp : SortBinStackOp
+  | SMOD_EVM_BinStackOp : SortBinStackOp
   | SSTORE_EVM_BinStackOp : SortBinStackOp
+  | SUB_EVM_BinStackOp : SortBinStackOp
   deriving BEq, DecidableEq
 
 inductive SortMode : Type where
@@ -397,6 +409,7 @@ mutual
     | inj_SortBinStackOp (x : SortBinStackOp) : SortMaybeOpCode
     | inj_SortInternalOp (x : SortInternalOp) : SortMaybeOpCode
     | inj_SortPushOp (x : SortPushOp) : SortMaybeOpCode
+    | inj_SortTernStackOp (x : SortTernStackOp) : SortMaybeOpCode
     | inj_SortUnStackOp (x : SortUnStackOp) : SortMaybeOpCode
     deriving BEq, DecidableEq
 end
@@ -707,6 +720,7 @@ mutual
     | inj_SortStatusCodeCell (x : SortStatusCodeCell) : SortKItem
     | inj_SortStorageCell (x : SortStorageCell) : SortKItem
     | inj_SortSubstateCell (x : SortSubstateCell) : SortKItem
+    | inj_SortTernStackOp (x : SortTernStackOp) : SortKItem
     | inj_SortTimestampCell (x : SortTimestampCell) : SortKItem
     | inj_SortToCell (x : SortToCell) : SortKItem
     | inj_SortTouchedAccountsCell (x : SortTouchedAccountsCell) : SortKItem

@@ -25,7 +25,7 @@ import EvmEquivalence.Utils.ListByteArrayUtils
 
 -- Summaries
 import EvmEquivalence.Summaries.StopSummary
-import EvmEquivalence.Summaries.AddSummary
+import EvmEquivalence.Summaries.ArithmeticSummary
 import EvmEquivalence.Summaries.Push0Summary
 import EvmEquivalence.Summaries.SstoreSummary
 import EvmEquivalence.Summaries.SloadSummary
@@ -33,7 +33,9 @@ import EvmEquivalence.Summaries.MstoreSummary
 import EvmEquivalence.Summaries.MloadSummary
 
 -- Equivalence
-import EvmEquivalence.Equivalence.AddEquivalence
+import EvmEquivalence.Equivalence.Arithmetic.OneOpEquivalence
+import EvmEquivalence.Equivalence.Arithmetic.TwoOpEquivalence
+import EvmEquivalence.Equivalence.Arithmetic.ExpEquivalence
 import EvmEquivalence.Equivalence.Push0Equivalence
 import EvmEquivalence.Equivalence.SstoreEquivalence
 import EvmEquivalence.Equivalence.SloadEquivalence
