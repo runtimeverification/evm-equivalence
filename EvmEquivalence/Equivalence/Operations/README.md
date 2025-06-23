@@ -1,17 +1,21 @@
-# Arithmetic Opcodes
+# Operation Opcodes
 
-
-This folder contains the equivalence proofs for all arithmetic Opcodes.
+This folder contains the equivalence proofs for all opcodes that perform operations on the stack.
 The proofs are divided into three files, according to the shape of the KEVM generated summary.
 
 ### Summary structure
 
-The generated KEVM summaries can be divided into three shapes, depending on the number of operations the arithmetic opcode takes.
+The generated KEVM summaries can be divided into three shapes, depending on the number of operations the opcode takes to execute.
 This is relevant because each operation results in an additional precondition for the generated summary. Let's see what this means.
+
+Also note that there are opcodes on the same file that requrie a diferent prestate stack structure,
+but it's easier to accomodate for that than for different preconditions.
 
 #### [**One operation**](./OneOpEquivalence.lean)
 
-Opcodes covered: `DIV`, `SDIV`, `MOD`, `SMOD`, `SIGNEXTEND`.
+Opcodes covered: `DIV`, `SDIV`, `MOD`, `SMOD`, `SIGNEXTEND`, `SLT`, `SGT`, `AND`, `XOR`, `NOT`, `BYTE`, `SHL`, `SHR`, `SAR`.
+
+TODO: `OR` KEVM summary is currently missing.
 
 The general precondition that appears in the summary of these opcodes follows this structure (showcasing the `DIV` precondition):
 
@@ -21,20 +25,17 @@ The general precondition that appears in the summary of these opcodes follows th
 
 #### [**Two operations**](./TwoOpEquivalence.lean)
 
-Opcodes covered: `ADD`, `SUB`, `ADDMOD`, `MULMOD`.
+Opcodes covered: `ADD`, `SUB`, `ADDMOD`, `MULMOD`, `EQ`, `ISZERO`.
 
-TODO: `MUL` summary is currently missing.
+TODO: `MUL` KEVM summary is currently missing.
 
-In this cases we need two preconditions to fully compute the opcodes.
+In this cases we need two preconditions to fully execute the opcodes.
 The general structure of these is as follows (showcasing the `ADD` opcode):
 
 ```lean
 (defn_Val3 : «_+Int_» W0 W1 = some _Val3)
 (defn_Val4 : chop _Val3 = some _Val4)
 ```
-
-Note that these opcodes requrie a diferent prestate stack structure,
-but it's easier to accomodate for that than for different preconditions.
 
 #### [**`EXP` opcode**](./ExpEquivalence.lean)
 
