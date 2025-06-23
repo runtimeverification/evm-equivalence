@@ -17,6 +17,7 @@ inductive arith_op where
   | sub
   | addmod
   | mulmod
+  | lt
 
 variable (op : arith_op)
 
@@ -26,6 +27,7 @@ def arith_op.to_binop : arith_op → SortBinStackOp ⊕ SortTernStackOp
   | .sub => .inl .SUB_EVM_BinStackOp
   | .addmod => .inr .ADDMOD_EVM_TernStackOp
   | .mulmod => .inr .MULMOD_EVM_TernStackOp
+  | .lt => .inl .LT_EVM_BinStackOp
 
 @[simp]
 def arith_op.to_maybeOpcode : SortMaybeOpCode :=
@@ -38,6 +40,7 @@ def arith_op.from_k : arith_op → ArithmeticSummary.arith_op
  | .sub => .sub
  | .addmod => .addmod
  | .mulmod => .mulmod
+ | .lt => .lt
 
 @[simp]
 def arith_op.to_stack (W0 W1 W2 : SortInt) (WS : SortWordStack) : SortWordStack :=
@@ -115,7 +118,7 @@ def twoOpLHS
     generatedCounter := _DotVar0 }
 
 def twoOpRHS
-  {_Val0 _Val3 _Val4 _Val5 _Val6 _Val7 : SortInt}
+  {_Val0 _Val4 _Val5 _Val6 _Val7 : SortInt}
   {K_CELL : SortK}
   {SCHEDULE_CELL : SortSchedule}
   {_Val1 _Val2 : SortBool}
@@ -186,30 +189,32 @@ def twoOpRHS
 /--
 First Op for summarization
 -/
-def arith_op.to_defn_Val3 (W0 W1 _Val3 : SortInt) : Prop :=
+def arith_op.to_defn_Val3 (W0 W1 _Val3_int : SortInt) (_Val3_bool : SortBool) : Prop :=
   match op with
-  | .add | .addmod => «_+Int_» W0 W1 = some _Val3
-  | .sub => «_-Int_» W0 W1 = some _Val3
-  | .mulmod => «_*Int_» W0 W1 = some _Val3
+  | .add | .addmod => «_+Int_» W0 W1 = some _Val3_int
+  | .sub => «_-Int_» W0 W1 = some _Val3_int
+  | .mulmod => «_*Int_» W0 W1 = some _Val3_int
+  | .lt => «_<Int_» W0 W1 = some _Val3_bool
 
 /--
 Second Op for summarization
 -/
-def arith_op.to_defn_Val4 (_Val3 _Val4 W2: SortInt) : Prop :=
+def arith_op.to_defn_Val4 (_Val3_bool : SortBool) (_Val3_int _Val4 W2: SortInt) : Prop :=
   match op with
-  | .add | .sub => chop _Val3 = some _Val4
-  | .addmod | .mulmod => «_%Word__EVM-TYPES_Int_Int_Int» _Val3 W2 = some _Val4
+  | .add | .sub => chop _Val3_int = some _Val4
+  | .addmod | .mulmod => «_%Word__EVM-TYPES_Int_Int_Int» _Val3_int W2 = some _Val4
+  | .lt => bool2Word _Val3_bool = some _Val4
 
 @[simp]
 def arith_op.to_gas : arith_op → SortScheduleConst
- | .add | .sub => .Gverylow_SCHEDULE_ScheduleConst
  | .addmod | .mulmod => .Gmid_SCHEDULE_ScheduleConst
+ | _ => .Gverylow_SCHEDULE_ScheduleConst
 
 theorem rw_twoOpLHS_twoOpRHS
-  {GAS_CELL PC_CELL W0 W1 W2 _Val0 _Val3 _Val4 _Val5 _Val6 _Val7 : SortInt}
+  {GAS_CELL PC_CELL W0 W1 W2 _Val0 _Val3_int _Val4 _Val5 _Val6 _Val7 : SortInt}
   {K_CELL : SortK}
   {SCHEDULE_CELL : SortSchedule}
-  {USEGAS_CELL _Val1 _Val2 : SortBool}
+  {USEGAS_CELL _Val1 _Val2 _Val3_bool : SortBool}
   {WS : SortWordStack}
   {_DotVar0 : SortGeneratedCounterCell}
   {_DotVar2 : SortNetworkCell}
@@ -240,15 +245,15 @@ theorem rw_twoOpLHS_twoOpRHS
   (defn_Val0 : «_<_>_SCHEDULE_Int_ScheduleConst_Schedule» op.to_gas SCHEDULE_CELL = some _Val0)
   (defn_Val1 : «_<=Int_» _Val0 GAS_CELL = some _Val1)
   (defn_Val2 : _andBool_ USEGAS_CELL _Val1 = some _Val2)
-  (defn_Val3 : op.to_defn_Val3 W0 W1 _Val3)
-  (defn_Val4 : op.to_defn_Val4 _Val3 _Val4 W2)
+  (defn_Val3 : op.to_defn_Val3 W0 W1 _Val3_int _Val3_bool)
+  (defn_Val4 : op.to_defn_Val4 _Val3_bool _Val3_int _Val4 W2)
   (defn_Val5 : «_+Int_» PC_CELL 1 = some _Val5)
   (defn_Val6 : «_<_>_SCHEDULE_Int_ScheduleConst_Schedule» op.to_gas SCHEDULE_CELL = some _Val6)
   (defn_Val7 : «_-Int_» GAS_CELL _Val6 = some _Val7)
   (req : _Val2 = true):
   Rewrites
   (@twoOpLHS op GAS_CELL PC_CELL W0 W1 W2 K_CELL SCHEDULE_CELL USEGAS_CELL WS _DotVar0 _DotVar2 _Gen0 _Gen1 _Gen10 _Gen11 _Gen12 _Gen13 _Gen14 _Gen15 _Gen16 _Gen17 _Gen18 _Gen19 _Gen2 _Gen20 _Gen21 _Gen22 _Gen23 _Gen3 _Gen4 _Gen5 _Gen6 _Gen7 _Gen8 _Gen9)
-  (@twoOpRHS _Val0 _Val3 _Val4 _Val5 _Val6 _Val7 K_CELL SCHEDULE_CELL _Val1 _Val2 WS _DotVar0 _DotVar2 _Gen0 _Gen1 _Gen10 _Gen11 _Gen12 _Gen13 _Gen14 _Gen15 _Gen16 _Gen17 _Gen18 _Gen19 _Gen2 _Gen20 _Gen21 _Gen22 _Gen23 _Gen3 _Gen4 _Gen5 _Gen6 _Gen7 _Gen8 _Gen9) := by
+  (@twoOpRHS _Val0 _Val4 _Val5 _Val6 _Val7 K_CELL SCHEDULE_CELL _Val1 _Val2 WS _DotVar0 _DotVar2 _Gen0 _Gen1 _Gen10 _Gen11 _Gen12 _Gen13 _Gen14 _Gen15 _Gen16 _Gen17 _Gen18 _Gen19 _Gen2 _Gen20 _Gen21 _Gen22 _Gen23 _Gen3 _Gen4 _Gen5 _Gen6 _Gen7 _Gen8 _Gen9) := by
   cases op
   . apply (@Rewrites.ADD_SUMMARY_ADD_SUMMARY_USEGAS GAS_CELL PC_CELL W0 W1 _Val0)
     <;> assumption
@@ -258,6 +263,7 @@ theorem rw_twoOpLHS_twoOpRHS
     <;> assumption
   . apply (@Rewrites.MULMOD_SUMMARY_MULMOD_SUMMARY_USEGAS GAS_CELL PC_CELL W0 W1 W2 _Val0)
     <;> assumption
+  . apply (@Rewrites.LT_SUMMARY_LT_SUMMARY_USEGAS GAS_CELL PC_CELL W0 W1 _Val0) <;> assumption
 
 theorem twoOp_prestate_equiv
   {GAS_CELL PC_CELL W0 W1 W2 : SortInt}
@@ -330,17 +336,18 @@ def arith_op.do (W0 W1 W2 : SortInt) : SortInt :=
   | .sub => chop' (W0 - W1)
   | .addmod => modWord (W0 + W1) W2
   | .mulmod => modWord (W0 * W1) W2
+  | .lt => ite (W0 < W1) 1 0
 
 @[simp]
 def arith_op.gas_comp : arith_op → SortInt
-  | .add | .sub => 3
   | .addmod | .mulmod => 8
+  | _ => 3
 
 theorem twoOp_poststate_equiv
-  {PC_CELL W0 W1 W2 _Val0 _Val3 _Val4 _Val5 _Val6 _Val7 : SortInt}
+  {PC_CELL W0 W1 W2 _Val0 _Val3_int _Val4 _Val5 _Val6 _Val7 : SortInt}
   {K_CELL : SortK}
   {SCHEDULE_CELL : SortSchedule}
-  {_Val1 _Val2 : SortBool}
+  {_Val1 _Val2 _Val3_bool : SortBool}
   {WS : SortWordStack}
   {_DotVar0 : SortGeneratedCounterCell}
   {_DotVar2 : SortNetworkCell}
@@ -368,11 +375,11 @@ theorem twoOp_poststate_equiv
   {_Gen7 : SortMemoryUsedCell}
   {_Gen8 : SortCallGasCell}
   {_Gen9 : SortStaticCell}
-  (defn_Val3 : op.to_defn_Val3 W0 W1 _Val3)
-  (defn_Val4 : op.to_defn_Val4 _Val3 _Val4 W2)
+  (defn_Val3 : op.to_defn_Val3 W0 W1 _Val3_int _Val3_bool)
+  (defn_Val4 : op.to_defn_Val4 _Val3_bool _Val3_int _Val4 W2)
   (defn_Val5 : «_+Int_» PC_CELL 1 = some _Val5)
   (symState : EVM.State):
-  let rhs := (@twoOpRHS _Val0 _Val3 _Val4 _Val5 _Val6 _Val7 K_CELL SCHEDULE_CELL _Val1 _Val2 WS _DotVar0 _DotVar2 _Gen0 _Gen1 _Gen10 _Gen11 _Gen12 _Gen13 _Gen14 _Gen15 _Gen16 _Gen17 _Gen18 _Gen19 _Gen2 _Gen20 _Gen21 _Gen22 _Gen23 _Gen3 _Gen4 _Gen5 _Gen6 _Gen7 _Gen8 _Gen9)
+  let rhs := (@twoOpRHS _Val0 _Val4 _Val5 _Val6 _Val7 K_CELL SCHEDULE_CELL _Val1 _Val2 WS _DotVar0 _DotVar2 _Gen0 _Gen1 _Gen10 _Gen11 _Gen12 _Gen13 _Gen14 _Gen15 _Gen16 _Gen17 _Gen18 _Gen19 _Gen2 _Gen20 _Gen21 _Gen22 _Gen23 _Gen3 _Gen4 _Gen5 _Gen6 _Gen7 _Gen8 _Gen9)
   stateMap symState rhs =
   {symState with
     stack := (intMap (op.do W0 W1 W2)) :: wordStackMap WS
@@ -393,6 +400,7 @@ theorem twoOp_poststate_equiv
     } := by
     aesop (add simp [«_-Int_», «_+Int_», «_*Int_», chop', chopIsSome])
     (add simp [arith_op.to_defn_Val3, arith_op.to_defn_Val4, twoOpRHS, stateMap])
+    (add simp [bool2Word, _4bd3e13, _cb4e96d])
 
 open ArithmeticSummary
 
@@ -401,10 +409,10 @@ attribute [local simp] GasConstants.Gverylow GasConstants.Gmid
 -- We cannot prove full equivalence for the `EVM.step` function
 -- This is because it doesn't include all semantics such as gas computation
 theorem step_twoOp_equiv
-  {GAS_CELL PC_CELL W0 W1 W2 _Val0 _Val3 _Val4 _Val5 _Val6 _Val7 : SortInt}
+  {GAS_CELL PC_CELL W0 W1 W2 _Val0 _Val3_int _Val4 _Val5 _Val6 _Val7 : SortInt}
   {K_CELL : SortK}
   {SCHEDULE_CELL : SortSchedule}
-  {USEGAS_CELL _Val1 _Val2 : SortBool}
+  {USEGAS_CELL _Val1 _Val2 _Val3_bool : SortBool}
   {WS : SortWordStack}
   {_DotVar0 : SortGeneratedCounterCell}
   {_DotVar2 : SortNetworkCell}
@@ -435,8 +443,8 @@ theorem step_twoOp_equiv
   (defn_Val0 : «_<_>_SCHEDULE_Int_ScheduleConst_Schedule» op.to_gas SCHEDULE_CELL = some _Val0)
   (defn_Val1 : «_<=Int_» _Val0 GAS_CELL = some _Val1)
   (defn_Val2 : _andBool_ USEGAS_CELL _Val1 = some _Val2)
-  (defn_Val3 : op.to_defn_Val3 W0 W1 _Val3)
-  (defn_Val4 : op.to_defn_Val4 _Val3 _Val4 W2)
+  (defn_Val3 : op.to_defn_Val3 W0 W1 _Val3_int _Val3_bool)
+  (defn_Val4 : op.to_defn_Val4 _Val3_bool _Val3_int _Val4 W2)
   (defn_Val5 : «_+Int_» PC_CELL 1 = some _Val5)
   (defn_Val6 : «_<_>_SCHEDULE_Int_ScheduleConst_Schedule» op.to_gas SCHEDULE_CELL = some _Val6)
   (defn_Val7 : «_-Int_» GAS_CELL _Val6 = some _Val7)
@@ -454,10 +462,10 @@ theorem step_twoOp_equiv
   (W0ge0 : 0 ≤ W0)
   (W1ge0 : 0 ≤ W1):
   EVM.step_arith op.from_k gas gasCost (stateMap symState (@twoOpLHS op GAS_CELL PC_CELL W0 W1 W2 K_CELL SCHEDULE_CELL USEGAS_CELL WS _DotVar0 _DotVar2 _Gen0 _Gen1 _Gen10 _Gen11 _Gen12 _Gen13 _Gen14 _Gen15 _Gen16 _Gen17 _Gen18 _Gen19 _Gen2 _Gen20 _Gen21 _Gen22 _Gen23 _Gen3 _Gen4 _Gen5 _Gen6 _Gen7 _Gen8 _Gen9)) =
-  .ok (stateMap {symState with execLength := symState.execLength + 1} (@twoOpRHS _Val0 _Val3 _Val4 _Val5 _Val6 _Val7 K_CELL SCHEDULE_CELL _Val1 _Val2 WS _DotVar0 _DotVar2 _Gen0 _Gen1 _Gen10 _Gen11 _Gen12 _Gen13 _Gen14 _Gen15 _Gen16 _Gen17 _Gen18 _Gen19 _Gen2 _Gen20 _Gen21 _Gen22 _Gen23 _Gen3 _Gen4 _Gen5 _Gen6 _Gen7 _Gen8 _Gen9)) := by
+  .ok (stateMap {symState with execLength := symState.execLength + 1} (@twoOpRHS _Val0 _Val4 _Val5 _Val6 _Val7 K_CELL SCHEDULE_CELL _Val1 _Val2 WS _DotVar0 _DotVar2 _Gen0 _Gen1 _Gen10 _Gen11 _Gen12 _Gen13 _Gen14 _Gen15 _Gen16 _Gen17 _Gen18 _Gen19 _Gen2 _Gen20 _Gen21 _Gen22 _Gen23 _Gen3 _Gen4 _Gen5 _Gen6 _Gen7 _Gen8 _Gen9)) := by
   have gasAvailEnough : op.gas_comp ≤ GAS_CELL := by
    cases op <;> aesop (add simp [_andBool_, _5b9db8d, _61fbef3, «_<=Int_»])
-  rw [twoOp_prestate_equiv, @twoOp_poststate_equiv _ _ W0 W1 W2 _ _Val3]
+  rw [twoOp_prestate_equiv, @twoOp_poststate_equiv _ _ W0 W1 W2 _ _Val3_int]
   <;> try assumption
   cases gas; contradiction
   case succ gas =>
@@ -477,6 +485,11 @@ theorem step_twoOp_equiv
         sorry
       . -- `mulmod` case
         sorry
+      . -- `lt` case
+        aesop (add simp [UInt256.lt, UInt256.fromBool, Bool.toUInt256]) <;>
+        /- We need a lemma to the effect that `a < b` iff `intMap a < intMap b` -/
+        sorry
+
 
 
 attribute [local simp] ArithmeticSummary.arith_op.C'_comp
@@ -490,10 +503,10 @@ attribute [local simp] ArithmeticSummary.arith_op.C'_comp
  6. `W0` and `W1` are nonnegative
  -/
 theorem X_twoOp_equiv
-  {GAS_CELL PC_CELL W0 W1 W2 _Val0 _Val3 _Val4 _Val5 _Val6 _Val7 : SortInt}
+  {GAS_CELL PC_CELL W0 W1 W2 _Val0 _Val3_int _Val4 _Val5 _Val6 _Val7 : SortInt}
   {K_CELL : SortK}
   {SCHEDULE_CELL : SortSchedule}
-  {USEGAS_CELL _Val1 _Val2 : SortBool}
+  {USEGAS_CELL _Val1 _Val2 _Val3_bool: SortBool}
   {WS : SortWordStack}
   {_DotVar0 : SortGeneratedCounterCell}
   {_DotVar2 : SortNetworkCell}
@@ -524,8 +537,8 @@ theorem X_twoOp_equiv
   (defn_Val0 : «_<_>_SCHEDULE_Int_ScheduleConst_Schedule» op.to_gas SCHEDULE_CELL = some _Val0)
   (defn_Val1 : «_<=Int_» _Val0 GAS_CELL = some _Val1)
   (defn_Val2 : _andBool_ USEGAS_CELL _Val1 = some _Val2)
-  (defn_Val3 : op.to_defn_Val3 W0 W1 _Val3)
-  (defn_Val4 : op.to_defn_Val4 _Val3 _Val4 W2)
+  (defn_Val3 : op.to_defn_Val3 W0 W1 _Val3_int _Val3_bool)
+  (defn_Val4 : op.to_defn_Val4 _Val3_bool _Val3_int _Val4 W2)
   (defn_Val5 : «_+Int_» PC_CELL 1 = some _Val5)
   (defn_Val6 : «_<_>_SCHEDULE_Int_ScheduleConst_Schedule» op.to_gas SCHEDULE_CELL = some _Val6)
   (defn_Val7 : «_-Int_» GAS_CELL _Val6 = some _Val7)
@@ -545,10 +558,10 @@ theorem X_twoOp_equiv
   (wordStackOk : sizeWordStackAux WS 0 < some op.from_k.to_stack_length):
   EVM.X (UInt256.toNat (intMap GAS_CELL)) symValidJumps
   (stateMap symState (@twoOpLHS op GAS_CELL PC_CELL W0 W1 W2 K_CELL SCHEDULE_CELL USEGAS_CELL WS _DotVar0 _DotVar2 _Gen0 _Gen1 _Gen10 _Gen11 _Gen12 _Gen13 _Gen14 _Gen15 _Gen16 _Gen17 _Gen18 _Gen19 _Gen2 _Gen20 _Gen21 _Gen22 _Gen23 _Gen3 _Gen4 _Gen5 _Gen6 _Gen7 _Gen8 _Gen9)) =
-  .ok (.success (stateMap {symState with execLength := symState.execLength + 2} (@twoOpRHS _Val0 _Val3 _Val4 _Val5 _Val6 _Val7 K_CELL SCHEDULE_CELL _Val1 _Val2 WS _DotVar0 _DotVar2 _Gen0 _Gen1 _Gen10 ⟨ByteArray.empty⟩ _Gen12 _Gen13 _Gen14 _Gen15 _Gen16 _Gen17 _Gen18 _Gen19 _Gen2 _Gen20 _Gen21 _Gen22 _Gen23 _Gen3 _Gen4 _Gen5 _Gen6 _Gen7 _Gen8 _Gen9)) ByteArray.empty) := by
+  .ok (.success (stateMap {symState with execLength := symState.execLength + 2} (@twoOpRHS _Val0 _Val4 _Val5 _Val6 _Val7 K_CELL SCHEDULE_CELL _Val1 _Val2 WS _DotVar0 _DotVar2 _Gen0 _Gen1 _Gen10 ⟨ByteArray.empty⟩ _Gen12 _Gen13 _Gen14 _Gen15 _Gen16 _Gen17 _Gen18 _Gen19 _Gen2 _Gen20 _Gen21 _Gen22 _Gen23 _Gen3 _Gen4 _Gen5 _Gen6 _Gen7 _Gen8 _Gen9)) ByteArray.empty) := by
   -- With `simp` doesn't work
   rw [codeTwoOp, pcZero]
-  rw [twoOp_prestate_equiv, @twoOp_poststate_equiv _ _ W0 W1 W2 _ _Val3]
+  rw [twoOp_prestate_equiv, @twoOp_poststate_equiv _ _ W0 W1 W2 _ _Val3_int]
   <;> try assumption
   -- If we don't apply this lemma we cannot rewrite X_add_summary
   have pc_equiv : intMap 0 = UInt256.ofNat 0 := rfl
@@ -566,6 +579,8 @@ theorem X_twoOp_equiv
     . -- `addmod` case
       sorry
     . -- `mulmod` case
+      sorry
+    . -- `lt` case
       sorry
   · simp_all [sizeWordStack_def]
   · simp [GasInterface.cancun_def] at defn_Val6 defn_Val0
