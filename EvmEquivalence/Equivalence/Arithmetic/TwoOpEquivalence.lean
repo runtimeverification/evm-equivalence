@@ -19,23 +19,28 @@ inductive arith_op where
   | mulmod
   | lt
   | gt
+  | eq
+  | iszero
 
 variable (op : arith_op)
 
 @[simp]
-def arith_op.to_binop : arith_op → SortBinStackOp ⊕ SortTernStackOp
+def arith_op.to_binop : arith_op → SortBinStackOp ⊕ (SortTernStackOp ⊕ SortUnStackOp)
   | .add => .inl .ADD_EVM_BinStackOp
   | .sub => .inl .SUB_EVM_BinStackOp
-  | .addmod => .inr .ADDMOD_EVM_TernStackOp
-  | .mulmod => .inr .MULMOD_EVM_TernStackOp
+  | .addmod => .inr (.inl .ADDMOD_EVM_TernStackOp)
+  | .mulmod => .inr (.inl .MULMOD_EVM_TernStackOp)
   | .lt => .inl .LT_EVM_BinStackOp
   | .gt => .inl .GT_EVM_BinStackOp
+  | .eq => .inl .EQ_EVM_BinStackOp
+  | .iszero => .inr (.inr .ISZERO_EVM_UnStackOp)
 
 @[simp]
 def arith_op.to_maybeOpcode : SortMaybeOpCode :=
   match op.to_binop with
   | .inl op => (@inj SortBinStackOp SortMaybeOpCode) op
-  | .inr op => (@inj SortTernStackOp SortMaybeOpCode) op
+  | .inr (.inl op) => (@inj SortTernStackOp SortMaybeOpCode) op
+  | .inr (.inr op) => (@inj SortUnStackOp SortMaybeOpCode) op
 
 def arith_op.from_k : arith_op → ArithmeticSummary.arith_op
  | .add => .add
@@ -44,12 +49,15 @@ def arith_op.from_k : arith_op → ArithmeticSummary.arith_op
  | .mulmod => .mulmod
  | .lt => .lt
  | .gt => .gt
+ | .eq => .eq
+ | .iszero => .iszero
 
 @[simp]
 def arith_op.to_stack (W0 W1 W2 : SortInt) (WS : SortWordStack) : SortWordStack :=
   match op.to_binop with
   | .inl _ => SortWordStack.«_:__EVM-TYPES_WordStack_Int_WordStack» W0 (SortWordStack.«_:__EVM-TYPES_WordStack_Int_WordStack» W1 WS)
-  | .inr _ => SortWordStack.«_:__EVM-TYPES_WordStack_Int_WordStack» W0 (SortWordStack.«_:__EVM-TYPES_WordStack_Int_WordStack» W1 (SortWordStack.«_:__EVM-TYPES_WordStack_Int_WordStack» W2 WS))
+  | .inr (.inl _) => SortWordStack.«_:__EVM-TYPES_WordStack_Int_WordStack» W0 (SortWordStack.«_:__EVM-TYPES_WordStack_Int_WordStack» W1 (SortWordStack.«_:__EVM-TYPES_WordStack_Int_WordStack» W2 WS))
+  | .inr (.inr _) => SortWordStack.«_:__EVM-TYPES_WordStack_Int_WordStack» W0 WS
 
 def twoOpLHS
   {GAS_CELL PC_CELL W0 W1 W2 : SortInt}
@@ -199,6 +207,8 @@ def arith_op.to_defn_Val3 (W0 W1 _Val3_int : SortInt) (_Val3_bool : SortBool) : 
   | .mulmod => «_*Int_» W0 W1 = some _Val3_int
   | .lt => «_<Int_» W0 W1 = some _Val3_bool
   | .gt => «_<Int_» W1 W0 = some _Val3_bool
+  | .eq => «_==Int_» W0 W1 = some _Val3_bool
+  | .iszero => «_==Int_» W0 0 = some _Val3_bool
 
 /--
 Second Op for summarization
@@ -207,7 +217,7 @@ def arith_op.to_defn_Val4 (_Val3_bool : SortBool) (_Val3_int _Val4 W2: SortInt) 
   match op with
   | .add | .sub => chop _Val3_int = some _Val4
   | .addmod | .mulmod => «_%Word__EVM-TYPES_Int_Int_Int» _Val3_int W2 = some _Val4
-  | .lt | .gt=> bool2Word _Val3_bool = some _Val4
+  | .lt | .gt | .eq | .iszero => bool2Word _Val3_bool = some _Val4
 
 @[simp]
 def arith_op.to_gas : arith_op → SortScheduleConst
@@ -270,6 +280,10 @@ theorem rw_twoOpLHS_twoOpRHS
   . apply (@Rewrites.LT_SUMMARY_LT_SUMMARY_USEGAS GAS_CELL PC_CELL W0 W1 _Val0)
     <;> assumption
   . apply (@Rewrites.GT_SUMMARY_GT_SUMMARY_USEGAS GAS_CELL PC_CELL W0 W1 _Val0)
+    <;> assumption
+  . apply (@Rewrites.EQ_SUMMARY_EQ_SUMMARY_USEGAS GAS_CELL PC_CELL W0 W1 _Val0)
+    <;> assumption
+  . apply (@Rewrites.ISZERO_SUMMARY_ISZERO_SUMMARY_USEGAS GAS_CELL PC_CELL W0 _Val0)
     <;> assumption
 
 theorem twoOp_prestate_equiv
@@ -345,6 +359,8 @@ def arith_op.do (W0 W1 W2 : SortInt) : SortInt :=
   | .mulmod => modWord (W0 * W1) W2
   | .lt => ite (W0 < W1) 1 0
   | .gt => ite (W1 < W0) 1 0
+  | .eq => ite (W0 = W1) 1 0
+  | .iszero => ite (W0 = 0) 1 0
 
 @[simp]
 def arith_op.gas_comp : arith_op → SortInt
@@ -499,7 +515,10 @@ theorem step_twoOp_equiv
         sorry
       . -- `gt` case
         sorry
-
+      . -- `eq` case
+        sorry
+      . -- `iszero` case
+        sorry
 
 
 attribute [local simp] ArithmeticSummary.arith_op.C'_comp
@@ -593,6 +612,10 @@ theorem X_twoOp_equiv
     . -- `lt` case
       sorry
     . -- `gt` case
+      sorry
+    . -- `eq` case
+      sorry
+    . -- `iszero` case
       sorry
   · simp_all [sizeWordStack_def]
   · simp [GasInterface.cancun_def] at defn_Val6 defn_Val0
