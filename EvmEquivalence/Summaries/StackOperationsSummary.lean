@@ -7,7 +7,7 @@ open EvmYul
 open EVM
 open StopSummary
 
-namespace ArithmeticSummary
+namespace StackOpsSummary
 
 inductive arith_op where
 | add
@@ -20,6 +20,20 @@ inductive arith_op where
 | mulmod
 | exp
 | signextend
+| lt
+| gt
+| slt
+| sgt
+| eq
+| iszero
+| and
+| or
+| xor
+| not
+| byte
+| shl
+| shr
+| sar
 deriving BEq, DecidableEq
 
 section
@@ -48,6 +62,20 @@ abbrev addmodEVM := @Operation.ADDMOD .EVM
 abbrev mulmodEVM := @Operation.MULMOD .EVM
 abbrev expEVM := @Operation.EXP .EVM
 abbrev signextendEVM := @Operation.SIGNEXTEND .EVM
+abbrev ltEVM := @Operation.LT .EVM
+abbrev gtEVM := @Operation.GT .EVM
+abbrev sltEVM := @Operation.SLT .EVM
+abbrev sgtEVM := @Operation.SGT .EVM
+abbrev eqEVM := @Operation.EQ .EVM
+abbrev iszeroEVM := @Operation.ISZERO .EVM
+abbrev andEVM := @Operation.AND .EVM
+abbrev orEVM := @Operation.OR .EVM
+abbrev xorEVM := @Operation.XOR .EVM
+abbrev notEVM := @Operation.NOT .EVM
+abbrev byteEVM := @Operation.BYTE .EVM
+abbrev shlEVM := @Operation.SHL .EVM
+abbrev shrEVM := @Operation.SHR .EVM
+abbrev sarEVM := @Operation.SAR .EVM
 
 abbrev add_instr : Option (Operation .EVM × Option (UInt256 × Nat)) := some ⟨addEVM, none⟩
 abbrev sub_instr : Option (Operation .EVM × Option (UInt256 × Nat)) := some ⟨subEVM, none⟩
@@ -59,6 +87,21 @@ abbrev addmod_instr : Option (Operation .EVM × Option (UInt256 × Nat)) := some
 abbrev mulmod_instr : Option (Operation .EVM × Option (UInt256 × Nat)) := some ⟨mulmodEVM, none⟩
 abbrev exp_instr : Option (Operation .EVM × Option (UInt256 × Nat)) := some ⟨expEVM, none⟩
 abbrev signextend_instr : Option (Operation .EVM × Option (UInt256 × Nat)) := some ⟨signextendEVM, none⟩
+abbrev lt_instr : Option (Operation .EVM × Option (UInt256 × Nat)) := some ⟨ltEVM, none⟩
+abbrev gt_instr : Option (Operation .EVM × Option (UInt256 × Nat)) := some ⟨gtEVM, none⟩
+abbrev slt_instr : Option (Operation .EVM × Option (UInt256 × Nat)) := some ⟨sltEVM, none⟩
+abbrev sgt_instr : Option (Operation .EVM × Option (UInt256 × Nat)) := some ⟨sgtEVM, none⟩
+abbrev eq_instr : Option (Operation .EVM × Option (UInt256 × Nat)) := some ⟨eqEVM, none⟩
+abbrev iszero_instr : Option (Operation .EVM × Option (UInt256 × Nat)) := some ⟨iszeroEVM, none⟩
+abbrev and_instr : Option (Operation .EVM × Option (UInt256 × Nat)) := some ⟨andEVM, none⟩
+abbrev or_instr : Option (Operation .EVM × Option (UInt256 × Nat)) := some ⟨orEVM, none⟩
+abbrev xor_instr : Option (Operation .EVM × Option (UInt256 × Nat)) := some ⟨xorEVM, none⟩
+abbrev not_instr : Option (Operation .EVM × Option (UInt256 × Nat)) := some ⟨notEVM, none⟩
+abbrev byte_instr : Option (Operation .EVM × Option (UInt256 × Nat)) := some ⟨byteEVM, none⟩
+abbrev shl_instr : Option (Operation .EVM × Option (UInt256 × Nat)) := some ⟨shlEVM, none⟩
+abbrev shr_instr : Option (Operation .EVM × Option (UInt256 × Nat)) := some ⟨shrEVM, none⟩
+abbrev sar_instr : Option (Operation .EVM × Option (UInt256 × Nat)) := some ⟨sarEVM, none⟩
+
 
 @[simp]
 def arith_op.get : (Option (Operation .EVM × Option (UInt256 × Nat))) :=
@@ -73,6 +116,20 @@ def arith_op.get : (Option (Operation .EVM × Option (UInt256 × Nat))) :=
   | .mulmod => mulmod_instr
   | .exp => exp_instr
   | .signextend => signextend_instr
+  | .lt => lt_instr
+  | .gt => gt_instr
+  | .slt => slt_instr
+  | .sgt => sgt_instr
+  | .eq => eq_instr
+  | .iszero => iszero_instr
+  | .and => and_instr
+  | .or => or_instr
+  | .xor => xor_instr
+  | .not => not_instr
+  | .byte => byte_instr
+  | .shl => shl_instr
+  | .shr => shr_instr
+  | .sar => sar_instr
 
 --@[simp]
 def arith_op.t : Operation .EVM :=
@@ -87,6 +144,20 @@ def arith_op.t : Operation .EVM :=
   | .mulmod => (mulmod_instr.get rfl).1
   | .exp => (exp_instr.get rfl).1
   | .signextend => (signextend_instr.get rfl).1
+  | .lt => (lt_instr.get rfl).1
+  | .gt => (gt_instr.get rfl).1
+  | .slt => (slt_instr.get rfl).1
+  | .sgt => (sgt_instr.get rfl).1
+  | .eq => (eq_instr.get rfl).1
+  | .iszero => (iszero_instr.get rfl).1
+  | .and => (and_instr.get rfl).1
+  | .or => (or_instr.get rfl).1
+  | .xor => (xor_instr.get rfl).1
+  | .not => (not_instr.get rfl).1
+  | .byte => (byte_instr.get rfl).1
+  | .shl => (shl_instr.get rfl).1
+  | .shr => (shr_instr.get rfl).1
+  | .sar => (sar_instr.get rfl).1
 
 def EVM.step_arith : Transformer := EVM.step gas gasCost op.get
 
@@ -105,20 +176,37 @@ def arith_op.do :=
   | .mulmod => word₁.mulMod word₂ word₃
   | .exp => word₁.exp word₂
   | .signextend => word₁.signextend word₂
+  | .lt => word₁.lt word₂
+  | .gt => word₁.gt word₂
+  | .slt => word₁.slt word₂
+  | .sgt => word₁.sgt word₂
+  | .eq => word₁.eq word₂
+  | .iszero => word₁.isZero
+  | .and => word₁.land word₂
+  | .or => word₁.lor word₂
+  | .xor => word₁.xor word₂
+  | .not => word₁.lnot
+  | .byte => word₁.byteAt word₂
+  | .shl => (flip UInt256.shiftLeft) word₁ word₂
+  | .shr => (flip UInt256.shiftRight) word₁ word₂
+  | .sar => word₁.sar word₂
 
 @[simp]
 def arith_op.stack :=
   match op with
+  | .iszero | .not => word₁ :: symStack
   | .addmod | .mulmod => word₁ :: word₂ :: word₃ :: symStack
   | _ => word₁ :: word₂ :: symStack
 
-theorem EvmYul.step_sub_summary (symState : EVM.State):
+theorem EvmYul.step_op_summary (symState : EVM.State):
   EvmYul.step_arith op {symState with
     stack := op.stack word₁ word₂ word₃ symStack,
     pc := symPc} =
   .ok {symState with
         stack := (op.do word₁ word₂ word₃) :: symStack
         pc := symPc + .ofNat 1} := by cases op <;> rfl
+
+
 
 theorem EVM.step_add_to_step_add (gpos : 0 < gas) (symState : EVM.State):
   EVM.step_arith op gas gasCost
@@ -238,6 +326,20 @@ def arith_op.to_bin : ByteArray :=
   | .mulmod => ⟨#[0x9]⟩
   | .exp => ⟨#[0xA]⟩
   | .signextend => ⟨#[0xB]⟩
+  | .lt => ⟨#[0x10]⟩
+  | .gt => ⟨#[0x11]⟩
+  | .slt => ⟨#[0x12]⟩
+  | .sgt => ⟨#[0x13]⟩
+  | .eq => ⟨#[0x14]⟩
+  | .iszero => ⟨#[0x15]⟩
+  | .and => ⟨#[0x16]⟩
+  | .or => ⟨#[0x17]⟩
+  | .xor => ⟨#[0x18]⟩
+  | .not => ⟨#[0x19]⟩
+  | .byte => ⟨#[0x1A]⟩
+  | .shl => ⟨#[0x1B]⟩
+  | .shr => ⟨#[0x1C]⟩
+  | .sar => ⟨#[0x1D]⟩
 
 @[simp]
 theorem decode_singleton_add :
@@ -269,6 +371,48 @@ theorem decode_singleton_exp :
 @[simp]
 theorem decode_singleton_signextend :
   decode ⟨#[0xB]⟩ (.ofNat 0) = some ⟨signextendEVM, none⟩ := rfl
+@[simp]
+theorem decode_singleton_lt :
+  decode ⟨#[0x10]⟩ (.ofNat 0) = some (ltEVM, none) := rfl
+@[simp]
+theorem decode_singleton_gt :
+  decode ⟨#[0x11]⟩ (.ofNat 0) = some (gtEVM, none) := rfl
+@[simp]
+theorem decode_singleton_slt :
+  decode ⟨#[0x12]⟩ (.ofNat 0) = some (sltEVM, none) := rfl
+@[simp]
+theorem decode_singleton_sgt :
+  decode ⟨#[0x13]⟩ (.ofNat 0) = some (sgtEVM, none) := rfl
+@[simp]
+theorem decode_singleton_eq :
+  decode ⟨#[0x14]⟩ (.ofNat 0) = some (eqEVM, none) := rfl
+@[simp]
+theorem decode_singleton_iszero :
+  decode ⟨#[0x15]⟩ (.ofNat 0) = some (iszeroEVM, none) := rfl
+@[simp]
+theorem decode_singleton_and :
+  decode ⟨#[0x16]⟩ (.ofNat 0) = some (andEVM, none) := rfl
+@[simp]
+theorem decode_singleton_or :
+  decode ⟨#[0x17]⟩ (.ofNat 0) = some (orEVM, none) := rfl
+@[simp]
+theorem decode_singleton_xor :
+  decode ⟨#[0x18]⟩ (.ofNat 0) = some (xorEVM, none) := rfl
+@[simp]
+theorem decode_singleton_not :
+  decode ⟨#[0x19]⟩ (.ofNat 0) = some (notEVM, none) := rfl
+@[simp]
+theorem decode_singleton_byte :
+  decode ⟨#[0x1A]⟩ (.ofNat 0) = some (byteEVM, none) := rfl
+@[simp]
+theorem decode_singleton_shl :
+  decode ⟨#[0x1B]⟩ (.ofNat 0) = some (shlEVM, none) := rfl
+@[simp]
+theorem decode_singleton_shr :
+  decode ⟨#[0x1C]⟩ (.ofNat 0) = some (shrEVM, none) := rfl
+@[simp]
+theorem decode_singleton_sar :
+  decode ⟨#[0x1D]⟩ (.ofNat 0) = some (sarEVM, none) := rfl
 
 @[simp]
 theorem decode_singleton_arith :
@@ -286,9 +430,9 @@ def C'_exp (symState : EVM.State) :=
 
 def arith_op.C'_noexp :=
   match op with
-  | .add | .sub => GasConstants.Gverylow
+  | .div | .sdiv | .mod | .smod | .signextend => GasConstants.Glow
   | .addmod | .mulmod => GasConstants.Gmid
-  | _ => GasConstants.Glow
+  | _ => GasConstants.Gverylow
 
 def arith_op.C'_comp (symState : EVM.State) :=
   match op with
@@ -300,13 +444,12 @@ theorem C'_arith (symState : EVM.State) :
   C' symState op.t = op.C'_comp symState := by
   cases op <;> aesop (add simp [C', arith_op.t, arith_op.C'_comp, C'_exp])
 
-
-
 @[simp]
 def arith_op.to_stack_length :=
   match op with
-  | .addmod | .mulmod => 1023
-  | _ => 1024
+  | .iszero | .not => 1024
+  | .addmod | .mulmod => 1022
+  | _ => 1023
 
 attribute [local simp] GasConstants.Gverylow GasConstants.Glow GasConstants.Gmid GasConstants.Gexp GasConstants.Gexpbyte
 
@@ -344,14 +487,11 @@ theorem X_arith_summary
   intro ss enoughGas
   cases g_case : symGasAvailable.toNat; rw [g_case] at enoughGas; contradiction
   case succ g_pos =>
-  have ss_lt2_f  (n : ℕ) : (n + 1 + 1 < 2) = False := by simp
-  simp [X, δ, ss_lt2_f]
-  have stack_ok_rw : (1024 < List.length symStack + 1) = False := by
-    aesop (add safe (by omega))
+  simp [X, δ]
   have enough_gas_rw : (symGasAvailable.toNat < GasConstants.Gverylow) = False :=
     by aesop (add simp [arith_op.C'_comp, arith_op.C'_noexp])
     (add safe (by omega))
-  simp [α, stack_ok_rw, enough_gas_rw]
+  simp [α/- , stack_ok_rw -/, enough_gas_rw]
   have : ((decode ss.executionEnv.code ss.pc).getD (Operation.STOP, none)).1 = op.t := by
     cases op <;> simp [ss, arith_op.t]
   simp [this]
@@ -362,11 +502,14 @@ theorem X_arith_summary
     revert enoughGas; simp [arith_op.C'_comp]
     cases op <;> simp [ss] <;> aesop (add safe (by omega))
   have step_rw (cost : ℕ) := (EVM.step_add_summary op word₁ word₂ word₃ g_pos cost symStack (.ofNat 0) symGasAvailable symRefund symActiveWords symExecLength symReturnData op.to_bin symMemory symAccessedStorageKeys symAccounts symCodeOwner symPerm gPos)
+  have stack_ok_rw : (1024 < List.length symStack + 1) = False := by
+    cases op <;> aesop (add safe (by omega))
   cases cop: op <;> simp [cop] at symStack_ok <;>
   split <;> rename_i evm cost exec <;> try contradiction
   all_goals (
     simp [EVM.step_arith, cop, add_instr, sub_instr, div_instr] at step_rw
-    simp [arith_op.t, ss, cop, ss_lt2_f, stack_ok_rw] at exec
+    simp only [cop, arith_op.to_stack_length] at stack_ok_rw
+    simp [arith_op.t, ss, cop, stack_ok_rw] at exec
     cases exec
   )
   all_goals (
@@ -376,4 +519,4 @@ theorem X_arith_summary
 
 end
 
-end ArithmeticSummary
+end StackOpsSummary

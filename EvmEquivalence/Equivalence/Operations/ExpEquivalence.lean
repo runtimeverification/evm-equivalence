@@ -1,4 +1,4 @@
-import EvmEquivalence.Summaries.ArithmeticSummary
+import EvmEquivalence.Summaries.StackOperationsSummary
 import EvmEquivalence.StateMap
 import EvmEquivalence.Interfaces.FuncInterface
 import EvmEquivalence.Interfaces.GasInterface
@@ -399,7 +399,7 @@ theorem exp_poststate_equiv
     aesop (add simp [expRHS, stateMap, «_+Int_»])
     sorry
 
-open ArithmeticSummary
+open StackOpsSummary
 
 /- TODO: correctly articulate the case where `0 < W1` -/
 def exp_case.gas : ℕ :=
@@ -493,7 +493,7 @@ theorem step_exp_equiv
   cases gas; contradiction
   case succ gas =>
     have : intMap W0 :: intMap W1 :: wordStackMap WS =
-    ArithmeticSummary.arith_op.stack .exp
+    StackOpsSummary.arith_op.stack .exp
       (intMap W0) (intMap W1) (intMap W1) (wordStackMap WS) := by aesop
     rw [this]
     rw [EVM.step_add_summary] <;> try assumption
@@ -587,7 +587,7 @@ theorem X_exp_equiv
   (W1ge0 : 0 ≤ W1)
   (boundedW1 : W1 < ↑UInt256.size)
   -- There's no #sizeWordStack
-  (wordStackOk : sizeWordStackAux WS 0 < some 1024):
+  (wordStackOk : sizeWordStackAux WS 0 < some 1023):
   let lhs := (@expLHS GAS_CELL PC_CELL W0 W1 SCHEDULE_CELL
    USEGAS_CELL WS _DotVar0 _DotVar2 _Gen0 _Gen1 _Gen10 _Gen11
    _Gen12 _Gen13 _Gen14 _Gen15 _Gen16 _Gen17 _Gen18 _Gen19 _Gen2
@@ -608,9 +608,9 @@ theorem X_exp_equiv
   -- If we don't apply this lemma we cannot rewrite X_add_summary
   have pc_equiv : intMap 0 = UInt256.ofNat 0 := rfl
   have stack_op : intMap W0 :: intMap W1 :: wordStackMap WS =
-    ArithmeticSummary.arith_op.stack .exp
+    StackOpsSummary.arith_op.stack .exp
       (intMap W0) (intMap W1) (intMap W1) (wordStackMap WS) := rfl
-  have code_op : ⟨#[0xA]⟩ = ArithmeticSummary.arith_op.to_bin .exp := rfl
+  have code_op : ⟨#[0xA]⟩ = StackOpsSummary.arith_op.to_bin .exp := rfl
   rw [stack_op, code_op, pc_equiv, X_arith_summary]
   /- This have could be subsumed, but it's useful for the `gt0` case above -/
   have W1_zero_eq : (intMap W1 == { val := 0 }) = true → W1 = 0 := by
