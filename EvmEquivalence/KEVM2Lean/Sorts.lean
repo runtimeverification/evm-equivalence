@@ -13,6 +13,7 @@ inductive SortTernStackOp : Type where
 
 inductive SortNullStackOp : Type where
   | ADDRESS_EVM_NullStackOp : SortNullStackOp
+  | ORIGIN_EVM_NullStackOp : SortNullStackOp
   deriving BEq, DecidableEq
 
 inductive SortScheduleConst : Type where
