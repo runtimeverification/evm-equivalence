@@ -7,7 +7,7 @@ open EvmYul
 open EVM
 open StopSummary
 
-namespace StackOpsSummary
+namespace StateGettersSummary
 
 inductive stackGetter_op where
 | address
@@ -218,4 +218,4 @@ theorem X_arith_summary
 
 end
 
-end StackOpsSummary
+end StateGettersSummary
