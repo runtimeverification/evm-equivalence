@@ -9,13 +9,13 @@ open StopSummary
 
 namespace StateGettersSummary
 
-inductive stackGetter_op where
+inductive stateGetter_op where
 | address
 deriving BEq, DecidableEq
 
 section
 
-variable (op : stackGetter_op)
+variable (op : stateGetter_op)
 variable (word₁ word₂ word₃: UInt256)
 variable (gas gasCost : ℕ)
 variable (symStack : Stack UInt256)
@@ -35,12 +35,12 @@ abbrev address_instr : Option (Operation .EVM × Option (UInt256 × Nat)) := som
 
 
 @[simp]
-def stackGetter_op.get : (Option (Operation .EVM × Option (UInt256 × Nat))) :=
+def stateGetter_op.get : (Option (Operation .EVM × Option (UInt256 × Nat))) :=
   match op with
   | .address  => address_instr
 
 --@[simp]
-def stackGetter_op.t : Operation .EVM :=
+def stateGetter_op.t : Operation .EVM :=
   match op with
   | .address  => (address_instr.get rfl).1
 
@@ -49,7 +49,7 @@ def EVM.step_arith : Transformer := EVM.step gas gasCost op.get
 def EvmYul.step_arith : Transformer := @EvmYul.step .EVM op.t
 
 @[simp]
-def stackGetter_op.do (symState : EVM.State) :=
+def stateGetter_op.do (symState : EVM.State) :=
   match op with
   | .address  => UInt256.ofNat ↑symState.executionEnv.codeOwner
 
@@ -123,7 +123,7 @@ theorem EVM.step_add_summary (gpos : 0 < gas) (symState : EVM.State):
   . assumption
 
 @[simp]
-def stackGetter_op.to_bin : ByteArray :=
+def stateGetter_op.to_bin : ByteArray :=
   match op with
   | .address  => ⟨#[0x30]⟩
 
@@ -138,9 +138,9 @@ theorem decode_singleton_arith :
 @[simp]
 theorem memoryExpansionCost_arith (symState : EVM.State) :
   memoryExpansionCost symState op.t = 0 := by
-  cases op <;> simp [stackGetter_op.t, memoryExpansionCost, memoryExpansionCost.μᵢ']
+  cases op <;> simp [stateGetter_op.t, memoryExpansionCost, memoryExpansionCost.μᵢ']
 
-def stackGetter_op.C'_comp :=
+def stateGetter_op.C'_comp :=
   match op with
   | .address => GasConstants.Gbase
 
@@ -188,17 +188,17 @@ theorem X_arith_summary
   case succ g_pos =>
   simp [X, δ]
   have enough_gas_rw : (symGasAvailable.toNat < GasConstants.Gbase) = False :=
-    by aesop (add simp [stackGetter_op.C'_comp])
+    by aesop (add simp [stateGetter_op.C'_comp])
     (add safe (by omega))
   simp [α/- , stack_ok_rw -/, enough_gas_rw]
   have : ((decode ss.executionEnv.code ss.pc).getD (Operation.STOP, none)).1 = op.t := by
-    cases op <;> simp [ss, stackGetter_op.t]
+    cases op <;> simp [ss, stateGetter_op.t]
   simp [this]
   have : (ss.gasAvailable.toNat < op.C'_comp) = False := by
-    aesop (add simp [stackGetter_op.C'_comp]) (add safe (by linarith))
+    aesop (add simp [stateGetter_op.C'_comp]) (add safe (by linarith))
   simp [this]
   have gPos : (0 < g_pos) := by
-    revert enoughGas; simp [stackGetter_op.C'_comp]
+    revert enoughGas; simp [stateGetter_op.C'_comp]
     cases op <;> aesop (add safe (by omega))
   have step_rw (cost : ℕ) := (EVM.step_add_summary op g_pos cost symStack (.ofNat 0) symGasAvailable symRefund symActiveWords symExecLength symReturnData op.to_bin symMemory symAccessedStorageKeys symAccounts symCodeOwner symPerm gPos)
   have stack_ok_rw : (1024 < List.length symStack + 1) = False := by
@@ -208,12 +208,12 @@ theorem X_arith_summary
   all_goals (
     simp [EVM.step_arith, cop, address_instr] at step_rw
     --simp only [cop] at stack_ok_rw
-    simp [stackGetter_op.t, ss, cop, stack_ok_rw] at exec
+    simp [stateGetter_op.t, ss, cop, stack_ok_rw] at exec
     cases exec
   )
   all_goals (
-    simp [Except.instMonad, Except.bind, ss, cop, step_rw, stackGetter_op.t]
-    rw [X_bad_pc] <;> aesop (add simp [stackGetter_op.C'_comp]) (add safe (by omega))
+    simp [Except.instMonad, Except.bind, ss, cop, step_rw, stateGetter_op.t]
+    rw [X_bad_pc] <;> aesop (add simp [stateGetter_op.C'_comp]) (add safe (by omega))
   )
 
 end
