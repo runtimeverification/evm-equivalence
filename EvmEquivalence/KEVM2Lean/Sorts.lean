@@ -11,6 +11,10 @@ inductive SortTernStackOp : Type where
   | MULMOD_EVM_TernStackOp : SortTernStackOp
   deriving BEq, DecidableEq
 
+inductive SortNullStackOp : Type where
+  | ADDRESS_EVM_NullStackOp : SortNullStackOp
+  deriving BEq, DecidableEq
+
 inductive SortScheduleConst : Type where
   | Gaccesslistaddress_SCHEDULE_ScheduleConst : SortScheduleConst
   | Gaccessliststoragekey_SCHEDULE_ScheduleConst : SortScheduleConst
@@ -421,6 +425,7 @@ mutual
   inductive SortMaybeOpCode : Type where
     | inj_SortBinStackOp (x : SortBinStackOp) : SortMaybeOpCode
     | inj_SortInternalOp (x : SortInternalOp) : SortMaybeOpCode
+    | inj_SortNullStackOp (x : SortNullStackOp) : SortMaybeOpCode
     | inj_SortPushOp (x : SortPushOp) : SortMaybeOpCode
     | inj_SortTernStackOp (x : SortTernStackOp) : SortMaybeOpCode
     | inj_SortUnStackOp (x : SortUnStackOp) : SortMaybeOpCode
@@ -705,6 +710,7 @@ mutual
     | inj_SortMsgIDCell (x : SortMsgIDCell) : SortKItem
     | inj_SortNetworkCell (x : SortNetworkCell) : SortKItem
     | inj_SortNonceCell (x : SortNonceCell) : SortKItem
+    | inj_SortNullStackOp (x : SortNullStackOp) : SortKItem
     | inj_SortNumberCell (x : SortNumberCell) : SortKItem
     | inj_SortOmmerBlockHeadersCell (x : SortOmmerBlockHeadersCell) : SortKItem
     | inj_SortOmmersHashCell (x : SortOmmersHashCell) : SortKItem
