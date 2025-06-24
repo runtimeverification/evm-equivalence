@@ -12,6 +12,7 @@ namespace StateGettersSummary
 inductive stateGetter_op where
 | address
 | origin
+| caller
 deriving BEq, DecidableEq
 
 section
@@ -32,9 +33,11 @@ variable (symValidJumps : Array UInt256)
 
 abbrev addressEVM := @Operation.ADDRESS .EVM
 abbrev originEVM := @Operation.ORIGIN .EVM
+abbrev callerEVM := @Operation.CALLER .EVM
 
 abbrev address_instr : Option (Operation .EVM × Option (UInt256 × Nat)) := some ⟨addressEVM, none⟩
 abbrev origin_instr : Option (Operation .EVM × Option (UInt256 × Nat)) := some ⟨originEVM, none⟩
+abbrev caller_instr : Option (Operation .EVM × Option (UInt256 × Nat)) := some ⟨callerEVM, none⟩
 
 
 @[simp]
@@ -42,12 +45,14 @@ def stateGetter_op.get : (Option (Operation .EVM × Option (UInt256 × Nat))) :=
   match op with
   | .address  => address_instr
   | .origin => origin_instr
+  | .caller => caller_instr
 
 --@[simp]
 def stateGetter_op.t : Operation .EVM :=
   match op with
   | .address  => (address_instr.get rfl).1
   | .origin  => (origin_instr.get rfl).1
+  | .caller  => (caller_instr.get rfl).1
 
 def EVM.step_arith : Transformer := EVM.step gas gasCost op.get
 
@@ -58,6 +63,7 @@ def stateGetter_op.do (symState : EVM.State) :=
   match op with
   | .address  => UInt256.ofNat ↑symState.executionEnv.codeOwner
   | .origin  => UInt256.ofNat ↑symState.executionEnv.sender
+  | .caller  => UInt256.ofNat ↑symState.executionEnv.source
 
 /- theorem EvmYul.step_op_summary (symState : EVM.State):
   EvmYul.step_arith op {symState with
@@ -134,6 +140,7 @@ def stateGetter_op.to_bin : ByteArray :=
   match op with
   | .address  => ⟨#[0x30]⟩
   | .origin  => ⟨#[0x32]⟩
+  | .caller  => ⟨#[0x33]⟩
 
 @[simp]
 theorem decode_singleton_address :
@@ -141,6 +148,9 @@ theorem decode_singleton_address :
 @[simp]
 theorem decode_singleton_origin :
   decode ⟨#[0x32]⟩ (.ofNat 0) = some ⟨originEVM, none⟩ := rfl
+@[simp]
+theorem decode_singleton_caller :
+  decode ⟨#[0x33]⟩ (.ofNat 0) = some ⟨callerEVM, none⟩ := rfl
 
 @[simp]
 theorem decode_singleton :
