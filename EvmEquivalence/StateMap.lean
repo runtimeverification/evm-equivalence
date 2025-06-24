@@ -60,6 +60,9 @@ def memoryUsed : SortMemoryUsedCell := tc.kevm.ethereum.evm.callState.memoryUsed
 @[simp]
 def memory : SortLocalMemCell := tc.kevm.ethereum.evm.callState.localMem
 
+@[simp]
+def origin : SortOriginCell := tc.kevm.ethereum.evm.origin
+
 end SortGeneratedTopCell
 
 namespace SortKItem
@@ -117,10 +120,6 @@ def idMap (idc : SortIdCell) : AccountAddress :=
   accountAddressMap idc.val
 
 @[simp]
-def acctIDMap (aid : SortAcctIDCell) : AccountAddress :=
-  AccountAddress.ofNat (Int.toNat aid.val)
-
-@[simp]
 noncomputable def storageMap (stor : SortStorageCell) : Storage :=
   Axioms.SortStorageCellMap stor
 
@@ -165,6 +164,7 @@ def executionEnv_map (tc : SortGeneratedTopCell) (s : EVM.State) : ExecutionEnv 
   {s.executionEnv with
     code := tc.program.val,
     codeOwner := idMap tc.Iₐ
+    sender := accountAddressMap tc.origin.val
     perm := !tc.isStatic.val}
 
 /--
@@ -183,10 +183,7 @@ noncomputable def stateMap (symState : EVM.State) (tc : SortGeneratedTopCell) : 
   stack := wordStackCellMap tc.wordStackCell
   pc := pcCellMap tc.pc
   gasAvailable := gasCellMap tc.gas
-  executionEnv := {symState.executionEnv with
-                code := tc.program.val,
-                codeOwner := idMap tc.Iₐ
-                perm := !tc.isStatic.val}
+  executionEnv := executionEnv_map tc symState
   accountMap := Axioms.SortAccountsCellMap tc.accounts
   substate := {symState.substate with
             accessedStorageKeys :=  Axioms.SortAccessedStorageCellMap tc.accessedStorage
