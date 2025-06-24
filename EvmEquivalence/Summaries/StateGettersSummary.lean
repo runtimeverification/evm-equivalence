@@ -11,6 +11,7 @@ namespace StateGettersSummary
 
 inductive stateGetter_op where
 | address
+| origin
 deriving BEq, DecidableEq
 
 section
@@ -30,19 +31,23 @@ variable (symPerm : Bool)
 variable (symValidJumps : Array UInt256)
 
 abbrev addressEVM := @Operation.ADDRESS .EVM
+abbrev originEVM := @Operation.ORIGIN .EVM
 
 abbrev address_instr : Option (Operation .EVM × Option (UInt256 × Nat)) := some ⟨addressEVM, none⟩
+abbrev origin_instr : Option (Operation .EVM × Option (UInt256 × Nat)) := some ⟨originEVM, none⟩
 
 
 @[simp]
 def stateGetter_op.get : (Option (Operation .EVM × Option (UInt256 × Nat))) :=
   match op with
   | .address  => address_instr
+  | .origin => origin_instr
 
 --@[simp]
 def stateGetter_op.t : Operation .EVM :=
   match op with
   | .address  => (address_instr.get rfl).1
+  | .origin  => (origin_instr.get rfl).1
 
 def EVM.step_arith : Transformer := EVM.step gas gasCost op.get
 
@@ -52,6 +57,7 @@ def EvmYul.step_arith : Transformer := @EvmYul.step .EVM op.t
 def stateGetter_op.do (symState : EVM.State) :=
   match op with
   | .address  => UInt256.ofNat ↑symState.executionEnv.codeOwner
+  | .origin  => UInt256.ofNat ↑symState.executionEnv.sender
 
 /- theorem EvmYul.step_op_summary (symState : EVM.State):
   EvmYul.step_arith op {symState with
@@ -117,8 +123,7 @@ theorem EVM.step_add_summary (gpos : 0 < gas) (symState : EVM.State):
       pc := UInt256.add symPc (.ofNat 1),
       gasAvailable := symGasAvailable - UInt256.ofNat gasCost,
       execLength := symExecLength + 1} := by
-  intro ss
-  rw [EVM.step_add_to_step_add]
+  intro ss; rw [EVM.step_add_to_step_add]
   . cases op <;> rfl
   . assumption
 
@@ -126,13 +131,17 @@ theorem EVM.step_add_summary (gpos : 0 < gas) (symState : EVM.State):
 def stateGetter_op.to_bin : ByteArray :=
   match op with
   | .address  => ⟨#[0x30]⟩
+  | .origin  => ⟨#[0x32]⟩
 
 @[simp]
-theorem decode_singleton_add :
+theorem decode_singleton_address :
   decode ⟨#[0x30]⟩ (.ofNat 0) = some ⟨addressEVM, none⟩ := rfl
+@[simp]
+theorem decode_singleton_origin :
+  decode ⟨#[0x32]⟩ (.ofNat 0) = some ⟨originEVM, none⟩ := rfl
 
 @[simp]
-theorem decode_singleton_arith :
+theorem decode_singleton :
   decode op.to_bin (.ofNat 0) = some ⟨op.t, none⟩ := by cases op <;> rfl
 
 @[simp]
@@ -142,11 +151,11 @@ theorem memoryExpansionCost_arith (symState : EVM.State) :
 
 def stateGetter_op.C'_comp :=
   match op with
-  | .address => GasConstants.Gbase
+  | _ => GasConstants.Gbase
 
 @[simp]
 theorem C'_arith (symState : EVM.State) :
-  C' symState op.t = op.C'_comp := by rfl
+  C' symState op.t = op.C'_comp := by cases op <;> reduce <;> rfl
 
 attribute [local simp] GasConstants.Gbase
 
