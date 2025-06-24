@@ -24,7 +24,7 @@ variable (symExecLength : ℕ)
 variable (symReturnData symCode symMemory : ByteArray)
 variable (symAccessedStorageKeys : Batteries.RBSet (AccountAddress × UInt256) Substate.storageKeysCmp)
 variable (symAccounts : AccountMap)
-variable (symCodeOwner : AccountAddress)
+variable (symCodeOwner symSender : AccountAddress)
 variable (symPerm : Bool)
 variable (symValidJumps : Array UInt256)
 
@@ -90,7 +90,8 @@ theorem mstore_bypass_private
   gasAvailable := symGasAvailable,
   executionEnv := {symState.executionEnv with
                   code := symCode,
-                  codeOwner := symCodeOwner
+                  codeOwner := symCodeOwner,
+                  sender := symSender,
                   perm := symPerm},
   accountMap := symAccounts,
   activeWords := symActiveWords,
@@ -138,7 +139,8 @@ theorem EvmYul.step_mstore_summary (symState : EVM.State):
     gasAvailable := symGasAvailable,
     executionEnv := {symState.executionEnv with
                   code := symCode,
-                  codeOwner := symCodeOwner
+                  codeOwner := symCodeOwner,
+                  sender := symSender,
                   perm := symPerm},
     accountMap := symAccounts,
     activeWords := symActiveWords,
@@ -164,7 +166,8 @@ theorem EVM.step_mstore_summary
     gasAvailable := symGasAvailable,
     executionEnv := {symState.executionEnv with
                   code := symCode,
-                  codeOwner := symCodeOwner
+                  codeOwner := symCodeOwner,
+                  sender := symSender,
                   perm := symPerm},
     accountMap := symAccounts,
     activeWords := symActiveWords,
@@ -225,7 +228,8 @@ theorem X_mstore_summary (symState : EVM.State)
     gasAvailable := symGasAvailable,
     executionEnv := {symState.executionEnv with
                   code := op.to_bin,
-                  codeOwner := symCodeOwner
+                  codeOwner := symCodeOwner,
+                  sender := symSender,
                   perm := symPerm},
     accountMap := symAccounts,
     activeWords := symActiveWords,
@@ -279,7 +283,7 @@ theorem X_mstore_summary (symState : EVM.State)
   simp [fls2, ss]
   have g_pos0 : 0 < g_pos := by omega
   have g_pos1 : 1 < g_pos := by omega
-  have step_rw (g : UInt256) := (EVM.step_mstore_summary op g_pos GasConstants.Gverylow symStack (.ofNat 0) (symGasAvailable - g) symRefund offset value symActiveWords symExecLength symReturnData op.to_bin symMemory symAccessedStorageKeys symAccounts symCodeOwner symPerm g_pos0 symState)
+  have step_rw (g : UInt256) := (EVM.step_mstore_summary op g_pos GasConstants.Gverylow symStack (.ofNat 0) (symGasAvailable - g) symRefund offset value symActiveWords symExecLength symReturnData op.to_bin symMemory symAccessedStorageKeys symAccounts symCodeOwner symSender symPerm g_pos0 symState)
   let op_stack := match op with | .mstore => 1024 | .mstore8 => 1025
   have : (op_stack < List.length symStack) = False := by aesop
   cases cop : op <;> simp [δ] <;>

@@ -25,7 +25,7 @@ variable (symExecLength : ℕ)
 variable (symReturnData symCode symMemory : ByteArray)
 variable (symAccessedStorageKeys : Batteries.RBSet (AccountAddress × UInt256) Substate.storageKeysCmp)
 variable (symAccounts : AccountMap)
-variable (symCodeOwner : AccountAddress)
+variable (symCodeOwner symSender : AccountAddress)
 variable (symPerm : Bool)
 
 variable (symValidJumps : Array UInt256)
@@ -76,6 +76,7 @@ theorem EVM.step_add_to_step_add (gpos : 0 < gas) (symState : EVM.State):
       executionEnv := {symState.executionEnv with
                   code := symCode,
                   codeOwner := symCodeOwner,
+                  sender := symSender,
                   perm := symPerm},
       accountMap := symAccounts,
       activeWords := symActiveWords,
@@ -98,7 +99,7 @@ open private dispatchExecutionEnvOp from EvmYul.Semantics
 
 --attribute [local simp] dispatchExecutionEnvOp executionEnvOp
 
-theorem EVM.step_add_summary (gpos : 0 < gas) (symState : EVM.State):
+theorem EVM.step_getter_summary (gpos : 0 < gas) (symState : EVM.State):
   let ss :=
       {symState with
       stack := symStack,
@@ -107,6 +108,7 @@ theorem EVM.step_add_summary (gpos : 0 < gas) (symState : EVM.State):
       executionEnv := {symState.executionEnv with
                   code := symCode,
                   codeOwner := symCodeOwner,
+                  sender := symSender,
                   perm := symPerm},
       accountMap := symAccounts,
       activeWords := symActiveWords,
@@ -161,7 +163,7 @@ attribute [local simp] GasConstants.Gbase
 
 --GasConstants.Gverylow GasConstants.Glow GasConstants.Gmid GasConstants.Gexp GasConstants.Gexpbyte
 
-theorem X_arith_summary
+theorem X_getter_summary
                       (enoughGas : op.C'_comp < symGasAvailable.toNat)
                       (symStack_ok : symStack.length < 1024)
                       (symState : EVM.State):
@@ -174,6 +176,7 @@ theorem X_arith_summary
     executionEnv := {symState.executionEnv with
                   code := op.to_bin,
                   codeOwner := symCodeOwner,
+                  sender := symSender,
                   perm := symPerm},
     accountMap := symAccounts,
     activeWords := symActiveWords,
@@ -209,7 +212,7 @@ theorem X_arith_summary
   have gPos : (0 < g_pos) := by
     revert enoughGas; simp [stateGetter_op.C'_comp]
     cases op <;> aesop (add safe (by omega))
-  have step_rw (cost : ℕ) := (EVM.step_add_summary op g_pos cost symStack (.ofNat 0) symGasAvailable symRefund symActiveWords symExecLength symReturnData op.to_bin symMemory symAccessedStorageKeys symAccounts symCodeOwner symPerm gPos)
+  have step_rw (cost : ℕ) := (EVM.step_getter_summary op g_pos cost symStack (.ofNat 0) symGasAvailable symRefund symActiveWords symExecLength symReturnData op.to_bin symMemory symAccessedStorageKeys symAccounts symCodeOwner symSender symPerm gPos)
   have stack_ok_rw : (1024 < List.length symStack + 1) = False := by
     cases op <;> aesop (add safe (by omega))
   cases cop: op <;>

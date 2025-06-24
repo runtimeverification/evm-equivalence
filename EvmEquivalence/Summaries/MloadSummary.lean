@@ -19,7 +19,7 @@ variable (symExecLength : ℕ)
 variable (symReturnData symCode symMemory : ByteArray)
 variable (symAccessedStorageKeys : Batteries.RBSet (AccountAddress × UInt256) Substate.storageKeysCmp)
 variable (symAccounts : AccountMap)
-variable (symCodeOwner : AccountAddress)
+variable (symCodeOwner symSender : AccountAddress)
 variable (symPerm : Bool)
 
 variable (symValidJumps : Array UInt256)
@@ -48,7 +48,8 @@ theorem EvmYul.step_mload_summary (symState : EVM.State):
     gasAvailable := symGasAvailable,
     executionEnv := {symState.executionEnv with
                   code := symCode,
-                  codeOwner := symCodeOwner
+                  codeOwner := symCodeOwner,
+                  sender := symSender,
                   perm := symPerm},
     accountMap := symAccounts,
     activeWords := symActiveWords,
@@ -71,7 +72,8 @@ theorem EVM.step_mload_summary (gas_pos : 0 < gas) (symState : EVM.State):
     gasAvailable := symGasAvailable,
     executionEnv := {symState.executionEnv with
                   code := symCode,
-                  codeOwner := symCodeOwner
+                  codeOwner := symCodeOwner,
+                  sender := symSender,
                   perm := symPerm},
     accountMap := symAccounts,
     activeWords := symActiveWords,
@@ -118,7 +120,8 @@ theorem X_mload_summary (symState : EVM.State)
     gasAvailable := symGasAvailable,
     executionEnv := {symState.executionEnv with
                   code := ⟨#[(0x51 : UInt8)]⟩,
-                  codeOwner := symCodeOwner
+                  codeOwner := symCodeOwner,
+                  sender := symSender,
                   perm := symPerm},
     accountMap := symAccounts,
     activeWords := symActiveWords,
@@ -171,7 +174,7 @@ theorem X_mload_summary (symState : EVM.State)
   try aesop (add safe (by omega)) (add safe (by linarith)) (add safe (by contradiction))
   cases state_ok
   have g_pos_pos : 0 < g_pos := by omega
-  have step_rw (g : UInt256) := (EVM.step_mload_summary g_pos GasConstants.Gverylow symStack (.ofNat 0) (symGasAvailable - g) symRefund offset symActiveWords symExecLength symReturnData ⟨#[(0x51 : UInt8)]⟩ symMemory symAccessedStorageKeys symAccounts symCodeOwner symPerm g_pos_pos symState)
+  have step_rw (g : UInt256) := (EVM.step_mload_summary g_pos GasConstants.Gverylow symStack (.ofNat 0) (symGasAvailable - g) symRefund offset symActiveWords symExecLength symReturnData ⟨#[(0x51 : UInt8)]⟩ symMemory symAccessedStorageKeys symAccounts symCodeOwner symSender symPerm g_pos_pos symState)
   simp [EVM.step_mload, mload_instr, mloadEVM, ss] at step_rw
   simp [step_rw, Except.instMonad, Except.bind]
   rw [X_bad_pc] <;> aesop (add simp [GasConstants.Gverylow]) (add safe (by omega))
