@@ -365,6 +365,7 @@ theorem sload_prestate_equiv
     executionEnv := {symState.executionEnv with
                   code := _Gen0.val,
                   codeOwner := accountAddressMap ((@inj SortInt SortAccount) ID_CELL)
+                  sender := accountAddressMap lhs.origin.val
                   perm := !lhs.isStatic.val},
     accountMap := Axioms.SortAccountsCellMap lhs.accounts
     activeWords := intMap lhs.memoryUsed.val
@@ -447,6 +448,7 @@ theorem sload_poststate_equiv
     executionEnv := {symState.executionEnv with
                   code := _Gen0.val,
                   codeOwner := accountAddressMap ((@inj SortInt SortAccount) ID_CELL)
+                  sender := accountAddressMap rhs.origin.val
                   perm := !rhs.isStatic.val},
     accountMap := Axioms.SortAccountsCellMap rhs.accounts,
     activeWords := intMap rhs.memoryUsed.val

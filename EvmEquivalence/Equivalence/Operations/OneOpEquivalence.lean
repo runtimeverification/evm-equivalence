@@ -360,6 +360,7 @@ theorem oneOp_prestate_equiv
     executionEnv := {symState.executionEnv with
                   code := _Gen0.val,
                   codeOwner := idMap lhs.Iₐ
+                  sender := accountAddressMap lhs.origin.val
                   perm := !lhs.isStatic.val}
     accountMap := Axioms.SortAccountsCellMap lhs.accounts
     activeWords := intMap lhs.memoryUsed.val
@@ -449,6 +450,7 @@ theorem oneOp_poststate_equiv
     executionEnv := {symState.executionEnv with
                   code := _Gen0.val,
                   codeOwner := idMap rhs.Iₐ,
+                  sender := accountAddressMap rhs.origin.val
                   perm := !rhs.isStatic.val}
     accountMap := Axioms.SortAccountsCellMap rhs.accounts
     activeWords := intMap rhs.memoryUsed.val
