@@ -40,7 +40,7 @@ section
 
 variable (op : arith_op)
 variable (word₁ word₂ word₃: UInt256)
-variable (gas gasCost : ℕ)
+variable (gas gasCost symGasPrice : ℕ)
 variable (symStack : Stack UInt256)
 variable (symPc symGasAvailable symRefund symActiveWords : UInt256)
 variable (symExecLength : ℕ)
@@ -219,6 +219,7 @@ theorem EVM.step_add_to_step_add (gpos : 0 < gas) (symState : EVM.State):
                   codeOwner := symCodeOwner,
                   sender := symSender,
                   source := symSource,
+                  gasPrice := symGasPrice,
                   perm := symPerm},
     accountMap := symAccounts,
     activeWords := symActiveWords,
@@ -249,6 +250,7 @@ theorem EVM.step_add_summary (gpos : 0 < gas) (symState : EVM.State):
                   codeOwner := symCodeOwner,
                   sender := symSender,
                   source := symSource,
+                  gasPrice := symGasPrice,
                   perm := symPerm},
     accountMap := symAccounts,
     activeWords := symActiveWords,
@@ -449,6 +451,7 @@ theorem X_arith_summary
                   codeOwner := symCodeOwner,
                   sender := symSender,
                   source := symSource,
+                  gasPrice := symGasPrice,
                   perm := symPerm},
     accountMap := symAccounts,
     activeWords := symActiveWords,
@@ -484,7 +487,7 @@ theorem X_arith_summary
   have gPos : (0 < g_pos) := by
     revert enoughGas; simp [arith_op.C'_comp]
     cases op <;> simp [ss] <;> aesop (add safe (by omega))
-  have step_rw (cost : ℕ) := (EVM.step_add_summary op word₁ word₂ word₃ g_pos cost symStack (.ofNat 0) symGasAvailable symRefund symActiveWords symExecLength symReturnData op.to_bin symMemory symAccessedStorageKeys symAccounts symCodeOwner symSender symSource symPerm gPos)
+  have step_rw (cost : ℕ) := (EVM.step_add_summary op word₁ word₂ word₃ g_pos cost symGasPrice symStack (.ofNat 0) symGasAvailable symRefund symActiveWords symExecLength symReturnData op.to_bin symMemory symAccessedStorageKeys symAccounts symCodeOwner symSender symSource symPerm gPos)
   have stack_ok_rw : (1024 < List.length symStack + 1) = False := by
     cases op <;> aesop (add safe (by omega))
   cases cop: op <;> simp [cop] at symStack_ok <;>

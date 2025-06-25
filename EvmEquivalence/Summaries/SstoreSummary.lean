@@ -10,7 +10,7 @@ namespace SstoreSummary
 
 section
 
-variable (gas gasCost : ℕ)
+variable (gas gasCost symGasPrice: ℕ)
 variable (symStack : Stack UInt256)
 variable (symPc symGasAvailable symRefund key value symActiveWords : UInt256)
 variable (symExecLength : ℕ)
@@ -50,6 +50,7 @@ theorem sstore_bypass_private (symState : EVM.State):
                   codeOwner := symCodeOwner,
                   sender := symSender,
                   source := symSource,
+                  gasPrice := symGasPrice,
                   perm := symPerm},
   accountMap := symAccounts,
   activeWords := symActiveWords,
@@ -120,6 +121,7 @@ theorem sstore_summary (symState : EvmYul.State) (key value : UInt256):
                   codeOwner := symCodeOwner,
                   sender := symSender,
                   source := symSource,
+                  gasPrice := symGasPrice,
                   perm := symPerm},
              substate := {symState.substate with
                           accessedStorageKeys :=  symAccessedStorageKeys
@@ -150,6 +152,7 @@ theorem EvmYul.step_sstore_summary (symState : EVM.State):
                   codeOwner := symCodeOwner,
                   sender := symSender,
                   source := symSource,
+                  gasPrice := symGasPrice,
                   perm := symPerm},
     accountMap := symAccounts,
     activeWords := symActiveWords,
@@ -179,6 +182,7 @@ theorem EVM.step_sstore_summary (gas_pos : 0 < gas) (symState : EVM.State):
                   codeOwner := symCodeOwner,
                   sender := symSender,
                   source := symSource,
+                  gasPrice := symGasPrice,
                   perm := true},
     accountMap := symAccounts,
     activeWords := symActiveWords,
@@ -201,7 +205,7 @@ theorem EVM.step_sstore_summary (gas_pos : 0 < gas) (symState : EVM.State):
           execLength := symExecLength + 1} := by
   cases gas; contradiction
   simp [step_sstore, EVM.step]
-  have srw := EvmYul.step_sstore_summary symStack symPc (symGasAvailable - UInt256.ofNat gasCost) symRefund key value symActiveWords (symExecLength + 1) symReturnData symCode
+  have srw := EvmYul.step_sstore_summary symGasPrice symStack symPc (symGasAvailable - UInt256.ofNat gasCost) symRefund key value symActiveWords (symExecLength + 1) symReturnData symCode
   simp [EvmYul.step_sstore, Operation.SSTORE] at srw; aesop
 
 @[simp]
@@ -241,6 +245,7 @@ theorem X_sstore_summary (symState : EVM.State)
                   codeOwner := symCodeOwner,
                   sender := symSender,
                   source := symSource,
+                  gasPrice := symGasPrice,
                   perm := true},
     accountMap := symAccounts,
     activeWords := symActiveWords,
@@ -273,7 +278,7 @@ theorem X_sstore_summary (symState : EVM.State)
   simp [ss, (lt_fls_rw enoughGas), α, (lt_fls_rw symStack_ok)]
   have g_rw : (symGasAvailable.toNat ≤ GasConstants.Gcallstipend) = False := by aesop
   simp [g_rw]; split; contradiction; next evm cost stateOk =>
-  have step_rw := (EVM.step_sstore_summary g_pos (Csstore evm) symStack (.ofNat 0)
+  have step_rw := (EVM.step_sstore_summary g_pos (Csstore evm) symGasPrice symStack (.ofNat 0)
     symGasAvailable symRefund key value symActiveWords symExecLength symReturnData ⟨#[(0x55 : UInt8)]⟩
     symMemory symAccessedStorageKeys symAccounts symCodeOwner symSender symSource (by omega) evm)
   cases stateOk; simp at step_rw; rw [step_rw]; simp [Except.instMonad, Except.bind]

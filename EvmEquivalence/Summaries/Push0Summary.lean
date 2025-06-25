@@ -10,7 +10,7 @@ namespace Push0Summary
 
 section
 
-variable (gas gasCost : ℕ)
+variable (gas gasCost symGasPrice : ℕ)
 variable (symStack : Stack UInt256)
 variable (symPc symGasAvailable symRefund symActiveWords : UInt256)
 variable (symExecLength : ℕ)
@@ -63,6 +63,7 @@ theorem EVM.step_push0_summary (gpos : 0 < gas) (symState : EVM.State):
                   codeOwner := symCodeOwner,
                   sender := symSender,
                   source := symSource,
+                  gasPrice := symGasPrice,
                   perm := symPerm},
       accountMap := symAccounts,
       activeWords := symActiveWords,
@@ -107,6 +108,7 @@ theorem X_push0_summary (enoughGas : GasConstants.Gbase < symGasAvailable.toNat)
                   codeOwner := symCodeOwner,
                   sender := symSender,
                   source := symSource,
+                  gasPrice := symGasPrice,
                   perm := symPerm},
     accountMap := symAccounts,
     activeWords := symActiveWords,
@@ -135,7 +137,7 @@ theorem X_push0_summary (enoughGas : GasConstants.Gbase < symGasAvailable.toNat)
   rename_i evm _ stateOk; revert stateOk
   simp [pure, Except.pure]; intro evm_eq cost; subst cost evm_eq
   dsimp [Except.instMonad, Except.bind]
-  have step_rw := (@EVM.step_push0_summary g_pos GasConstants.Gbase symStack (.ofNat 0) symGasAvailable symRefund symActiveWords symExecLength symReturnData ⟨#[(0x5F : UInt8)]⟩ symMemory symAccessedStorageKeys symAccounts symCodeOwner symSender symSource symPerm gPos)
+  have step_rw := (@EVM.step_push0_summary g_pos GasConstants.Gbase symGasPrice symStack (.ofNat 0) symGasAvailable symRefund symActiveWords symExecLength symReturnData ⟨#[(0x5F : UInt8)]⟩ symMemory symAccessedStorageKeys symAccounts symCodeOwner symSender symSource symPerm gPos)
   rw [EVM.step_push0, push0_instr] at step_rw; simp [step_rw]
   rw [X_bad_pc] <;> aesop (add simp [GasConstants.Gbase]) (add safe (by omega))
 
