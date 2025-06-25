@@ -63,6 +63,9 @@ def memory : SortLocalMemCell := tc.kevm.ethereum.evm.callState.localMem
 @[simp]
 def origin : SortOriginCell := tc.kevm.ethereum.evm.origin
 
+@[simp]
+def caller : SortCallerCell := tc.kevm.ethereum.evm.callState.caller
+
 end SortGeneratedTopCell
 
 namespace SortKItem
@@ -164,6 +167,7 @@ def executionEnv_map (tc : SortGeneratedTopCell) (s : EVM.State) : ExecutionEnv 
   {s.executionEnv with
     code := tc.program.val,
     codeOwner := idMap tc.Iₐ
+    source := accountAddressMap tc.caller.val
     sender := accountAddressMap tc.origin.val
     perm := !tc.isStatic.val}
 
