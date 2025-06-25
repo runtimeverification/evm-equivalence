@@ -13,13 +13,14 @@ inductive stateGetter_op where
 | address
 | origin
 | caller
+| gasprice
 deriving BEq, DecidableEq
 
 section
 
 variable (op : stateGetter_op)
 variable (word₁ word₂ word₃: UInt256)
-variable (gas gasCost : ℕ)
+variable (gas gasCost symGasPrice: ℕ)
 variable (symStack : Stack UInt256)
 variable (symPc symGasAvailable symRefund symActiveWords : UInt256)
 variable (symExecLength : ℕ)
@@ -34,10 +35,12 @@ variable (symValidJumps : Array UInt256)
 abbrev addressEVM := @Operation.ADDRESS .EVM
 abbrev originEVM := @Operation.ORIGIN .EVM
 abbrev callerEVM := @Operation.CALLER .EVM
+abbrev gaspriceEVM := @Operation.GASPRICE .EVM
 
 abbrev address_instr : Option (Operation .EVM × Option (UInt256 × Nat)) := some ⟨addressEVM, none⟩
 abbrev origin_instr : Option (Operation .EVM × Option (UInt256 × Nat)) := some ⟨originEVM, none⟩
 abbrev caller_instr : Option (Operation .EVM × Option (UInt256 × Nat)) := some ⟨callerEVM, none⟩
+abbrev gasprice_instr : Option (Operation .EVM × Option (UInt256 × Nat)) := some ⟨gaspriceEVM, none⟩
 
 
 @[simp]
@@ -46,6 +49,7 @@ def stateGetter_op.get : (Option (Operation .EVM × Option (UInt256 × Nat))) :=
   | .address  => address_instr
   | .origin => origin_instr
   | .caller => caller_instr
+  | .gasprice => gasprice_instr
 
 --@[simp]
 def stateGetter_op.t : Operation .EVM :=
@@ -53,6 +57,7 @@ def stateGetter_op.t : Operation .EVM :=
   | .address  => (address_instr.get rfl).1
   | .origin  => (origin_instr.get rfl).1
   | .caller  => (caller_instr.get rfl).1
+  | .gasprice  => (gasprice_instr.get rfl).1
 
 def EVM.step_arith : Transformer := EVM.step gas gasCost op.get
 
@@ -64,6 +69,7 @@ def stateGetter_op.do (symState : EVM.State) :=
   | .address  => UInt256.ofNat ↑symState.executionEnv.codeOwner
   | .origin  => UInt256.ofNat ↑symState.executionEnv.sender
   | .caller  => UInt256.ofNat ↑symState.executionEnv.source
+  | .gasprice  => UInt256.ofNat ↑symState.executionEnv.gasPrice
 
 /- theorem EvmYul.step_op_summary (symState : EVM.State):
   EvmYul.step_arith op {symState with
@@ -84,6 +90,7 @@ theorem EVM.step_add_to_step_add (gpos : 0 < gas) (symState : EVM.State):
                   codeOwner := symCodeOwner,
                   sender := symSender,
                   source := symSource,
+                  gasPrice := symGasPrice,
                   perm := symPerm},
       accountMap := symAccounts,
       activeWords := symActiveWords,
@@ -117,6 +124,7 @@ theorem EVM.step_getter_summary (gpos : 0 < gas) (symState : EVM.State):
                   codeOwner := symCodeOwner,
                   sender := symSender,
                   source := symSource,
+                  gasPrice := symGasPrice,
                   perm := symPerm},
       accountMap := symAccounts,
       activeWords := symActiveWords,
@@ -143,6 +151,7 @@ def stateGetter_op.to_bin : ByteArray :=
   | .address  => ⟨#[0x30]⟩
   | .origin  => ⟨#[0x32]⟩
   | .caller  => ⟨#[0x33]⟩
+  | .gasprice => ⟨#[0x3A]⟩
 
 @[simp]
 theorem decode_singleton_address :
@@ -153,6 +162,9 @@ theorem decode_singleton_origin :
 @[simp]
 theorem decode_singleton_caller :
   decode ⟨#[0x33]⟩ (.ofNat 0) = some ⟨callerEVM, none⟩ := rfl
+@[simp]
+theorem decode_singleton_gasprice :
+  decode ⟨#[0x3A]⟩ (.ofNat 0) = some ⟨gaspriceEVM, none⟩ := rfl
 
 @[simp]
 theorem decode_singleton :
@@ -190,6 +202,7 @@ theorem X_getter_summary
                   codeOwner := symCodeOwner,
                   sender := symSender,
                   source := symSource,
+                  gasPrice := symGasPrice,
                   perm := symPerm},
     accountMap := symAccounts,
     activeWords := symActiveWords,
@@ -225,7 +238,7 @@ theorem X_getter_summary
   have gPos : (0 < g_pos) := by
     revert enoughGas; simp [stateGetter_op.C'_comp]
     cases op <;> aesop (add safe (by omega))
-  have step_rw (cost : ℕ) := (EVM.step_getter_summary op g_pos cost symStack (.ofNat 0) symGasAvailable symRefund symActiveWords symExecLength symReturnData op.to_bin symMemory symAccessedStorageKeys symAccounts symCodeOwner symSender symSource symPerm gPos)
+  have step_rw (cost : ℕ) := (EVM.step_getter_summary op g_pos cost symGasPrice symStack (.ofNat 0) symGasAvailable symRefund symActiveWords symExecLength symReturnData op.to_bin symMemory symAccessedStorageKeys symAccounts symCodeOwner symSender symSource symPerm gPos)
   have stack_ok_rw : (1024 < List.length symStack + 1) = False := by
     cases op <;> aesop (add safe (by omega))
   cases cop: op <;>
