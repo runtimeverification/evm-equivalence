@@ -24,7 +24,7 @@ variable (symExecLength : ℕ)
 variable (symReturnData symCode symMemory : ByteArray)
 variable (symAccessedStorageKeys : Batteries.RBSet (AccountAddress × UInt256) Substate.storageKeysCmp)
 variable (symAccounts : AccountMap)
-variable (symCodeOwner symSender : AccountAddress)
+variable (symCodeOwner symSender symSource : AccountAddress)
 variable (symPerm : Bool)
 variable (symValidJumps : Array UInt256)
 
@@ -92,6 +92,7 @@ theorem mstore_bypass_private
                   code := symCode,
                   codeOwner := symCodeOwner,
                   sender := symSender,
+                  source := symSource,
                   perm := symPerm},
   accountMap := symAccounts,
   activeWords := symActiveWords,
@@ -141,6 +142,7 @@ theorem EvmYul.step_mstore_summary (symState : EVM.State):
                   code := symCode,
                   codeOwner := symCodeOwner,
                   sender := symSender,
+                  source := symSource,
                   perm := symPerm},
     accountMap := symAccounts,
     activeWords := symActiveWords,
@@ -168,6 +170,7 @@ theorem EVM.step_mstore_summary
                   code := symCode,
                   codeOwner := symCodeOwner,
                   sender := symSender,
+                  source := symSource,
                   perm := symPerm},
     accountMap := symAccounts,
     activeWords := symActiveWords,
@@ -230,6 +233,7 @@ theorem X_mstore_summary (symState : EVM.State)
                   code := op.to_bin,
                   codeOwner := symCodeOwner,
                   sender := symSender,
+                  source := symSource,
                   perm := symPerm},
     accountMap := symAccounts,
     activeWords := symActiveWords,
@@ -283,7 +287,7 @@ theorem X_mstore_summary (symState : EVM.State)
   simp [fls2, ss]
   have g_pos0 : 0 < g_pos := by omega
   have g_pos1 : 1 < g_pos := by omega
-  have step_rw (g : UInt256) := (EVM.step_mstore_summary op g_pos GasConstants.Gverylow symStack (.ofNat 0) (symGasAvailable - g) symRefund offset value symActiveWords symExecLength symReturnData op.to_bin symMemory symAccessedStorageKeys symAccounts symCodeOwner symSender symPerm g_pos0 symState)
+  have step_rw (g : UInt256) := (EVM.step_mstore_summary op g_pos GasConstants.Gverylow symStack (.ofNat 0) (symGasAvailable - g) symRefund offset value symActiveWords symExecLength symReturnData op.to_bin symMemory symAccessedStorageKeys symAccounts symCodeOwner symSender symSource symPerm g_pos0 symState)
   let op_stack := match op with | .mstore => 1024 | .mstore8 => 1025
   have : (op_stack < List.length symStack) = False := by aesop
   cases cop : op <;> simp [δ] <;>

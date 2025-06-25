@@ -47,7 +47,7 @@ variable (symExecLength : ℕ)
 variable (symReturnData symCode symMemory : ByteArray)
 variable (symAccessedStorageKeys : Batteries.RBSet (AccountAddress × UInt256) Substate.storageKeysCmp)
 variable (symAccounts : AccountMap)
-variable (symCodeOwner symSender : AccountAddress)
+variable (symCodeOwner symSender symSource : AccountAddress)
 variable (symPerm : Bool)
 
 variable (symValidJumps : Array UInt256)
@@ -218,6 +218,7 @@ theorem EVM.step_add_to_step_add (gpos : 0 < gas) (symState : EVM.State):
                   code := symCode,
                   codeOwner := symCodeOwner,
                   sender := symSender,
+                  source := symSource,
                   perm := symPerm},
     accountMap := symAccounts,
     activeWords := symActiveWords,
@@ -247,6 +248,7 @@ theorem EVM.step_add_summary (gpos : 0 < gas) (symState : EVM.State):
                   code := symCode,
                   codeOwner := symCodeOwner,
                   sender := symSender,
+                  source := symSource,
                   perm := symPerm},
     accountMap := symAccounts,
     activeWords := symActiveWords,
@@ -446,6 +448,7 @@ theorem X_arith_summary
                   code := op.to_bin,
                   codeOwner := symCodeOwner,
                   sender := symSender,
+                  source := symSource,
                   perm := symPerm},
     accountMap := symAccounts,
     activeWords := symActiveWords,
@@ -481,7 +484,7 @@ theorem X_arith_summary
   have gPos : (0 < g_pos) := by
     revert enoughGas; simp [arith_op.C'_comp]
     cases op <;> simp [ss] <;> aesop (add safe (by omega))
-  have step_rw (cost : ℕ) := (EVM.step_add_summary op word₁ word₂ word₃ g_pos cost symStack (.ofNat 0) symGasAvailable symRefund symActiveWords symExecLength symReturnData op.to_bin symMemory symAccessedStorageKeys symAccounts symCodeOwner symSender symPerm gPos)
+  have step_rw (cost : ℕ) := (EVM.step_add_summary op word₁ word₂ word₃ g_pos cost symStack (.ofNat 0) symGasAvailable symRefund symActiveWords symExecLength symReturnData op.to_bin symMemory symAccessedStorageKeys symAccounts symCodeOwner symSender symSource symPerm gPos)
   have stack_ok_rw : (1024 < List.length symStack + 1) = False := by
     cases op <;> aesop (add safe (by omega))
   cases cop: op <;> simp [cop] at symStack_ok <;>
