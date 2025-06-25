@@ -372,6 +372,7 @@ theorem sstore_prestate_equiv
                   code := _Gen0.val,
                   codeOwner := accountAddressMap ((@inj SortInt SortAccount) ID_CELL),
                   sender := accountAddressMap lhs.origin.val,
+                  source := accountAddressMap lhs.caller.val,
                   perm := true},
     accountMap := Axioms.SortAccountsCellMap lhs.accounts
     activeWords := intMap lhs.memoryUsed.val
@@ -564,6 +565,7 @@ theorem sstore_poststate_equiv
                   code := _Gen0.val,
                   codeOwner := accountAddressMap ((@inj SortInt SortAccount) ID_CELL),
                   sender := accountAddressMap rhs.origin.val,
+                  source := accountAddressMap rhs.caller.val,
                   perm := true},
     accountMap := Axioms.SortAccountsCellMap rhs.accounts
     activeWords := intMap rhs.memoryUsed.val

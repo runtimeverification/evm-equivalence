@@ -362,11 +362,7 @@ theorem sload_prestate_equiv
     stack := (intMap W0) :: wordStackMap WS
     pc := intMap PC_CELL
     gasAvailable := intMap GAS_CELL
-    executionEnv := {symState.executionEnv with
-                  code := _Gen0.val,
-                  codeOwner := accountAddressMap ((@inj SortInt SortAccount) ID_CELL)
-                  sender := accountAddressMap lhs.origin.val
-                  perm := !lhs.isStatic.val},
+    executionEnv := executionEnv_map lhs symState
     accountMap := Axioms.SortAccountsCellMap lhs.accounts
     activeWords := intMap lhs.memoryUsed.val
     memory := memory_map lhs.memory
@@ -445,11 +441,7 @@ theorem sload_poststate_equiv
     stack := intMap _Val10 :: wordStackMap WS
     pc := intMap («_+Int'_» PC_CELL 1)
     gasAvailable := intMap GAS_CELL -  intMap _Val15 --(sload_gas ACCESSEDSTORAGE_CELL W0)
-    executionEnv := {symState.executionEnv with
-                  code := _Gen0.val,
-                  codeOwner := accountAddressMap ((@inj SortInt SortAccount) ID_CELL)
-                  sender := accountAddressMap rhs.origin.val
-                  perm := !rhs.isStatic.val},
+    executionEnv := executionEnv_map rhs symState
     accountMap := Axioms.SortAccountsCellMap rhs.accounts,
     activeWords := intMap rhs.memoryUsed.val
     memory := memory_map rhs.memory
@@ -569,7 +561,7 @@ theorem step_sload_equiv
     have val15_pos : 0 < _Val15 := by simp at defn_Val15; aesop
     have _ := Int.lt_of_lt_of_le val15_pos gavailEnough
     omega
-  rw [sload_prestate_equiv, EVM.step_sload_summary] <;> try assumption
+  rw [sload_prestate_equiv, executionEnv_map, EVM.step_sload_summary] <;> try assumption
   rw [sloadLHS, sload_poststate_equiv, sloadRHS] <;> try congr
   . simp[State.lookupAccount, SortGeneratedTopCell.accounts, accountAddressMap, inj_ID_CELL]
     aesop
@@ -693,6 +685,7 @@ theorem X_sload_equiv
   <;> first | assumption | try linarith
   simp
   have pc_equiv : intMap 0 = UInt256.ofNat 0 := rfl
+  simp [executionEnv_map, sloadLHS]
   rw [pc_equiv, X_sload_summary] <;> try simp [State.lookupAccount, sloadLHS, sloadRHS]
   <;> try assumption
   . constructor <;> constructor
