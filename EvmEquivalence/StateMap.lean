@@ -75,6 +75,9 @@ def coinbase : SortCoinbaseCell := tc.kevm.ethereum.evm.block.coinbase
 @[simp]
 def timestamp : SortTimestampCell := tc.kevm.ethereum.evm.block.timestamp
 
+@[simp]
+def mixhash : SortMixHashCell := tc.kevm.ethereum.evm.block.mixHash
+
 end SortGeneratedTopCell
 
 namespace SortKItem
@@ -176,6 +179,7 @@ def blockHeader_map (tc : SortGeneratedTopCell) (s : EVM.State) : BlockHeader :=
   {s.executionEnv.header with
     beneficiary := .ofNat <| Int.toNat tc.coinbase.val
     timestamp := Int.toNat tc.timestamp.val
+    prevRandao := intMap tc.mixhash.val
   }
 
 @[simp]
