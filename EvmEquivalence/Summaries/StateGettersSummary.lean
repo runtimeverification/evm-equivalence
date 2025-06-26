@@ -16,6 +16,7 @@ inductive stateGetter_op where
 | gasprice
 | coinbase
 | timestamp
+| prevrandao
 deriving BEq, DecidableEq
 
 section
@@ -25,6 +26,7 @@ variable (word₁ word₂ word₃: UInt256)
 variable (gas gasCost symGasPrice symTimestamp : ℕ)
 variable (symStack : Stack UInt256)
 variable (symPc symGasAvailable symRefund symActiveWords : UInt256)
+variable (symPrevrandao : UInt256)
 variable (symExecLength : ℕ)
 variable (symReturnData symCode symMemory : ByteArray)
 variable (symAccessedStorageKeys : Batteries.RBSet (AccountAddress × UInt256) Substate.storageKeysCmp)
@@ -40,6 +42,7 @@ abbrev callerEVM := @Operation.CALLER .EVM
 abbrev gaspriceEVM := @Operation.GASPRICE .EVM
 abbrev coinbaseEVM := @Operation.COINBASE .EVM
 abbrev timestampEVM := @Operation.TIMESTAMP .EVM
+abbrev prevrandaoEVM := @Operation.PREVRANDAO .EVM
 
 abbrev address_instr : Option (Operation .EVM × Option (UInt256 × Nat)) := some ⟨addressEVM, none⟩
 abbrev origin_instr : Option (Operation .EVM × Option (UInt256 × Nat)) := some ⟨originEVM, none⟩
@@ -47,6 +50,7 @@ abbrev caller_instr : Option (Operation .EVM × Option (UInt256 × Nat)) := some
 abbrev gasprice_instr : Option (Operation .EVM × Option (UInt256 × Nat)) := some ⟨gaspriceEVM, none⟩
 abbrev coinbase_instr : Option (Operation .EVM × Option (UInt256 × Nat)) := some ⟨coinbaseEVM, none⟩
 abbrev timestamp_instr : Option (Operation .EVM × Option (UInt256 × Nat)) := some ⟨timestampEVM, none⟩
+abbrev prevrandao_instr : Option (Operation .EVM × Option (UInt256 × Nat)) := some ⟨prevrandaoEVM, none⟩
 
 @[simp]
 def stateGetter_op.get : (Option (Operation .EVM × Option (UInt256 × Nat))) :=
@@ -57,6 +61,7 @@ def stateGetter_op.get : (Option (Operation .EVM × Option (UInt256 × Nat))) :=
   | .gasprice => gasprice_instr
   | .coinbase => coinbase_instr
   | .timestamp => timestamp_instr
+  | .prevrandao => prevrandao_instr
 
 --@[simp]
 def stateGetter_op.t : Operation .EVM :=
@@ -67,6 +72,7 @@ def stateGetter_op.t : Operation .EVM :=
   | .gasprice  => (gasprice_instr.get rfl).1
   | .coinbase  => (coinbase_instr.get rfl).1
   | .timestamp  => (timestamp_instr.get rfl).1
+  | .prevrandao  => (prevrandao_instr.get rfl).1
 
 def EVM.step_arith : Transformer := EVM.step gas gasCost op.get
 
@@ -81,6 +87,7 @@ def stateGetter_op.do (symState : EVM.State) :=
   | .gasprice  => UInt256.ofNat symState.executionEnv.gasPrice
   | .coinbase  => UInt256.ofNat ↑symState.coinBase
   | .timestamp  => symState.timeStamp
+  | .prevrandao  => symState.executionEnv.header.prevRandao
 
 /- theorem EvmYul.step_op_summary (symState : EVM.State):
   EvmYul.step_arith op {symState with
@@ -103,8 +110,9 @@ theorem EVM.step_add_to_step_add (gpos : 0 < gas) (symState : EVM.State):
                   source := symSource,
                   gasPrice := symGasPrice,
                   header := {symState.executionEnv.header with
-                    beneficiary := symCoinbase
-                    timestamp := symTimestamp
+                    beneficiary := symCoinbase,
+                    timestamp := symTimestamp,
+                    prevRandao := symPrevrandao
                   }
                   perm := symPerm},
       accountMap := symAccounts,
@@ -141,8 +149,9 @@ theorem EVM.step_getter_summary (gpos : 0 < gas) (symState : EVM.State):
                   source := symSource,
                   gasPrice := symGasPrice,
                   header := {symState.executionEnv.header with
-                    beneficiary := symCoinbase
-                    timestamp := symTimestamp
+                    beneficiary := symCoinbase,
+                    timestamp := symTimestamp,
+                    prevRandao := symPrevrandao
                   }
                   perm := symPerm},
       accountMap := symAccounts,
@@ -173,6 +182,7 @@ def stateGetter_op.to_bin : ByteArray :=
   | .gasprice => ⟨#[0x3A]⟩
   | .coinbase => ⟨#[0x41]⟩
   | .timestamp => ⟨#[0x42]⟩
+  | .prevrandao => ⟨#[0x44]⟩
 
 @[simp]
 theorem decode_singleton_address :
@@ -192,6 +202,9 @@ theorem decode_singleton_coinbase :
 @[simp]
 theorem decode_singleton_timestamp :
   decode ⟨#[0x42]⟩ (.ofNat 0) = some ⟨timestampEVM, none⟩ := rfl
+@[simp]
+theorem decode_singleton_prevrandao :
+  decode ⟨#[0x44]⟩ (.ofNat 0) = some ⟨prevrandaoEVM, none⟩ := rfl
 
 @[simp]
 theorem decode_singleton :
@@ -232,8 +245,9 @@ theorem X_getter_summary
                   source := symSource,
                   gasPrice := symGasPrice,
                   header := {symState.executionEnv.header with
-                    beneficiary := symCoinbase
-                    timestamp := symTimestamp
+                    beneficiary := symCoinbase,
+                    timestamp := symTimestamp,
+                    prevRandao := symPrevrandao
                   }
                   perm := symPerm},
     accountMap := symAccounts,
@@ -270,7 +284,7 @@ theorem X_getter_summary
   have gPos : (0 < g_pos) := by
     revert enoughGas; simp [stateGetter_op.C'_comp]
     cases op <;> aesop (add safe (by omega))
-  have step_rw (cost : ℕ) := (EVM.step_getter_summary op g_pos cost symGasPrice symTimestamp symStack (.ofNat 0) symGasAvailable symRefund symActiveWords symExecLength symReturnData op.to_bin symMemory symAccessedStorageKeys symAccounts symCodeOwner symSender symSource symCoinbase symPerm gPos)
+  have step_rw (cost : ℕ) := (EVM.step_getter_summary op g_pos cost symGasPrice symTimestamp symStack (.ofNat 0) symGasAvailable symRefund symActiveWords symPrevrandao symExecLength symReturnData op.to_bin symMemory symAccessedStorageKeys symAccounts symCodeOwner symSender symSource symCoinbase symPerm gPos)
   have stack_ok_rw : (1024 < List.length symStack + 1) = False := by
     cases op <;> aesop (add safe (by omega))
   cases cop: op <;>
