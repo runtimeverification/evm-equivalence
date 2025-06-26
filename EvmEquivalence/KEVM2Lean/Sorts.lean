@@ -15,6 +15,7 @@ inductive SortNullStackOp : Type where
   | ADDRESS_EVM_NullStackOp : SortNullStackOp
   | CALLER_EVM_NullStackOp : SortNullStackOp
   | COINBASE_EVM_NullStackOp : SortNullStackOp
+  | GASLIMIT_EVM_NullStackOp : SortNullStackOp
   | GASPRICE_EVM_NullStackOp : SortNullStackOp
   | NUMBER_EVM_NullStackOp : SortNullStackOp
   | ORIGIN_EVM_NullStackOp : SortNullStackOp
