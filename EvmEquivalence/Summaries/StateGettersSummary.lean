@@ -14,6 +14,7 @@ inductive stateGetter_op where
 | origin
 | caller
 | gasprice
+| coinbase
 deriving BEq, DecidableEq
 
 section
@@ -27,7 +28,7 @@ variable (symExecLength : ℕ)
 variable (symReturnData symCode symMemory : ByteArray)
 variable (symAccessedStorageKeys : Batteries.RBSet (AccountAddress × UInt256) Substate.storageKeysCmp)
 variable (symAccounts : AccountMap)
-variable (symCodeOwner symSender symSource : AccountAddress)
+variable (symCodeOwner symSender symSource symCoinbase : AccountAddress)
 variable (symPerm : Bool)
 
 variable (symValidJumps : Array UInt256)
@@ -36,11 +37,13 @@ abbrev addressEVM := @Operation.ADDRESS .EVM
 abbrev originEVM := @Operation.ORIGIN .EVM
 abbrev callerEVM := @Operation.CALLER .EVM
 abbrev gaspriceEVM := @Operation.GASPRICE .EVM
+abbrev coinbaseEVM := @Operation.COINBASE .EVM
 
 abbrev address_instr : Option (Operation .EVM × Option (UInt256 × Nat)) := some ⟨addressEVM, none⟩
 abbrev origin_instr : Option (Operation .EVM × Option (UInt256 × Nat)) := some ⟨originEVM, none⟩
 abbrev caller_instr : Option (Operation .EVM × Option (UInt256 × Nat)) := some ⟨callerEVM, none⟩
 abbrev gasprice_instr : Option (Operation .EVM × Option (UInt256 × Nat)) := some ⟨gaspriceEVM, none⟩
+abbrev coinbase_instr : Option (Operation .EVM × Option (UInt256 × Nat)) := some ⟨coinbaseEVM, none⟩
 
 
 @[simp]
@@ -50,6 +53,7 @@ def stateGetter_op.get : (Option (Operation .EVM × Option (UInt256 × Nat))) :=
   | .origin => origin_instr
   | .caller => caller_instr
   | .gasprice => gasprice_instr
+  | .coinbase => coinbase_instr
 
 --@[simp]
 def stateGetter_op.t : Operation .EVM :=
@@ -58,6 +62,7 @@ def stateGetter_op.t : Operation .EVM :=
   | .origin  => (origin_instr.get rfl).1
   | .caller  => (caller_instr.get rfl).1
   | .gasprice  => (gasprice_instr.get rfl).1
+  | .coinbase  => (coinbase_instr.get rfl).1
 
 def EVM.step_arith : Transformer := EVM.step gas gasCost op.get
 
@@ -70,6 +75,7 @@ def stateGetter_op.do (symState : EVM.State) :=
   | .origin  => UInt256.ofNat ↑symState.executionEnv.sender
   | .caller  => UInt256.ofNat ↑symState.executionEnv.source
   | .gasprice  => UInt256.ofNat ↑symState.executionEnv.gasPrice
+  | .coinbase  => UInt256.ofNat ↑symState.coinBase
 
 /- theorem EvmYul.step_op_summary (symState : EVM.State):
   EvmYul.step_arith op {symState with
@@ -91,6 +97,9 @@ theorem EVM.step_add_to_step_add (gpos : 0 < gas) (symState : EVM.State):
                   sender := symSender,
                   source := symSource,
                   gasPrice := symGasPrice,
+                  header := {symState.executionEnv.header with
+                    beneficiary := symCoinbase
+                  }
                   perm := symPerm},
       accountMap := symAccounts,
       activeWords := symActiveWords,
@@ -125,6 +134,9 @@ theorem EVM.step_getter_summary (gpos : 0 < gas) (symState : EVM.State):
                   sender := symSender,
                   source := symSource,
                   gasPrice := symGasPrice,
+                  header := {symState.executionEnv.header with
+                    beneficiary := symCoinbase
+                  }
                   perm := symPerm},
       accountMap := symAccounts,
       activeWords := symActiveWords,
@@ -152,6 +164,7 @@ def stateGetter_op.to_bin : ByteArray :=
   | .origin  => ⟨#[0x32]⟩
   | .caller  => ⟨#[0x33]⟩
   | .gasprice => ⟨#[0x3A]⟩
+  | .coinbase => ⟨#[0x41]⟩
 
 @[simp]
 theorem decode_singleton_address :
@@ -165,6 +178,9 @@ theorem decode_singleton_caller :
 @[simp]
 theorem decode_singleton_gasprice :
   decode ⟨#[0x3A]⟩ (.ofNat 0) = some ⟨gaspriceEVM, none⟩ := rfl
+@[simp]
+theorem decode_singleton_coinbase :
+  decode ⟨#[0x41]⟩ (.ofNat 0) = some ⟨coinbaseEVM, none⟩ := rfl
 
 @[simp]
 theorem decode_singleton :
@@ -190,6 +206,7 @@ attribute [local simp] GasConstants.Gbase
 theorem X_getter_summary
                       (enoughGas : op.C'_comp < symGasAvailable.toNat)
                       (symStack_ok : symStack.length < 1024)
+                      (code_h : symCode = op.to_bin)
                       (symState : EVM.State):
   let ss :=
   {symState with
@@ -198,11 +215,14 @@ theorem X_getter_summary
     execLength := symExecLength,
     gasAvailable := symGasAvailable,
     executionEnv := {symState.executionEnv with
-                  code := op.to_bin,
+                  code := symCode,
                   codeOwner := symCodeOwner,
                   sender := symSender,
                   source := symSource,
                   gasPrice := symGasPrice,
+                  header := {symState.executionEnv.header with
+                    beneficiary := symCoinbase
+                  }
                   perm := symPerm},
     accountMap := symAccounts,
     activeWords := symActiveWords,
@@ -230,7 +250,7 @@ theorem X_getter_summary
     (add safe (by omega))
   simp [α/- , stack_ok_rw -/, enough_gas_rw]
   have : ((decode ss.executionEnv.code ss.pc).getD (Operation.STOP, none)).1 = op.t := by
-    cases op <;> simp [ss, stateGetter_op.t]
+    cases op <;> simp [ss, code_h, stateGetter_op.t]
   simp [this]
   have : (ss.gasAvailable.toNat < op.C'_comp) = False := by
     aesop (add simp [stateGetter_op.C'_comp]) (add safe (by linarith))
@@ -238,7 +258,7 @@ theorem X_getter_summary
   have gPos : (0 < g_pos) := by
     revert enoughGas; simp [stateGetter_op.C'_comp]
     cases op <;> aesop (add safe (by omega))
-  have step_rw (cost : ℕ) := (EVM.step_getter_summary op g_pos cost symGasPrice symStack (.ofNat 0) symGasAvailable symRefund symActiveWords symExecLength symReturnData op.to_bin symMemory symAccessedStorageKeys symAccounts symCodeOwner symSender symSource symPerm gPos)
+  have step_rw (cost : ℕ) := (EVM.step_getter_summary op g_pos cost symGasPrice symStack (.ofNat 0) symGasAvailable symRefund symActiveWords symExecLength symReturnData op.to_bin symMemory symAccessedStorageKeys symAccounts symCodeOwner symSender symSource symCoinbase symPerm gPos)
   have stack_ok_rw : (1024 < List.length symStack + 1) = False := by
     cases op <;> aesop (add safe (by omega))
   cases cop: op <;>
@@ -250,7 +270,7 @@ theorem X_getter_summary
     cases exec
   )
   all_goals (
-    simp [Except.instMonad, Except.bind, ss, cop, step_rw, stateGetter_op.t]
+    simp [Except.instMonad, Except.bind, ss, code_h, cop, step_rw, stateGetter_op.t]
     rw [X_bad_pc] <;> aesop (add simp [stateGetter_op.C'_comp]) (add safe (by omega))
   )
 
