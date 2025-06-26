@@ -13,7 +13,7 @@ To pretty print the generated `Rewrites` type run the following (assuming `Rewri
 and you're running it from [`EvmEquivalence`](../EvmEquivalence/))
 
 ```bash
-cat KEVM2Lean/Rewrite.lean | python3 ../scripts/format-rewrites.py | cat > KEVM2Lean/Rewrite.lean
+cat KEVM2Lean/Rewrite.lean | python3 ../scripts/format-rewrites.py > tmp.lean & mv tmp.lean KEVM2Lean/Rewrite.lean
 ```
 
 ## `get-arguments.py`
