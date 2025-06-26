@@ -374,6 +374,7 @@ theorem sstore_prestate_equiv
                   sender := accountAddressMap lhs.origin.val,
                   source := accountAddressMap lhs.caller.val,
                   gasPrice := Int.toNat lhs.gasPrice.val,
+                  header := blockHeader_map lhs symState,
                   perm := true},
     accountMap := Axioms.SortAccountsCellMap lhs.accounts
     activeWords := intMap lhs.memoryUsed.val
@@ -568,6 +569,7 @@ theorem sstore_poststate_equiv
                   sender := accountAddressMap rhs.origin.val,
                   source := accountAddressMap rhs.caller.val,
                   gasPrice := Int.toNat rhs.gasPrice.val,
+                  header := blockHeader_map rhs symState,
                   perm := true},
     accountMap := Axioms.SortAccountsCellMap rhs.accounts
     activeWords := intMap rhs.memoryUsed.val
@@ -717,7 +719,7 @@ theorem step_sstore_equiv
     have fls := sstore_gas_pos ACCESSEDSTORAGE_CELL W1 _Val22 _Val23 ID_CELL W0
     have _ := Int.lt_of_lt_of_le fls gavailEnough
     omega
-  rw [sstore_prestate_equiv, EVM.step_sstore_summary] <;> try assumption
+  rw [sstore_prestate_equiv, blockHeader_map, EVM.step_sstore_summary] <;> try assumption
   rw [sstoreLHS, sstore_poststate_equiv, sstoreRHS] <;> try congr
   . simp only [accountMap_sstore, Aᵣ_sstore, State.lookupAccount]
     simp only [SortGeneratedTopCell.accounts, accountAddressMap, inj_ID_CELL]

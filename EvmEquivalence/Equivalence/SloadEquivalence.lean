@@ -561,7 +561,7 @@ theorem step_sload_equiv
     have val15_pos : 0 < _Val15 := by simp at defn_Val15; aesop
     have _ := Int.lt_of_lt_of_le val15_pos gavailEnough
     omega
-  rw [sload_prestate_equiv, executionEnv_map, EVM.step_sload_summary] <;> try assumption
+  rw [sload_prestate_equiv, executionEnv_map, blockHeader_map, EVM.step_sload_summary] <;> try assumption
   rw [sloadLHS, sload_poststate_equiv, sloadRHS] <;> try congr
   . simp[State.lookupAccount, SortGeneratedTopCell.accounts, accountAddressMap, inj_ID_CELL]
     aesop

@@ -355,7 +355,7 @@ theorem step_push0_equiv
   .ok (stateMap {symState with execLength := symState.execLength + 1} (@push0RHS _Val6 _Val8 SCHEDULE_CELL WS _DotVar0 _DotVar2 _Gen0 _Gen1 _Gen10 _Gen11 _Gen12 _Gen13 _Gen14 _Gen15 _Gen16 _Gen17 _Gen18 _Gen19 _Gen2 _Gen20 _Gen21 _Gen22 _Gen23 _Gen3 _Gen4 _Gen5 _Gen6 _Gen7 _Gen8 _Gen9 _K_CELL)) := by
   rw [push0_prestate_equiv, (push0_poststate_equiv defn_Val6)]
   cases gas; contradiction
-  rw [executionEnv_map, EVM.step_push0_summary] <;> try assumption
+  rw [executionEnv_map, blockHeader_map, EVM.step_push0_summary] <;> try assumption
   simp [push0LHS, push0RHS]; constructor <;> try constructor
   . aesop (add simp [GasConstants.Gbase, «_-Int_», cancun_def, intMap_sub_dist])
   . rw [←UInt256.add_succ_mod_size, intMap_add_dist] <;> aesop

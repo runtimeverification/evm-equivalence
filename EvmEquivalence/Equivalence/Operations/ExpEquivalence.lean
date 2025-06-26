@@ -490,7 +490,8 @@ theorem step_exp_equiv
     StackOpsSummary.arith_op.stack .exp
       (intMap W0) (intMap W1) (intMap W1) (wordStackMap WS) := by aesop
     rw [this]
-    rw [executionEnv_map, EVM.step_add_summary] <;> try assumption
+    rw [executionEnv_map, blockHeader_map, EVM.step_add_summary]
+    <;> try assumption
     simp [expLHS, expRHS]; constructor <;> try constructor
     . aesop (add simp [exp_case.gas, GasConstants.Gexp, GasInterface.cancun_def, «_-Int_»])
       (add safe (by rw [intMap_sub_dist]))
@@ -605,7 +606,7 @@ theorem X_exp_equiv
     StackOpsSummary.arith_op.stack .exp
       (intMap W0) (intMap W1) (intMap W1) (wordStackMap WS) := rfl
   have code_op : ⟨#[0xA]⟩ = StackOpsSummary.arith_op.to_bin .exp := rfl
-  simp [executionEnv_map, expLHS]
+  simp [executionEnv_map, blockHeader_map, expLHS]
   rw [stack_op, code_op, pc_equiv, X_arith_summary]
   /- This have could be subsumed, but it's useful for the `gt0` case above -/
   have W1_zero_eq : (intMap W1 == { val := 0 }) = true → W1 = 0 := by
