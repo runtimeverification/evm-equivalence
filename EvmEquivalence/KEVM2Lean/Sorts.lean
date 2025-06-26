@@ -17,6 +17,7 @@ inductive SortNullStackOp : Type where
   | COINBASE_EVM_NullStackOp : SortNullStackOp
   | GASPRICE_EVM_NullStackOp : SortNullStackOp
   | ORIGIN_EVM_NullStackOp : SortNullStackOp
+  | TIMESTAMP_EVM_NullStackOp : SortNullStackOp
   deriving BEq, DecidableEq
 
 inductive SortScheduleConst : Type where
