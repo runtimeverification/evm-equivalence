@@ -69,6 +69,9 @@ def caller : SortCallerCell := tc.kevm.ethereum.evm.callState.caller
 @[simp]
 def gasPrice : SortGasPriceCell := tc.kevm.ethereum.evm.gasPrice
 
+@[simp]
+def coinbase : SortCoinbaseCell := tc.kevm.ethereum.evm.block.coinbase
+
 end SortGeneratedTopCell
 
 namespace SortKItem
@@ -166,6 +169,12 @@ def memory_map : SortLocalMemCell → ByteArray | .mk b => b
 /- Maps from parts of the Generated Top Cell to EvmYul structures -/
 
 @[simp]
+def blockHeader_map (tc : SortGeneratedTopCell) (s : EVM.State) : BlockHeader :=
+  {s.executionEnv.header with
+    beneficiary := .ofNat <| Int.toNat tc.coinbase.val
+  }
+
+@[simp]
 def executionEnv_map (tc : SortGeneratedTopCell) (s : EVM.State) : ExecutionEnv :=
   {s.executionEnv with
     codeOwner := idMap tc.Iₐ
@@ -173,6 +182,7 @@ def executionEnv_map (tc : SortGeneratedTopCell) (s : EVM.State) : ExecutionEnv 
     sender := accountAddressMap tc.origin.val
     code := tc.program.val,
     gasPrice := Int.toNat tc.gasPrice.val
+    header := blockHeader_map tc s
     perm := !tc.isStatic.val}
 
 /--
