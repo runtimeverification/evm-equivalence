@@ -526,8 +526,6 @@ theorem X_oneOp_equiv
   (pcZero : PC_CELL = 0)
   (enoughGas : op.gas < GAS_CELL)
   (boundedGas : GAS_CELL < ↑UInt256.size)
-  -- There's no #sizeWordStack
-  (wordStackOk : sizeWordStackAux WS 0 < some 1024)
   (ID_CELL_small : ID_CELL < AccountAddress.size)
   (ID_CELL_nonneg : 0 ≤ ID_CELL)
   (ORIGIN_CELL_small : ORIGIN_CELL < AccountAddress.size)
@@ -553,7 +551,8 @@ theorem X_oneOp_equiv
   rw [pcZero, pc_equiv, executionEnv_map, blockHeader_map]
   rw [X_getter_summary op.from_k]
   case enoughGas => rw [intMap_toNat] <;> aesop (add safe (by linarith))
-  case symStack_ok => simp [sizeWordStack_def] at wordStackOk; assumption
+  case symStack_ok =>
+    aesop (add simp [sizeWordStack_def, «_<=Int_»]) (add safe (by linarith))
   case code_h => simp [oneOpLHS]
   congr <;> try simp
   . cases op <;>
