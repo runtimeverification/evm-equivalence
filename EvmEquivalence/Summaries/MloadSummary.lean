@@ -11,7 +11,7 @@ namespace MloadSummary
 
 section
 
-variable (gas gasCost symGasPrice symTimestamp : ℕ)
+variable (gas gasCost symGasPrice symTimestamp symNumber : ℕ)
 variable (symStack : Stack UInt256)
 variable (symPc symGasAvailable symRefund offset : UInt256)
 variable (symActiveWords symPrevrandao : UInt256)
@@ -55,6 +55,7 @@ theorem EvmYul.step_mload_summary (symState : EVM.State):
                   header := {symState.executionEnv.header with
                     beneficiary := symCoinbase,
                     timestamp := symTimestamp,
+                    number := symNumber,
                     prevRandao := symPrevrandao
                   }
                   perm := symPerm},
@@ -86,6 +87,7 @@ theorem EVM.step_mload_summary (gas_pos : 0 < gas) (symState : EVM.State):
                   header := {symState.executionEnv.header with
                     beneficiary := symCoinbase,
                     timestamp := symTimestamp,
+                    number := symNumber,
                     prevRandao := symPrevrandao
                   }
                   perm := symPerm},
@@ -106,7 +108,7 @@ theorem EVM.step_mload_summary (gas_pos : 0 < gas) (symState : EVM.State):
           execLength := symExecLength + 1} := by
   cases gas; contradiction
   simp [step_mload, EVM.step]
-  have := EvmYul.step_mload_summary symGasPrice symTimestamp symStack symPc (symGasAvailable - UInt256.ofNat gasCost) symRefund offset symActiveWords symPrevrandao (symExecLength + 1) symReturnData symCode symMemory
+  have := EvmYul.step_mload_summary symGasPrice symTimestamp symNumber symStack symPc (symGasAvailable - UInt256.ofNat gasCost) symRefund offset symActiveWords symPrevrandao (symExecLength + 1) symReturnData symCode symMemory
   simp [EvmYul.step_mload, Operation.MLOAD] at this; aesop
 
 @[simp]
@@ -141,6 +143,7 @@ theorem X_mload_summary (symState : EVM.State)
                   header := {symState.executionEnv.header with
                     beneficiary := symCoinbase,
                     timestamp := symTimestamp,
+                    number := symNumber,
                     prevRandao := symPrevrandao
                   }
                   perm := symPerm},
@@ -195,7 +198,7 @@ theorem X_mload_summary (symState : EVM.State)
   try aesop (add safe (by omega)) (add safe (by linarith)) (add safe (by contradiction))
   cases state_ok
   have g_pos_pos : 0 < g_pos := by omega
-  have step_rw (g : UInt256) := (EVM.step_mload_summary g_pos GasConstants.Gverylow symGasPrice symTimestamp symStack (.ofNat 0) (symGasAvailable - g) symRefund offset symActiveWords symPrevrandao symExecLength symReturnData ⟨#[(0x51 : UInt8)]⟩ symMemory symAccessedStorageKeys symAccounts symCodeOwner symSender symSource symCoinbase symPerm g_pos_pos symState)
+  have step_rw (g : UInt256) := (EVM.step_mload_summary g_pos GasConstants.Gverylow symGasPrice symTimestamp symNumber symStack (.ofNat 0) (symGasAvailable - g) symRefund offset symActiveWords symPrevrandao symExecLength symReturnData ⟨#[(0x51 : UInt8)]⟩ symMemory symAccessedStorageKeys symAccounts symCodeOwner symSender symSource symCoinbase symPerm g_pos_pos symState)
   simp [EVM.step_mload, mload_instr, mloadEVM, ss] at step_rw
   simp [step_rw, Except.instMonad, Except.bind]
   rw [X_bad_pc] <;> aesop (add simp [GasConstants.Gverylow]) (add safe (by omega))

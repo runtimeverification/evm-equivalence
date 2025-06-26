@@ -16,7 +16,7 @@ section
 
 /- It's more handy to have the `op` variable at the top -/
 variable (op : mstore_op)
-variable (gas gasCost symGasPrice symTimestamp : ℕ)
+variable (gas gasCost symGasPrice symTimestamp symNumber : ℕ)
 variable (symStack : Stack UInt256)
 variable (symPc symGasAvailable symRefund offset value : UInt256)
 variable (symActiveWords symPrevrandao : UInt256)
@@ -97,6 +97,7 @@ theorem mstore_bypass_private
                   header := {symState.executionEnv.header with
                     beneficiary := symCoinbase,
                     timestamp := symTimestamp,
+                    number := symNumber,
                     prevRandao := symPrevrandao
                   }
                   perm := symPerm},
@@ -153,6 +154,7 @@ theorem EvmYul.step_mstore_summary (symState : EVM.State):
                   header := {symState.executionEnv.header with
                     beneficiary := symCoinbase,
                     timestamp := symTimestamp,
+                    number := symNumber,
                     prevRandao := symPrevrandao
                   }
                   perm := symPerm},
@@ -187,6 +189,7 @@ theorem EVM.step_mstore_summary
                   header := {symState.executionEnv.header with
                     beneficiary := symCoinbase,
                     timestamp := symTimestamp,
+                    number := symNumber,
                     prevRandao := symPrevrandao
                   }
                   perm := symPerm},
@@ -208,7 +211,7 @@ theorem EVM.step_mstore_summary
           execLength := symExecLength + 1} := by
   cases gas; contradiction
   simp [step_mstore, EVM.step]
-  have srw := EvmYul.step_mstore_summary op symGasPrice symTimestamp symStack symPc (symGasAvailable - UInt256.ofNat gasCost) symRefund offset value symActiveWords symPrevrandao (symExecLength + 1) symReturnData symCode symMemory
+  have srw := EvmYul.step_mstore_summary op symGasPrice symTimestamp symNumber symStack symPc (symGasAvailable - UInt256.ofNat gasCost) symRefund offset value symActiveWords symPrevrandao (symExecLength + 1) symReturnData symCode symMemory
   simp [EvmYul.step_mstore, Operation.MSTORE] at srw
   cases op <;> aesop
 
@@ -256,6 +259,7 @@ theorem X_mstore_summary (symState : EVM.State)
                   header := {symState.executionEnv.header with
                     beneficiary := symCoinbase,
                     timestamp := symTimestamp,
+                    number := symNumber,
                     prevRandao := symPrevrandao
                   }
                   perm := symPerm},
@@ -311,7 +315,7 @@ theorem X_mstore_summary (symState : EVM.State)
   simp [fls2, ss]
   have g_pos0 : 0 < g_pos := by omega
   have g_pos1 : 1 < g_pos := by omega
-  have step_rw (g : UInt256) := (EVM.step_mstore_summary op g_pos GasConstants.Gverylow symGasPrice symTimestamp symStack (.ofNat 0) (symGasAvailable - g) symRefund offset value symActiveWords symPrevrandao symExecLength symReturnData op.to_bin symMemory symAccessedStorageKeys symAccounts symCodeOwner symSender symSource symCoinbase symPerm g_pos0 symState)
+  have step_rw (g : UInt256) := (EVM.step_mstore_summary op g_pos GasConstants.Gverylow symGasPrice symTimestamp symNumber symStack (.ofNat 0) (symGasAvailable - g) symRefund offset value symActiveWords symPrevrandao symExecLength symReturnData op.to_bin symMemory symAccessedStorageKeys symAccounts symCodeOwner symSender symSource symCoinbase symPerm g_pos0 symState)
   let op_stack := match op with | .mstore => 1024 | .mstore8 => 1025
   have : (op_stack < List.length symStack) = False := by aesop
   cases cop : op <;> simp [δ] <;>
