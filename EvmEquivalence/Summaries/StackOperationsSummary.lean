@@ -40,7 +40,7 @@ section
 
 variable (op : arith_op)
 variable (word₁ word₂ word₃: UInt256)
-variable (gas gasCost symGasPrice : ℕ)
+variable (gas gasCost symGasPrice symTimestamp : ℕ)
 variable (symStack : Stack UInt256)
 variable (symPc symGasAvailable symRefund symActiveWords : UInt256)
 variable (symExecLength : ℕ)
@@ -221,7 +221,8 @@ theorem EVM.step_add_to_step_add (gpos : 0 < gas) (symState : EVM.State):
                   source := symSource,
                   gasPrice := symGasPrice,
                   header := {symState.executionEnv.header with
-                    beneficiary := symCoinbase
+                    beneficiary := symCoinbase,
+                    timestamp := symTimestamp
                   }
                   perm := symPerm},
     accountMap := symAccounts,
@@ -255,7 +256,8 @@ theorem EVM.step_add_summary (gpos : 0 < gas) (symState : EVM.State):
                   source := symSource,
                   gasPrice := symGasPrice,
                   header := {symState.executionEnv.header with
-                    beneficiary := symCoinbase
+                    beneficiary := symCoinbase,
+                    timestamp := symTimestamp
                   }
                   perm := symPerm},
     accountMap := symAccounts,
@@ -459,7 +461,8 @@ theorem X_arith_summary
                   source := symSource,
                   gasPrice := symGasPrice,
                   header := {symState.executionEnv.header with
-                    beneficiary := symCoinbase
+                    beneficiary := symCoinbase,
+                    timestamp := symTimestamp
                   }
                   perm := symPerm},
     accountMap := symAccounts,
@@ -486,7 +489,7 @@ theorem X_arith_summary
   have enough_gas_rw : (symGasAvailable.toNat < GasConstants.Gverylow) = False :=
     by aesop (add simp [arith_op.C'_comp, arith_op.C'_noexp])
     (add safe (by omega))
-  simp [α/- , stack_ok_rw -/, enough_gas_rw]
+  simp [α, enough_gas_rw]
   have : ((decode ss.executionEnv.code ss.pc).getD (Operation.STOP, none)).1 = op.t := by
     cases op <;> simp [ss, arith_op.t]
   simp [this]
@@ -496,7 +499,7 @@ theorem X_arith_summary
   have gPos : (0 < g_pos) := by
     revert enoughGas; simp [arith_op.C'_comp]
     cases op <;> simp [ss] <;> aesop (add safe (by omega))
-  have step_rw (cost : ℕ) := (EVM.step_add_summary op word₁ word₂ word₃ g_pos cost symGasPrice symStack (.ofNat 0) symGasAvailable symRefund symActiveWords symExecLength symReturnData op.to_bin symMemory symAccessedStorageKeys symAccounts symCodeOwner symSender symSource symCoinbase symPerm gPos)
+  have step_rw (cost : ℕ) := (EVM.step_add_summary op word₁ word₂ word₃ g_pos cost symGasPrice symTimestamp symStack (.ofNat 0) symGasAvailable symRefund symActiveWords symExecLength symReturnData op.to_bin symMemory symAccessedStorageKeys symAccounts symCodeOwner symSender symSource symCoinbase symPerm gPos)
   have stack_ok_rw : (1024 < List.length symStack + 1) = False := by
     cases op <;> aesop (add safe (by omega))
   cases cop: op <;> simp [cop] at symStack_ok <;>
