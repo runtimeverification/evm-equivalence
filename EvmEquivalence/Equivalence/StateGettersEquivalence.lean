@@ -19,6 +19,7 @@ inductive stateGetter_op where
   | gasprice
   | coinbase
   | timestamp
+  | number
   | prevrandao
 
 variable (op : stateGetter_op)
@@ -31,6 +32,7 @@ def stateGetter_op.to_binop : stateGetter_op → SortNullStackOp
   | .gasprice => .GASPRICE_EVM_NullStackOp
   | .coinbase => .COINBASE_EVM_NullStackOp
   | .timestamp => .TIMESTAMP_EVM_NullStackOp
+  | .number => .NUMBER_EVM_NullStackOp
   | .prevrandao => .PREVRANDAO_EVM_NullStackOp
 
 def stateGetter_op.from_k : stateGetter_op → StateGettersSummary.stateGetter_op
@@ -40,10 +42,11 @@ def stateGetter_op.from_k : stateGetter_op → StateGettersSummary.stateGetter_o
  | .gasprice => .gasprice
  | .coinbase => .coinbase
  | .timestamp => .timestamp
+ | .number => .number
  | .prevrandao => .prevrandao
 
 def oneOpLHS
-  {GAS_CELL ID_CELL ORIGIN_CELL CALLER_CELL COINBASE_CELL TIMESTAMP_CELL MIXHASH_CELL PC_CELL _Val6 _Val8 : SortInt}
+  {GAS_CELL ID_CELL ORIGIN_CELL CALLER_CELL COINBASE_CELL TIMESTAMP_CELL MIXHASH_CELL NUMBER_CELL PC_CELL _Val6 _Val8 : SortInt}
   -- We assume `GASPRICE_CELL` is not negative
   {GASPRICE_CELL : ℕ}
   {SCHEDULE_CELL : SortSchedule}
@@ -108,13 +111,14 @@ def oneOpLHS
           block := {_Gen20 with
                     coinbase := { val := COINBASE_CELL},
                     timestamp := { val := TIMESTAMP_CELL },
+                    number := { val := NUMBER_CELL },
                     mixHash := { val := MIXHASH_CELL }
                     } },
         network := _DotVar2 } },
     generatedCounter := _DotVar0 }
 
 def oneOpRHS
-  {TOP_STACK ID_CELL ORIGIN_CELL CALLER_CELL COINBASE_CELL TIMESTAMP_CELL MIXHASH_CELL _Val6 _Val8 : SortInt}
+  {TOP_STACK ID_CELL ORIGIN_CELL CALLER_CELL COINBASE_CELL TIMESTAMP_CELL MIXHASH_CELL NUMBER_CELL _Val6 _Val8 : SortInt}
   -- We assume `GASPRICE_CELL` is not negative
   {GASPRICE_CELL : ℕ}
   {SCHEDULE_CELL : SortSchedule}
@@ -178,6 +182,7 @@ def oneOpRHS
             block := {_Gen20 with
                     coinbase := { val := COINBASE_CELL},
                     timestamp := { val := TIMESTAMP_CELL },
+                    number := { val := NUMBER_CELL },
                     mixHash := { val := MIXHASH_CELL },
                     } },
           network := _DotVar2 } },
@@ -198,13 +203,14 @@ def stateGetter_op.do (tc : SortGeneratedTopCell) : SortInt :=
   | .address  => acc2Int tc.Iₐ.val
   | .origin => acc2Int tc.origin.val
   | .caller => acc2Int tc.caller.val
-  | .gasprice => Int.toNat tc.gasPrice.val
+  | .gasprice => tc.gasPrice.val
   | .coinbase => tc.coinbase.val
   | .timestamp => tc.timestamp.val
+  | .number => tc.number.val
   | .prevrandao => tc.mixhash.val
 
 theorem rw_oneOpLHS_oneOpRHS
-  {GAS_CELL ID_CELL ORIGIN_CELL CALLER_CELL COINBASE_CELL TIMESTAMP_CELL MIXHASH_CELL PC_CELL _Val0 _Val2 _Val6 _Val7 _Val8 : SortInt}
+  {GAS_CELL ID_CELL ORIGIN_CELL CALLER_CELL COINBASE_CELL TIMESTAMP_CELL MIXHASH_CELL NUMBER_CELL PC_CELL _Val0 _Val2 _Val6 _Val7 _Val8 : SortInt}
   -- We assume `GASPRICE_CELL` is not negative
   {GASPRICE_CELL : ℕ}
   {SCHEDULE_CELL : SortSchedule}
@@ -244,10 +250,10 @@ theorem rw_oneOpLHS_oneOpRHS
   (defn_Val7 : «_<_>_SCHEDULE_Int_ScheduleConst_Schedule» SortScheduleConst.Gbase_SCHEDULE_ScheduleConst SCHEDULE_CELL = some _Val7)
   (defn_Val8 : «_-Int_» GAS_CELL _Val7 = some _Val8)
   (req : _Val5 = true):
-  let lhs := (@oneOpLHS op GAS_CELL ID_CELL ORIGIN_CELL CALLER_CELL COINBASE_CELL TIMESTAMP_CELL MIXHASH_CELL PC_CELL _Val6 _Val8 GASPRICE_CELL SCHEDULE_CELL USEGAS_CELL WS _DotVar0 _DotVar2 _Gen0 _Gen1 _Gen10
+  let lhs := (@oneOpLHS op GAS_CELL ID_CELL ORIGIN_CELL CALLER_CELL COINBASE_CELL TIMESTAMP_CELL MIXHASH_CELL NUMBER_CELL PC_CELL _Val6 _Val8 GASPRICE_CELL SCHEDULE_CELL USEGAS_CELL WS _DotVar0 _DotVar2 _Gen0 _Gen1 _Gen10
   _Gen11 _Gen12 _Gen13 _Gen14 _Gen15 _Gen16 _Gen19
   _Gen20 _Gen21 _Gen22 _Gen3 _Gen4 _Gen5 _Gen6 _Gen7 _Gen8 _Gen9 _K_CELL)
-  let rhs := (@oneOpRHS (op.do lhs) ID_CELL ORIGIN_CELL CALLER_CELL COINBASE_CELL TIMESTAMP_CELL MIXHASH_CELL _Val6 _Val8 GASPRICE_CELL SCHEDULE_CELL WS _DotVar0 _DotVar2 _Gen0 _Gen1 _Gen10 _Gen11 _Gen12 _Gen13 _Gen14 _Gen15 _Gen16 _Gen19 _Gen20 _Gen21 _Gen22 _Gen3 _Gen4 _Gen5 _Gen6 _Gen7 _Gen8 _Gen9 _K_CELL)
+  let rhs := (@oneOpRHS (op.do lhs) ID_CELL ORIGIN_CELL CALLER_CELL COINBASE_CELL TIMESTAMP_CELL MIXHASH_CELL NUMBER_CELL _Val6 _Val8 GASPRICE_CELL SCHEDULE_CELL WS _DotVar0 _DotVar2 _Gen0 _Gen1 _Gen10 _Gen11 _Gen12 _Gen13 _Gen14 _Gen15 _Gen16 _Gen19 _Gen20 _Gen21 _Gen22 _Gen3 _Gen4 _Gen5 _Gen6 _Gen7 _Gen8 _Gen9 _K_CELL)
   Rewrites lhs rhs
    := by
   --intro lhs rhs; simp [lhs, rhs, oneOpLHS, oneOpRHS]
@@ -264,11 +270,13 @@ theorem rw_oneOpLHS_oneOpRHS
     <;> try assumption
   . apply (@Rewrites.TIMESTAMP_SUMMARY_TIMESTAMP_SUMMARY_USEGAS GAS_CELL PC_CELL TIMESTAMP_CELL _Val0 _Val2)
     <;> try assumption
+  . apply (@Rewrites.NUMBER_SUMMARY_NUMBER_SUMMARY_USEGAS GAS_CELL NUMBER_CELL PC_CELL _Val0 _Val2)
+    <;> try assumption
   . apply (@Rewrites.PREVRANDAO_SUMMARY_PREVRANDAO_SUMMARY_USEGAS GAS_CELL MIXHASH_CELL PC_CELL _Val0 _Val2)
     <;> try assumption
 
 theorem oneOp_prestate_equiv
-  {GAS_CELL ID_CELL ORIGIN_CELL CALLER_CELL COINBASE_CELL TIMESTAMP_CELL MIXHASH_CELL PC_CELL _Val6 _Val8 : SortInt}
+  {GAS_CELL ID_CELL ORIGIN_CELL CALLER_CELL COINBASE_CELL TIMESTAMP_CELL MIXHASH_CELL NUMBER_CELL PC_CELL _Val6 _Val8 : SortInt}
   -- We assume `GASPRICE_CELL` is not negative
   {GASPRICE_CELL : ℕ}
   {SCHEDULE_CELL : SortSchedule}
@@ -298,7 +306,7 @@ theorem oneOp_prestate_equiv
   {_Gen9 : SortCallDepthCell}
   {_K_CELL : SortK}
   (symState : EVM.State):
-  let lhs := (@oneOpLHS op GAS_CELL ID_CELL ORIGIN_CELL CALLER_CELL COINBASE_CELL TIMESTAMP_CELL MIXHASH_CELL PC_CELL _Val6 _Val8 GASPRICE_CELL SCHEDULE_CELL USEGAS_CELL WS _DotVar0 _DotVar2 _Gen0 _Gen1 _Gen10
+  let lhs := (@oneOpLHS op GAS_CELL ID_CELL ORIGIN_CELL CALLER_CELL COINBASE_CELL TIMESTAMP_CELL MIXHASH_CELL NUMBER_CELL PC_CELL _Val6 _Val8 GASPRICE_CELL SCHEDULE_CELL USEGAS_CELL WS _DotVar0 _DotVar2 _Gen0 _Gen1 _Gen10
   _Gen11 _Gen12 _Gen13 _Gen14 _Gen15 _Gen16 _Gen19
   _Gen20 _Gen21 _Gen22 _Gen3 _Gen4 _Gen5 _Gen6 _Gen7 _Gen8 _Gen9 _K_CELL)
   stateMap symState lhs =
@@ -327,7 +335,7 @@ theorem oneOp_prestate_equiv
     simp [oneOpLHS, cop, stateMap, stateGetter_op.from_k] <;> rfl
 
 theorem oneOp_poststate_equiv
-  {TOP_STACK ID_CELL ORIGIN_CELL CALLER_CELL COINBASE_CELL TIMESTAMP_CELL MIXHASH_CELL PC_CELL _Val5 _Val6 _Val8 : SortInt}
+  {TOP_STACK ID_CELL ORIGIN_CELL CALLER_CELL COINBASE_CELL TIMESTAMP_CELL MIXHASH_CELL NUMBER_CELL PC_CELL _Val5 _Val6 _Val8 : SortInt}
   -- We assume `GASPRICE_CELL` is not negative
   {GASPRICE_CELL : ℕ}
   {SCHEDULE_CELL : SortSchedule}
@@ -357,7 +365,7 @@ theorem oneOp_poststate_equiv
   {_K_CELL : SortK}
   (defn_Val6 : «_+Int_» PC_CELL 1 = some _Val6)
   (symState : EVM.State):
-  let rhs := (@oneOpRHS TOP_STACK ID_CELL ORIGIN_CELL CALLER_CELL COINBASE_CELL TIMESTAMP_CELL MIXHASH_CELL _Val6 _Val8 GASPRICE_CELL SCHEDULE_CELL WS _DotVar0 _DotVar2 _Gen0 _Gen1 _Gen10 _Gen11 _Gen12 _Gen13 _Gen14 _Gen15 _Gen16 _Gen19 _Gen20 _Gen21 _Gen22 _Gen3 _Gen4 _Gen5 _Gen6 _Gen7 _Gen8 _Gen9 _K_CELL)
+  let rhs := (@oneOpRHS TOP_STACK ID_CELL ORIGIN_CELL CALLER_CELL COINBASE_CELL TIMESTAMP_CELL MIXHASH_CELL NUMBER_CELL _Val6 _Val8 GASPRICE_CELL SCHEDULE_CELL WS _DotVar0 _DotVar2 _Gen0 _Gen1 _Gen10 _Gen11 _Gen12 _Gen13 _Gen14 _Gen15 _Gen16 _Gen19 _Gen20 _Gen21 _Gen22 _Gen3 _Gen4 _Gen5 _Gen6 _Gen7 _Gen8 _Gen9 _K_CELL)
   stateMap symState rhs =
   {symState with
     stack := (intMap TOP_STACK) :: wordStackMap WS
@@ -392,7 +400,7 @@ attribute [local simp] GasConstants.Gbase
 -- We cannot prove full equivalence for the `EVM.step` function
 -- This is because it doesn't include all semantics such as gas computation
 theorem step_oneOp_equiv
-  {GAS_CELL ID_CELL ORIGIN_CELL CALLER_CELL COINBASE_CELL TIMESTAMP_CELL MIXHASH_CELL PC_CELL _Val0 _Val2 _Val6 _Val7 _Val8 : SortInt}
+  {GAS_CELL ID_CELL ORIGIN_CELL CALLER_CELL COINBASE_CELL TIMESTAMP_CELL MIXHASH_CELL NUMBER_CELL PC_CELL _Val0 _Val2 _Val6 _Val7 _Val8 : SortInt}
   -- We assume `GASPRICE_CELL` is not negative
   {GASPRICE_CELL : ℕ}
   {SCHEDULE_CELL : SortSchedule}
@@ -451,16 +459,18 @@ theorem step_oneOp_equiv
   (COINBASE_CELL_small : COINBASE_CELL < AccountAddress.size)
   (COINBASE_CELL_nonneg : 0 ≤ COINBASE_CELL)
   (TIMESTAMP_CELL_small : TIMESTAMP_CELL < UInt256.size)
-  (TIMESTAMP_CELL_nonneg : 0 ≤ TIMESTAMP_CELL) :
-  let lhs := (@oneOpLHS op GAS_CELL ID_CELL ORIGIN_CELL CALLER_CELL COINBASE_CELL TIMESTAMP_CELL MIXHASH_CELL PC_CELL _Val6 _Val8 GASPRICE_CELL SCHEDULE_CELL USEGAS_CELL WS _DotVar0 _DotVar2 _Gen0 _Gen1 _Gen10
+  (TIMESTAMP_CELL_nonneg : 0 ≤ TIMESTAMP_CELL)
+  (NUMBER_CELL_small : NUMBER_CELL < UInt256.size)
+  (NUMBER_CELL_nonneg : 0 ≤ NUMBER_CELL):
+  let lhs := (@oneOpLHS op GAS_CELL ID_CELL ORIGIN_CELL CALLER_CELL COINBASE_CELL TIMESTAMP_CELL MIXHASH_CELL NUMBER_CELL PC_CELL _Val6 _Val8 GASPRICE_CELL SCHEDULE_CELL USEGAS_CELL WS _DotVar0 _DotVar2 _Gen0 _Gen1 _Gen10
   _Gen11 _Gen12 _Gen13 _Gen14 _Gen15 _Gen16 _Gen19
   _Gen20 _Gen21 _Gen22 _Gen3 _Gen4 _Gen5 _Gen6 _Gen7 _Gen8 _Gen9 _K_CELL)
-  let rhs := (@oneOpRHS (op.do lhs) ID_CELL ORIGIN_CELL CALLER_CELL COINBASE_CELL TIMESTAMP_CELL MIXHASH_CELL _Val6 _Val8 GASPRICE_CELL  SCHEDULE_CELL WS _DotVar0 _DotVar2 _Gen0 _Gen1 _Gen10 _Gen11 _Gen12 _Gen13 _Gen14 _Gen15 _Gen16  _Gen19 _Gen20 _Gen21 _Gen22 _Gen3 _Gen4 _Gen5 _Gen6 _Gen7 _Gen8 _Gen9 _K_CELL)
+  let rhs := (@oneOpRHS (op.do lhs) ID_CELL ORIGIN_CELL CALLER_CELL COINBASE_CELL TIMESTAMP_CELL MIXHASH_CELL NUMBER_CELL _Val6 _Val8 GASPRICE_CELL  SCHEDULE_CELL WS _DotVar0 _DotVar2 _Gen0 _Gen1 _Gen10 _Gen11 _Gen12 _Gen13 _Gen14 _Gen15 _Gen16  _Gen19 _Gen20 _Gen21 _Gen22 _Gen3 _Gen4 _Gen5 _Gen6 _Gen7 _Gen8 _Gen9 _K_CELL)
   EVM.step_arith op.from_k gas gasCost (stateMap symState lhs) =
   .ok (stateMap {symState with execLength := symState.execLength + 1} rhs) := by
   intro lhs rhs
   rw [oneOp_prestate_equiv]
-  rw [@oneOp_poststate_equiv _ ID_CELL ORIGIN_CELL CALLER_CELL COINBASE_CELL TIMESTAMP_CELL MIXHASH_CELL PC_CELL]
+  rw [@oneOp_poststate_equiv _ ID_CELL ORIGIN_CELL CALLER_CELL COINBASE_CELL TIMESTAMP_CELL MIXHASH_CELL NUMBER_CELL PC_CELL]
   <;> try assumption
   cases gas; contradiction
   case succ gas =>
@@ -496,7 +506,7 @@ attribute [local simp] GasConstants.Glow
  6. `W0` and `W1` are nonnegative
  -/
 theorem X_oneOp_equiv
-  {GAS_CELL ID_CELL ORIGIN_CELL CALLER_CELL COINBASE_CELL TIMESTAMP_CELL MIXHASH_CELL PC_CELL _Val0 _Val2 _Val6 _Val7 _Val8 : SortInt}
+  {GAS_CELL ID_CELL ORIGIN_CELL CALLER_CELL COINBASE_CELL TIMESTAMP_CELL MIXHASH_CELL NUMBER_CELL PC_CELL _Val0 _Val2 _Val6 _Val7 _Val8 : SortInt}
   -- We assume `GASPRICE_CELL` is not negative
   {GASPRICE_CELL : ℕ}
   {SCHEDULE_CELL : SortSchedule}
@@ -553,11 +563,13 @@ theorem X_oneOp_equiv
   (COINBASE_CELL_small : COINBASE_CELL < AccountAddress.size)
   (COINBASE_CELL_nonneg : 0 ≤ COINBASE_CELL)
   (TIMESTAMP_CELL_small : TIMESTAMP_CELL < UInt256.size)
-  (TIMESTAMP_CELL_nonneg : 0 ≤ TIMESTAMP_CELL) :
-  let lhs := (@oneOpLHS op GAS_CELL ID_CELL ORIGIN_CELL CALLER_CELL COINBASE_CELL TIMESTAMP_CELL MIXHASH_CELL PC_CELL _Val6 _Val8 GASPRICE_CELL SCHEDULE_CELL USEGAS_CELL WS _DotVar0 _DotVar2 ⟨op.from_k.to_bin⟩ _Gen1 _Gen10
+  (TIMESTAMP_CELL_nonneg : 0 ≤ TIMESTAMP_CELL)
+  (NUMBER_CELL_small : NUMBER_CELL < UInt256.size)
+  (NUMBER_CELL_nonneg : 0 ≤ NUMBER_CELL) :
+  let lhs := (@oneOpLHS op GAS_CELL ID_CELL ORIGIN_CELL CALLER_CELL COINBASE_CELL TIMESTAMP_CELL MIXHASH_CELL NUMBER_CELL PC_CELL _Val6 _Val8 GASPRICE_CELL SCHEDULE_CELL USEGAS_CELL WS _DotVar0 _DotVar2 ⟨op.from_k.to_bin⟩ _Gen1 _Gen10
   _Gen11 _Gen12 _Gen13 _Gen14 _Gen15 _Gen16 _Gen19
   _Gen20 _Gen21 _Gen22 _Gen3 _Gen4 _Gen5 _Gen6 _Gen7 _Gen8 _Gen9 _K_CELL)
-  let rhs := (@oneOpRHS (op.do lhs) ID_CELL ORIGIN_CELL CALLER_CELL COINBASE_CELL TIMESTAMP_CELL MIXHASH_CELL _Val6 _Val8 GASPRICE_CELL SCHEDULE_CELL WS _DotVar0 _DotVar2 _Gen0 _Gen1 ⟨.empty⟩ _Gen11 _Gen12 _Gen13 _Gen14 _Gen15 _Gen16 _Gen19 _Gen20 _Gen21 _Gen22 _Gen3 _Gen4 _Gen5 _Gen6 _Gen7 _Gen8 _Gen9 _K_CELL)
+  let rhs := (@oneOpRHS (op.do lhs) ID_CELL ORIGIN_CELL CALLER_CELL COINBASE_CELL TIMESTAMP_CELL MIXHASH_CELL NUMBER_CELL _Val6 _Val8 GASPRICE_CELL SCHEDULE_CELL WS _DotVar0 _DotVar2 _Gen0 _Gen1 ⟨.empty⟩ _Gen11 _Gen12 _Gen13 _Gen14 _Gen15 _Gen16 _Gen19 _Gen20 _Gen21 _Gen22 _Gen3 _Gen4 _Gen5 _Gen6 _Gen7 _Gen8 _Gen9 _K_CELL)
   EVM.X (UInt256.toNat (intMap GAS_CELL)) symValidJumps
   (stateMap symState lhs) =
   .ok (.success (stateMap {symState with execLength := symState.execLength + 2} rhs) ByteArray.empty) := by
@@ -565,7 +577,7 @@ theorem X_oneOp_equiv
   -- With `simp` doesn't work
   --rw [codeDiv, pcZero]
   rw [oneOp_prestate_equiv]
-  rw [@oneOp_poststate_equiv _ ID_CELL ORIGIN_CELL CALLER_CELL COINBASE_CELL TIMESTAMP_CELL MIXHASH_CELL PC_CELL]
+  rw [@oneOp_poststate_equiv _ ID_CELL ORIGIN_CELL CALLER_CELL COINBASE_CELL TIMESTAMP_CELL MIXHASH_CELL NUMBER_CELL PC_CELL]
   <;> try assumption
   -- If we don't apply this lemma we cannot rewrite X_add_summary
   have pc_equiv : intMap 0 = UInt256.ofNat 0 := rfl
@@ -589,7 +601,7 @@ theorem X_oneOp_equiv
       <;>
       cases top_stack <;> simp [oneOpLHS, intMap, AccountAddress.ofNat] <;>
       simp [UInt256.ofNat, Id.run, UInt256.toSigned] <;>
-      aesop (add simp [Fin.val, Fin.ofNat, AccountAddress.size, State.coinBase])
+      aesop (add simp [Fin.val, Fin.ofNat, AccountAddress.size, State.coinBase, State.number])
       (add safe (by omega))
 
 end StateGettersEquivalence
