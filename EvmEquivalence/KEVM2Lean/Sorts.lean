@@ -16,6 +16,7 @@ inductive SortNullStackOp : Type where
   | CALLER_EVM_NullStackOp : SortNullStackOp
   | COINBASE_EVM_NullStackOp : SortNullStackOp
   | GASPRICE_EVM_NullStackOp : SortNullStackOp
+  | NUMBER_EVM_NullStackOp : SortNullStackOp
   | ORIGIN_EVM_NullStackOp : SortNullStackOp
   | PREVRANDAO_EVM_NullStackOp : SortNullStackOp
   | TIMESTAMP_EVM_NullStackOp : SortNullStackOp
