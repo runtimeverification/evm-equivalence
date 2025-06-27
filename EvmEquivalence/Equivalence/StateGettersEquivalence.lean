@@ -23,6 +23,7 @@ inductive stateGetter_op where
   | prevrandao
   | gaslimit
   | chainid
+  | pc
 
 variable (op : stateGetter_op)
 
@@ -38,6 +39,7 @@ def stateGetter_op.to_binop : stateGetter_op → SortNullStackOp
   | .prevrandao => .PREVRANDAO_EVM_NullStackOp
   | .gaslimit => .GASLIMIT_EVM_NullStackOp
   | .chainid => .CHAINID_EVM_NullStackOp
+  | .pc => .PC_EVM_NullStackOp
 
 def stateGetter_op.from_k : stateGetter_op → StateGettersSummary.stateGetter_op
  | .address  => .address
@@ -50,6 +52,7 @@ def stateGetter_op.from_k : stateGetter_op → StateGettersSummary.stateGetter_o
  | .prevrandao => .prevrandao
  | .gaslimit => .gaslimit
  | .chainid => .chainid
+ | .pc => .pc
 
 def oneOpLHS
   {GAS_CELL ID_CELL ORIGIN_CELL CALLER_CELL GASPRICE_CELL  COINBASE_CELL TIMESTAMP_CELL MIXHASH_CELL NUMBER_CELL GASLIMIT_CELL CHAINID_CELL PC_CELL _Val6 _Val8 : SortInt}
@@ -222,6 +225,7 @@ def stateGetter_op.do (tc : SortGeneratedTopCell) : SortInt :=
   | .prevrandao => tc.mixhash.val
   | .gaslimit => tc.gaslimit.val
   | .chainid => tc.chainid.val -- This doesn't exist in EvmYul state
+  | .pc => tc.pc.val
 
 theorem rw_oneOpLHS_oneOpRHS
   {GAS_CELL ID_CELL ORIGIN_CELL CALLER_CELL GASPRICE_CELL  COINBASE_CELL TIMESTAMP_CELL MIXHASH_CELL NUMBER_CELL GASLIMIT_CELL CHAINID_CELL PC_CELL _Val0 _Val2 _Val6 _Val7 _Val8 : SortInt}
@@ -291,6 +295,8 @@ theorem rw_oneOpLHS_oneOpRHS
   . apply (@Rewrites.GASLIMIT_SUMMARY_GASLIMIT_SUMMARY_USEGAS GASLIMIT_CELL GAS_CELL PC_CELL _Val0 _Val2)
     <;> try assumption
   . apply (@Rewrites.CHAINID_SUMMARY_CHAINID_SUMMARY_USEGAS CHAINID_CELL GAS_CELL PC_CELL _Val0 _Val2)
+    <;> try assumption
+  . apply (@Rewrites.PC_SUMMARY_PC_SUMMARY_USEGAS GAS_CELL PC_CELL _Val0 _Val2)
     <;> try assumption
 
 theorem oneOp_prestate_equiv
