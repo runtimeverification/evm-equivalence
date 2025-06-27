@@ -18,6 +18,8 @@ inductive stateGetter_op where
 | timestamp
 | number
 | prevrandao
+| gaslimit
+| chainid
 deriving BEq, DecidableEq
 
 section
@@ -45,6 +47,8 @@ abbrev coinbaseEVM := @Operation.COINBASE .EVM
 abbrev timestampEVM := @Operation.TIMESTAMP .EVM
 abbrev numberEVM := @Operation.NUMBER .EVM
 abbrev prevrandaoEVM := @Operation.PREVRANDAO .EVM
+abbrev gaslimitEVM := @Operation.GASLIMIT .EVM
+abbrev chainidEVM := @Operation.CHAINID .EVM
 
 abbrev address_instr : Option (Operation .EVM × Option (UInt256 × Nat)) := some ⟨addressEVM, none⟩
 abbrev origin_instr : Option (Operation .EVM × Option (UInt256 × Nat)) := some ⟨originEVM, none⟩
@@ -54,6 +58,8 @@ abbrev coinbase_instr : Option (Operation .EVM × Option (UInt256 × Nat)) := so
 abbrev timestamp_instr : Option (Operation .EVM × Option (UInt256 × Nat)) := some ⟨timestampEVM, none⟩
 abbrev number_instr : Option (Operation .EVM × Option (UInt256 × Nat)) := some ⟨numberEVM, none⟩
 abbrev prevrandao_instr : Option (Operation .EVM × Option (UInt256 × Nat)) := some ⟨prevrandaoEVM, none⟩
+abbrev gaslimit_instr : Option (Operation .EVM × Option (UInt256 × Nat)) := some ⟨gaslimitEVM, none⟩
+abbrev chainid_instr : Option (Operation .EVM × Option (UInt256 × Nat)) := some ⟨chainidEVM, none⟩
 
 @[simp]
 def stateGetter_op.get : (Option (Operation .EVM × Option (UInt256 × Nat))) :=
@@ -66,6 +72,8 @@ def stateGetter_op.get : (Option (Operation .EVM × Option (UInt256 × Nat))) :=
   | .timestamp => timestamp_instr
   | .number => number_instr
   | .prevrandao => prevrandao_instr
+  | .gaslimit => gaslimit_instr
+  | .chainid => chainid_instr
 
 --@[simp]
 def stateGetter_op.t : Operation .EVM :=
@@ -78,6 +86,8 @@ def stateGetter_op.t : Operation .EVM :=
   | .timestamp  => (timestamp_instr.get rfl).1
   | .number  => (number_instr.get rfl).1
   | .prevrandao  => (prevrandao_instr.get rfl).1
+  | .gaslimit  => (gaslimit_instr.get rfl).1
+  | .chainid  => (chainid_instr.get rfl).1
 
 def EVM.step_arith : Transformer := EVM.step gas gasCost op.get
 
@@ -94,6 +104,8 @@ def stateGetter_op.do (symState : EVM.State) :=
   | .timestamp  => symState.timeStamp
   | .number  => symState.number
   | .prevrandao  => symState.executionEnv.header.prevRandao
+  | .gaslimit => symState.gasLimit
+  | .gaslimit => symState.chainId
 
 /- theorem EvmYul.step_op_summary (symState : EVM.State):
   EvmYul.step_arith op {symState with
