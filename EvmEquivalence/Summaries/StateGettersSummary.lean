@@ -20,6 +20,8 @@ inductive stateGetter_op where
 | prevrandao
 | gaslimit
 | chainid
+| selfbalance
+| pc
 deriving BEq, DecidableEq
 
 section
@@ -49,6 +51,8 @@ abbrev numberEVM := @Operation.NUMBER .EVM
 abbrev prevrandaoEVM := @Operation.PREVRANDAO .EVM
 abbrev gaslimitEVM := @Operation.GASLIMIT .EVM
 abbrev chainidEVM := @Operation.CHAINID .EVM
+abbrev selfbalanceEVM := @Operation.SELFBALANCE .EVM
+abbrev pcEVM := @Operation.PC
 
 abbrev address_instr : Option (Operation .EVM × Option (UInt256 × Nat)) := some ⟨addressEVM, none⟩
 abbrev origin_instr : Option (Operation .EVM × Option (UInt256 × Nat)) := some ⟨originEVM, none⟩
@@ -60,6 +64,8 @@ abbrev number_instr : Option (Operation .EVM × Option (UInt256 × Nat)) := some
 abbrev prevrandao_instr : Option (Operation .EVM × Option (UInt256 × Nat)) := some ⟨prevrandaoEVM, none⟩
 abbrev gaslimit_instr : Option (Operation .EVM × Option (UInt256 × Nat)) := some ⟨gaslimitEVM, none⟩
 abbrev chainid_instr : Option (Operation .EVM × Option (UInt256 × Nat)) := some ⟨chainidEVM, none⟩
+abbrev selfbalance_instr : Option (Operation .EVM × Option (UInt256 × Nat)) := some ⟨selfbalanceEVM, none⟩
+abbrev pc_instr : Option (Operation .EVM × Option (UInt256 × Nat)) := some ⟨pcEVM, none⟩
 
 @[simp]
 def stateGetter_op.get : (Option (Operation .EVM × Option (UInt256 × Nat))) :=
@@ -74,6 +80,8 @@ def stateGetter_op.get : (Option (Operation .EVM × Option (UInt256 × Nat))) :=
   | .prevrandao => prevrandao_instr
   | .gaslimit => gaslimit_instr
   | .chainid => chainid_instr
+  | .selfbalance => selfbalance_instr
+  | .pc => pc_instr
 
 --@[simp]
 def stateGetter_op.t : Operation .EVM :=
@@ -88,6 +96,8 @@ def stateGetter_op.t : Operation .EVM :=
   | .prevrandao  => (prevrandao_instr.get rfl).1
   | .gaslimit  => (gaslimit_instr.get rfl).1
   | .chainid  => (chainid_instr.get rfl).1
+  | .selfbalance  => (selfbalance_instr.get rfl).1
+  | .pc  => (pc_instr.get rfl).1
 
 def EVM.step_arith : Transformer := EVM.step gas gasCost op.get
 
@@ -106,16 +116,12 @@ def stateGetter_op.do (symState : EVM.State) :=
   | .prevrandao  => symState.executionEnv.header.prevRandao
   | .gaslimit => symState.gasLimit
   | .chainid => symState.chainId
+  | .selfbalance => symState.selfbalance
+  | .pc => symState.pc
 
-/- theorem EvmYul.step_op_summary (symState : EVM.State):
-  EvmYul.step_arith op {symState with
-    stack := symStack
-    pc := symPc} =
-  .ok {symState with
-        stack := /- (op.do word₁ word₂ word₃) ::  -/symStack
-        pc := symPc + .ofNat 1} := by cases op <;> try rfl -/
-
-theorem EVM.step_add_to_step_add (gpos : 0 < gas) (symState : EVM.State):
+theorem EVM.step_add_to_step_add (gpos : 0 < gas)
+                                 (symState : EVM.State)
+                                 (op_not_pc : op ≠ .pc):
   let ss :=
       {symState with
       stack := symStack,
@@ -150,7 +156,8 @@ theorem EVM.step_add_to_step_add (gpos : 0 < gas) (symState : EVM.State):
     gasAvailable := symGasAvailable - UInt256.ofNat gasCost
     execLength := symExecLength + 1} := by
       cases gas; contradiction
-      simp [EVM.step_arith, EVM.step]; cases op <;> rfl
+      simp [EVM.step_arith, EVM.step]; cases op <;>
+      simp at op_not_pc <;> rfl
 
 open private dispatchExecutionEnvOp from EvmYul.Semantics
 
@@ -191,9 +198,11 @@ theorem EVM.step_getter_summary (gpos : 0 < gas) (symState : EVM.State):
       pc := UInt256.add symPc (.ofNat 1),
       gasAvailable := symGasAvailable - UInt256.ofNat gasCost,
       execLength := symExecLength + 1} := by
-  intro ss; rw [EVM.step_add_to_step_add]
-  . cases op <;> rfl
-  . assumption
+  intro ss; cases op
+  case pc =>
+    unfold EVM.step_arith EVM.step; cases gas; contradiction
+    rfl
+  all_goals rw [EVM.step_add_to_step_add] <;> aesop
 
 @[simp]
 def stateGetter_op.to_bin : ByteArray :=
@@ -208,6 +217,8 @@ def stateGetter_op.to_bin : ByteArray :=
   | .prevrandao => ⟨#[0x44]⟩
   | .gaslimit => ⟨#[0x45]⟩
   | .chainid => ⟨#[0x46]⟩
+  | .selfbalance => ⟨#[0x47]⟩
+  | .pc => ⟨#[0x58]⟩
 
 @[simp]
 theorem decode_singleton_address :
@@ -239,6 +250,12 @@ theorem decode_singleton_gaslimit :
 @[simp]
 theorem decode_singleton_chainid :
   decode ⟨#[0x46]⟩ (.ofNat 0) = some ⟨chainidEVM, none⟩ := rfl
+@[simp]
+theorem decode_singleton_selfbalance :
+  decode ⟨#[0x47]⟩ (.ofNat 0) = some ⟨selfbalanceEVM, none⟩ := rfl
+@[simp]
+theorem decode_singleton_pc :
+  decode ⟨#[0x58]⟩ (.ofNat 0) = some ⟨pcEVM, none⟩ := rfl
 
 @[simp]
 theorem decode_singleton :
@@ -251,13 +268,14 @@ theorem memoryExpansionCost_arith (symState : EVM.State) :
 
 def stateGetter_op.C'_comp :=
   match op with
+  | .selfbalance => GasConstants.Glow
   | _ => GasConstants.Gbase
 
 @[simp]
 theorem C'_arith (symState : EVM.State) :
   C' symState op.t = op.C'_comp := by cases op <;> reduce <;> rfl
 
-attribute [local simp] GasConstants.Gbase
+attribute [local simp] GasConstants.Gbase GasConstants.Glow
 
 --GasConstants.Gverylow GasConstants.Glow GasConstants.Gmid GasConstants.Gexp GasConstants.Gexpbyte
 
@@ -310,7 +328,7 @@ theorem X_getter_summary
   have enough_gas_rw : (symGasAvailable.toNat < GasConstants.Gbase) = False :=
     by aesop (add simp [stateGetter_op.C'_comp])
     (add safe (by omega))
-  simp [α/- , stack_ok_rw -/, enough_gas_rw]
+  simp [α, enough_gas_rw]
   have : ((decode ss.executionEnv.code ss.pc).getD (Operation.STOP, none)).1 = op.t := by
     cases op <;> simp [ss, code_h, stateGetter_op.t]
   simp [this]
