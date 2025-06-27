@@ -56,8 +56,6 @@ def stateGetter_op.from_k : stateGetter_op → StateGettersSummary.stateGetter_o
 
 def oneOpLHS
   {GAS_CELL ID_CELL ORIGIN_CELL CALLER_CELL GASPRICE_CELL  COINBASE_CELL TIMESTAMP_CELL MIXHASH_CELL NUMBER_CELL GASLIMIT_CELL CHAINID_CELL PC_CELL _Val6 _Val8 : SortInt}
-  -- We assume `GASPRICE_CELL` is not negative
-  --{GASPRICE_CELL : ℕ}
   {SCHEDULE_CELL : SortSchedule}
   {USEGAS_CELL: SortBool}
   {WS : SortWordStack}
@@ -131,8 +129,6 @@ def oneOpLHS
 
 def oneOpRHS
   {TOP_STACK ID_CELL ORIGIN_CELL CALLER_CELL GASPRICE_CELL  COINBASE_CELL TIMESTAMP_CELL MIXHASH_CELL NUMBER_CELL GASLIMIT_CELL CHAINID_CELL _Val6 _Val8 : SortInt}
-  -- We assume `GASPRICE_CELL` is not negative
-  --{GASPRICE_CELL : ℕ}
   {SCHEDULE_CELL : SortSchedule}
   {WS : SortWordStack}
   {_DotVar0 : SortGeneratedCounterCell}
@@ -229,8 +225,6 @@ def stateGetter_op.do (tc : SortGeneratedTopCell) : SortInt :=
 
 theorem rw_oneOpLHS_oneOpRHS
   {GAS_CELL ID_CELL ORIGIN_CELL CALLER_CELL GASPRICE_CELL  COINBASE_CELL TIMESTAMP_CELL MIXHASH_CELL NUMBER_CELL GASLIMIT_CELL CHAINID_CELL PC_CELL _Val0 _Val2 _Val6 _Val7 _Val8 : SortInt}
-  -- We assume `GASPRICE_CELL` is not negative
-  --{GASPRICE_CELL : ℕ}
   {SCHEDULE_CELL : SortSchedule}
   {USEGAS_CELL _Val1 _Val3 _Val4 _Val5 : SortBool}
   {WS : SortWordStack}
@@ -301,8 +295,6 @@ theorem rw_oneOpLHS_oneOpRHS
 
 theorem oneOp_prestate_equiv
   {GAS_CELL ID_CELL ORIGIN_CELL CALLER_CELL GASPRICE_CELL  COINBASE_CELL TIMESTAMP_CELL MIXHASH_CELL NUMBER_CELL GASLIMIT_CELL CHAINID_CELL PC_CELL _Val6 _Val8 : SortInt}
-  -- We assume `GASPRICE_CELL` is not negative
-  --{GASPRICE_CELL : ℕ}
   {SCHEDULE_CELL : SortSchedule}
   {USEGAS_CELL: SortBool}
   {WS : SortWordStack}
@@ -353,8 +345,6 @@ theorem oneOp_prestate_equiv
 
 theorem oneOp_poststate_equiv
   {TOP_STACK ID_CELL ORIGIN_CELL CALLER_CELL GASPRICE_CELL  COINBASE_CELL TIMESTAMP_CELL MIXHASH_CELL NUMBER_CELL GASLIMIT_CELL CHAINID_CELL PC_CELL _Val5 _Val6 _Val8 : SortInt}
-  -- We assume `GASPRICE_CELL` is not negative
-  --{GASPRICE_CELL : ℕ}
   {SCHEDULE_CELL : SortSchedule}
   {WS : SortWordStack}
   {_DotVar0 : SortGeneratedCounterCell}
@@ -411,8 +401,6 @@ attribute [local simp] GasConstants.Gbase
 -- This is because it doesn't include all semantics such as gas computation
 theorem step_oneOp_equiv
   {GAS_CELL ID_CELL ORIGIN_CELL CALLER_CELL GASPRICE_CELL  COINBASE_CELL TIMESTAMP_CELL MIXHASH_CELL NUMBER_CELL GASLIMIT_CELL PC_CELL _Val0 _Val2 _Val6 _Val7 _Val8 : SortInt}
-  -- We assume `GASPRICE_CELL` is not negative
-  --{GASPRICE_CELL : ℕ}
   {SCHEDULE_CELL : SortSchedule}
   {USEGAS_CELL _Val1 _Val3 _Val4 _Val5 : SortBool}
   {WS : SortWordStack}
@@ -511,8 +499,6 @@ attribute [local simp] GasConstants.Glow
  -/
 theorem X_oneOp_equiv
   {GAS_CELL ID_CELL ORIGIN_CELL CALLER_CELL GASPRICE_CELL  COINBASE_CELL TIMESTAMP_CELL MIXHASH_CELL NUMBER_CELL GASLIMIT_CELL PC_CELL _Val0 _Val2 _Val6 _Val7 _Val8 : SortInt}
-  -- We assume `GASPRICE_CELL` is not negative
-  --{GASPRICE_CELL : ℕ}
   {SCHEDULE_CELL : SortSchedule}
   {USEGAS_CELL _Val1 _Val3 _Val4 _Val5 : SortBool}
   {WS : SortWordStack}
@@ -587,7 +573,8 @@ theorem X_oneOp_equiv
   have pc_equiv : intMap 0 = UInt256.ofNat 0 := rfl
   rw [pcZero, pc_equiv, executionEnv_map, blockHeader_map]
   rw [X_getter_summary op.from_k]
-  case enoughGas => rw [intMap_toNat] <;> aesop (add safe (by linarith))
+  case enoughGas => rw [intMap_toNat] <;>
+    cases op <;> aesop (add safe (by linarith))
   case symStack_ok =>
     aesop (add simp [sizeWordStack_def, «_<=Int_»]) (add safe (by linarith))
   case code_h => simp [oneOpLHS]
