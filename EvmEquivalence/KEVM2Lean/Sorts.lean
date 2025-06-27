@@ -20,7 +20,9 @@ inductive SortNullStackOp : Type where
   | GASPRICE_EVM_NullStackOp : SortNullStackOp
   | NUMBER_EVM_NullStackOp : SortNullStackOp
   | ORIGIN_EVM_NullStackOp : SortNullStackOp
+  | PC_EVM_NullStackOp : SortNullStackOp
   | PREVRANDAO_EVM_NullStackOp : SortNullStackOp
+  | SELFBALANCE_EVM_NullStackOp : SortNullStackOp
   | TIMESTAMP_EVM_NullStackOp : SortNullStackOp
   deriving BEq, DecidableEq
 
