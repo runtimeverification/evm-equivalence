@@ -10,7 +10,7 @@ namespace SstoreSummary
 
 section
 
-variable (gas gasCost symGasPrice symTimestamp symNumber: ℕ)
+variable (gas gasCost symGasPrice symTimestamp symNumber symGaslimit : ℕ)
 variable (symStack : Stack UInt256)
 variable (symPc symGasAvailable symRefund key value symActiveWords : UInt256)
 variable (symPrevrandao : UInt256)
@@ -56,7 +56,8 @@ theorem sstore_bypass_private (symState : EVM.State):
                     beneficiary := symCoinbase,
                     timestamp := symTimestamp,
                     number := symNumber,
-                    prevRandao := symPrevrandao
+                    prevRandao := symPrevrandao,
+                    gasLimit := symGaslimit
                   }
                   perm := symPerm},
   accountMap := symAccounts,
@@ -133,7 +134,8 @@ theorem sstore_summary (symState : EvmYul.State) (key value : UInt256):
                     beneficiary := symCoinbase,
                     timestamp := symTimestamp,
                     number := symNumber,
-                    prevRandao := symPrevrandao
+                    prevRandao := symPrevrandao,
+                    gasLimit := symGaslimit
                   }
                   perm := symPerm},
              substate := {symState.substate with
@@ -170,7 +172,8 @@ theorem EvmYul.step_sstore_summary (symState : EVM.State):
                     beneficiary := symCoinbase,
                     timestamp := symTimestamp,
                     number := symNumber,
-                    prevRandao := symPrevrandao
+                    prevRandao := symPrevrandao,
+                    gasLimit := symGaslimit
                   }
                   perm := symPerm},
     accountMap := symAccounts,
@@ -206,7 +209,8 @@ theorem EVM.step_sstore_summary (gas_pos : 0 < gas) (symState : EVM.State):
                     beneficiary := symCoinbase,
                     timestamp := symTimestamp,
                     number := symNumber,
-                    prevRandao := symPrevrandao
+                    prevRandao := symPrevrandao,
+                    gasLimit := symGaslimit
                   }
                   perm := true},
     accountMap := symAccounts,
@@ -230,7 +234,7 @@ theorem EVM.step_sstore_summary (gas_pos : 0 < gas) (symState : EVM.State):
           execLength := symExecLength + 1} := by
   cases gas; contradiction
   simp [step_sstore, EVM.step]
-  have srw := EvmYul.step_sstore_summary symGasPrice symTimestamp symNumber symStack symPc (symGasAvailable - UInt256.ofNat gasCost) symRefund key value symActiveWords symPrevrandao (symExecLength + 1) symReturnData symCode
+  have srw := EvmYul.step_sstore_summary symGasPrice symTimestamp symNumber symGaslimit symStack symPc (symGasAvailable - UInt256.ofNat gasCost) symRefund key value symActiveWords symPrevrandao (symExecLength + 1) symReturnData symCode
   simp [EvmYul.step_sstore, Operation.SSTORE] at srw; aesop
 
 @[simp]
@@ -275,7 +279,8 @@ theorem X_sstore_summary (symState : EVM.State)
                     beneficiary := symCoinbase,
                     timestamp := symTimestamp,
                     number := symNumber,
-                    prevRandao := symPrevrandao
+                    prevRandao := symPrevrandao,
+                    gasLimit := symGaslimit
                   }
                   perm := true},
     accountMap := symAccounts,
@@ -309,7 +314,7 @@ theorem X_sstore_summary (symState : EVM.State)
   simp [ss, (lt_fls_rw enoughGas), α, (lt_fls_rw symStack_ok)]
   have g_rw : (symGasAvailable.toNat ≤ GasConstants.Gcallstipend) = False := by aesop
   simp [g_rw]; split; contradiction; next evm cost stateOk =>
-  have step_rw := (EVM.step_sstore_summary g_pos (Csstore evm) symGasPrice symTimestamp symNumber symStack (.ofNat 0)
+  have step_rw := (EVM.step_sstore_summary g_pos (Csstore evm) symGasPrice symTimestamp symNumber symGaslimit symStack (.ofNat 0)
     symGasAvailable symRefund key value symActiveWords symPrevrandao symExecLength symReturnData ⟨#[(0x55 : UInt8)]⟩
     symMemory symAccessedStorageKeys symAccounts symCodeOwner symSender symSource symCoinbase (by omega) evm)
   cases stateOk; simp at step_rw; rw [step_rw]; simp [Except.instMonad, Except.bind]

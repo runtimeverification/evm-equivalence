@@ -40,7 +40,7 @@ section
 
 variable (op : arith_op)
 variable (word₁ word₂ word₃: UInt256)
-variable (gas gasCost symGasPrice symTimestamp symNumber : ℕ)
+variable (gas gasCost symGasPrice symTimestamp symNumber symGaslimit : ℕ)
 variable (symStack : Stack UInt256)
 variable (symPc symGasAvailable symRefund symActiveWords : UInt256)
 variable (symPrevrandao : UInt256)
@@ -225,7 +225,8 @@ theorem EVM.step_add_to_step_add (gpos : 0 < gas) (symState : EVM.State):
                     beneficiary := symCoinbase,
                     timestamp := symTimestamp,
                     number := symNumber,
-                    prevRandao := symPrevrandao
+                    prevRandao := symPrevrandao,
+                    gasLimit := symGaslimit
                   }
                   perm := symPerm},
     accountMap := symAccounts,
@@ -262,7 +263,8 @@ theorem EVM.step_add_summary (gpos : 0 < gas) (symState : EVM.State):
                     beneficiary := symCoinbase,
                     timestamp := symTimestamp,
                     number := symNumber,
-                    prevRandao := symPrevrandao
+                    prevRandao := symPrevrandao,
+                    gasLimit := symGaslimit
                   }
                   perm := symPerm},
     accountMap := symAccounts,
@@ -469,7 +471,8 @@ theorem X_arith_summary
                     beneficiary := symCoinbase,
                     timestamp := symTimestamp,
                     number := symNumber,
-                    prevRandao := symPrevrandao
+                    prevRandao := symPrevrandao,
+                    gasLimit := symGaslimit
                   }
                   perm := symPerm},
     accountMap := symAccounts,
@@ -506,7 +509,7 @@ theorem X_arith_summary
   have gPos : (0 < g_pos) := by
     revert enoughGas; simp [arith_op.C'_comp]
     cases op <;> simp [ss] <;> aesop (add safe (by omega))
-  have step_rw (cost : ℕ) := (EVM.step_add_summary op word₁ word₂ word₃ g_pos cost symGasPrice symTimestamp symNumber symStack (.ofNat 0) symGasAvailable symRefund symActiveWords symPrevrandao symExecLength symReturnData op.to_bin symMemory symAccessedStorageKeys symAccounts symCodeOwner symSender symSource symCoinbase symPerm gPos)
+  have step_rw (cost : ℕ) := (EVM.step_add_summary op word₁ word₂ word₃ g_pos cost symGasPrice symTimestamp symNumber symGaslimit symStack (.ofNat 0) symGasAvailable symRefund symActiveWords symPrevrandao symExecLength symReturnData op.to_bin symMemory symAccessedStorageKeys symAccounts symCodeOwner symSender symSource symCoinbase symPerm gPos)
   have stack_ok_rw : (1024 < List.length symStack + 1) = False := by
     cases op <;> aesop (add safe (by omega))
   cases cop: op <;> simp [cop] at symStack_ok <;>
