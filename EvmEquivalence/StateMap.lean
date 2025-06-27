@@ -81,6 +81,12 @@ def mixhash : SortMixHashCell := tc.kevm.ethereum.evm.block.mixHash
 @[simp]
 def number : SortNumberCell := tc.kevm.ethereum.evm.block.number
 
+@[simp]
+def gaslimit : SortGasLimitCell := tc.kevm.ethereum.evm.block.gasLimit
+
+@[simp]
+def chainid : SortChainIDCell := tc.kevm.ethereum.network.chainID
+
 end SortGeneratedTopCell
 
 namespace SortKItem
@@ -184,6 +190,7 @@ def blockHeader_map (tc : SortGeneratedTopCell) (s : EVM.State) : BlockHeader :=
     timestamp := Int.toNat tc.timestamp.val
     number := Int.toNat tc.number.val
     prevRandao := intMap tc.mixhash.val
+    gasLimit := Int.toNat tc.gaslimit.val
   }
 
 @[simp]
