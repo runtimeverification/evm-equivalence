@@ -60,6 +60,33 @@ def memoryUsed : SortMemoryUsedCell := tc.kevm.ethereum.evm.callState.memoryUsed
 @[simp]
 def memory : SortLocalMemCell := tc.kevm.ethereum.evm.callState.localMem
 
+@[simp]
+def origin : SortOriginCell := tc.kevm.ethereum.evm.origin
+
+@[simp]
+def caller : SortCallerCell := tc.kevm.ethereum.evm.callState.caller
+
+@[simp]
+def gasPrice : SortGasPriceCell := tc.kevm.ethereum.evm.gasPrice
+
+@[simp]
+def coinbase : SortCoinbaseCell := tc.kevm.ethereum.evm.block.coinbase
+
+@[simp]
+def timestamp : SortTimestampCell := tc.kevm.ethereum.evm.block.timestamp
+
+@[simp]
+def mixhash : SortMixHashCell := tc.kevm.ethereum.evm.block.mixHash
+
+@[simp]
+def number : SortNumberCell := tc.kevm.ethereum.evm.block.number
+
+@[simp]
+def gaslimit : SortGasLimitCell := tc.kevm.ethereum.evm.block.gasLimit
+
+@[simp]
+def chainid : SortChainIDCell := tc.kevm.ethereum.network.chainID
+
 end SortGeneratedTopCell
 
 namespace SortKItem
@@ -117,10 +144,6 @@ def idMap (idc : SortIdCell) : AccountAddress :=
   accountAddressMap idc.val
 
 @[simp]
-def acctIDMap (aid : SortAcctIDCell) : AccountAddress :=
-  AccountAddress.ofNat (Int.toNat aid.val)
-
-@[simp]
 noncomputable def storageMap (stor : SortStorageCell) : Storage :=
   Axioms.SortStorageCellMap stor
 
@@ -161,10 +184,24 @@ def memory_map : SortLocalMemCell → ByteArray | .mk b => b
 /- Maps from parts of the Generated Top Cell to EvmYul structures -/
 
 @[simp]
+def blockHeader_map (tc : SortGeneratedTopCell) (s : EVM.State) : BlockHeader :=
+  {s.executionEnv.header with
+    beneficiary := .ofNat <| Int.toNat tc.coinbase.val
+    timestamp := Int.toNat tc.timestamp.val
+    number := Int.toNat tc.number.val
+    prevRandao := intMap tc.mixhash.val
+    gasLimit := Int.toNat tc.gaslimit.val
+  }
+
+@[simp]
 def executionEnv_map (tc : SortGeneratedTopCell) (s : EVM.State) : ExecutionEnv :=
   {s.executionEnv with
-    code := tc.program.val,
     codeOwner := idMap tc.Iₐ
+    source := accountAddressMap tc.caller.val
+    sender := accountAddressMap tc.origin.val
+    code := tc.program.val,
+    gasPrice := Int.toNat tc.gasPrice.val
+    header := blockHeader_map tc s
     perm := !tc.isStatic.val}
 
 /--
@@ -183,10 +220,7 @@ noncomputable def stateMap (symState : EVM.State) (tc : SortGeneratedTopCell) : 
   stack := wordStackCellMap tc.wordStackCell
   pc := pcCellMap tc.pc
   gasAvailable := gasCellMap tc.gas
-  executionEnv := {symState.executionEnv with
-                code := tc.program.val,
-                codeOwner := idMap tc.Iₐ
-                perm := !tc.isStatic.val}
+  executionEnv := executionEnv_map tc symState
   accountMap := Axioms.SortAccountsCellMap tc.accounts
   substate := {symState.substate with
             accessedStorageKeys :=  Axioms.SortAccessedStorageCellMap tc.accessedStorage

@@ -357,10 +357,7 @@ theorem oneOp_prestate_equiv
     stack := op.from_k.stack (intMap W0) (intMap W1) default (wordStackMap WS)
     pc := intMap PC_CELL
     gasAvailable := intMap GAS_CELL
-    executionEnv := {symState.executionEnv with
-                  code := _Gen0.val,
-                  codeOwner := idMap lhs.Iₐ
-                  perm := !lhs.isStatic.val}
+    executionEnv := executionEnv_map lhs symState
     accountMap := Axioms.SortAccountsCellMap lhs.accounts
     activeWords := intMap lhs.memoryUsed.val
     memory := memory_map lhs.memory
@@ -446,10 +443,7 @@ theorem oneOp_poststate_equiv
     stack := (intMap (op.do W0 W1)) :: wordStackMap WS
     pc := intMap (PC_CELL + 1)
     gasAvailable := intMap _Val6
-    executionEnv := {symState.executionEnv with
-                  code := _Gen0.val,
-                  codeOwner := idMap rhs.Iₐ,
-                  perm := !rhs.isStatic.val}
+    executionEnv := executionEnv_map rhs symState
     accountMap := Axioms.SortAccountsCellMap rhs.accounts
     activeWords := intMap rhs.memoryUsed.val
     memory := memory_map rhs.memory
@@ -598,7 +592,8 @@ theorem step_oneOp_equiv
   <;> try assumption
   cases gas; contradiction
   case succ gas =>
-    rw [EVM.step_add_summary] <;> try assumption
+    rw [executionEnv_map, blockHeader_map, EVM.step_add_summary]
+    <;> try assumption
     simp [oneOpLHS, oneOpRHS]; constructor <;> try constructor
     . cases op <;>
       simp [cancun, GasInterface.cancun_def] at defn_Val0 defn_Val5 <;>
@@ -729,6 +724,7 @@ theorem X_oneOp_equiv
   <;> try assumption
   -- If we don't apply this lemma we cannot rewrite X_add_summary
   have pc_equiv : intMap 0 = UInt256.ofNat 0 := rfl
+  simp only [executionEnv_map, blockHeader_map, oneOpLHS, SortGeneratedTopCell.program]
   rw [pc_equiv, X_arith_summary]
   · cases op <;>
     simp [arith_op.from_k, arith_op.C'_comp, arith_op.C'_noexp] <;>

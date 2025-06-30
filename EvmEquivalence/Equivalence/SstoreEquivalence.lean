@@ -370,7 +370,11 @@ theorem sstore_prestate_equiv
     gasAvailable := intMap GAS_CELL
     executionEnv := {symState.executionEnv with
                   code := _Gen0.val,
-                  codeOwner := accountAddressMap ((@inj SortInt SortAccount) ID_CELL)
+                  codeOwner := accountAddressMap ((@inj SortInt SortAccount) ID_CELL),
+                  sender := accountAddressMap lhs.origin.val,
+                  source := accountAddressMap lhs.caller.val,
+                  gasPrice := Int.toNat lhs.gasPrice.val,
+                  header := blockHeader_map lhs symState,
                   perm := true},
     accountMap := Axioms.SortAccountsCellMap lhs.accounts
     activeWords := intMap lhs.memoryUsed.val
@@ -561,7 +565,11 @@ theorem sstore_poststate_equiv
     gasAvailable := intMap (GAS_CELL - sstore_gas ACCESSEDSTORAGE_CELL W1 _Val22 _Val23 ID_CELL W0)
     executionEnv := {symState.executionEnv with
                   code := _Gen0.val,
-                  codeOwner := accountAddressMap ((@inj SortInt SortAccount) ID_CELL)
+                  codeOwner := accountAddressMap ((@inj SortInt SortAccount) ID_CELL),
+                  sender := accountAddressMap rhs.origin.val,
+                  source := accountAddressMap rhs.caller.val,
+                  gasPrice := Int.toNat rhs.gasPrice.val,
+                  header := blockHeader_map rhs symState,
                   perm := true},
     accountMap := Axioms.SortAccountsCellMap rhs.accounts
     activeWords := intMap rhs.memoryUsed.val
@@ -711,22 +719,20 @@ theorem step_sstore_equiv
     have fls := sstore_gas_pos ACCESSEDSTORAGE_CELL W1 _Val22 _Val23 ID_CELL W0
     have _ := Int.lt_of_lt_of_le fls gavailEnough
     omega
-  rw [sstore_prestate_equiv, EVM.step_sstore_summary] <;> try assumption
+  rw [sstore_prestate_equiv, blockHeader_map, EVM.step_sstore_summary] <;> try assumption
   rw [sstoreLHS, sstore_poststate_equiv, sstoreRHS] <;> try congr
   . simp only [accountMap_sstore, Aᵣ_sstore, State.lookupAccount]
     simp only [SortGeneratedTopCell.accounts, accountAddressMap, inj_ID_CELL]
     simp [(Axioms.accountsCell_map_find? acc (by eq_refl) defn_Val19 defn_Val20)]
     exact (Axioms.accountsCell_map_insert defn_Val34 defn_Val35 defn_Val36 defn_Val37
     defn_Val38 defn_Val40 defn_Val41 defn_Val42 defn_Val19 defn_Val20)
-  . simp [State.lookupAccount]
-    split
-    . rename_i _ _ owner
-      rw [(Axioms.accountsCell_map_find? acc)] at owner <;> first | contradiction | congr
-    . constructor
-      . /- Refund Cell -/
+  . simp [State.lookupAccount]; constructor
+    . /- Refund Cell -/
         sorry
-      . rename_i _ ownerAcc findOwner
-        exact (Axioms.accessedStorageCell_map_insert defn_Val34 defn_Val35
+    . split
+      . rename_i _ _ owner
+        rw [(Axioms.accountsCell_map_find? acc)] at owner <;> first | contradiction | congr
+      . exact (Axioms.accessedStorageCell_map_insert defn_Val34 defn_Val35
         defn_Val36 defn_Val37 defn_Val38 defn_Val39)
   . rw [(UInt256.ofNat_toSigned gasCostValue), sstore_gas] at *
     rw [cancun, Csstore_def, Option.some.injEq] at defn_Val10 defn_Val3

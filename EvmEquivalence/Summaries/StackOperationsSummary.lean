@@ -40,14 +40,15 @@ section
 
 variable (op : arith_op)
 variable (word₁ word₂ word₃: UInt256)
-variable (gas gasCost : ℕ)
+variable (gas gasCost symGasPrice symTimestamp symNumber symGaslimit : ℕ)
 variable (symStack : Stack UInt256)
 variable (symPc symGasAvailable symRefund symActiveWords : UInt256)
+variable (symPrevrandao : UInt256)
 variable (symExecLength : ℕ)
 variable (symReturnData symCode symMemory : ByteArray)
 variable (symAccessedStorageKeys : Batteries.RBSet (AccountAddress × UInt256) Substate.storageKeysCmp)
 variable (symAccounts : AccountMap)
-variable (symCodeOwner : AccountAddress)
+variable (symCodeOwner symSender symSource symCoinbase : AccountAddress)
 variable (symPerm : Bool)
 
 variable (symValidJumps : Array UInt256)
@@ -209,82 +210,79 @@ theorem EvmYul.step_op_summary (symState : EVM.State):
 
 
 theorem EVM.step_add_to_step_add (gpos : 0 < gas) (symState : EVM.State):
-  EVM.step_arith op gas gasCost
-    {symState with
-      stack := op.stack word₁ word₂ word₃ symStack,
-      pc := symPc,
-      gasAvailable := symGasAvailable,
-      execLength := symExecLength,
-      executionEnv := {symState.executionEnv with
-                  code := symCode,
-                  codeOwner := symCodeOwner,
-                  perm := symPerm},
-      accountMap := symAccounts,
-      activeWords := symActiveWords,
-      memory := symMemory,
-      substate := {symState.substate with
-            accessedStorageKeys :=  symAccessedStorageKeys
-            refundBalance := symRefund
-           }
-      returnData := symReturnData} =
-  EvmYul.step_arith op
-    {symState with
+  let ss := {symState with
     stack := op.stack word₁ word₂ word₃ symStack,
-    gasAvailable := symGasAvailable - UInt256.ofNat gasCost
     pc := symPc,
+    gasAvailable := symGasAvailable,
+    returnData := symReturnData,
     executionEnv := {symState.executionEnv with
                   code := symCode,
                   codeOwner := symCodeOwner,
+                  sender := symSender,
+                  source := symSource,
+                  gasPrice := symGasPrice,
+                  header := {symState.executionEnv.header with
+                    beneficiary := symCoinbase,
+                    timestamp := symTimestamp,
+                    number := symNumber,
+                    prevRandao := symPrevrandao,
+                    gasLimit := symGaslimit
+                  }
                   perm := symPerm},
     accountMap := symAccounts,
     activeWords := symActiveWords,
     memory := symMemory,
-    returnData := symReturnData,
     substate := {symState.substate with
-            accessedStorageKeys :=  symAccessedStorageKeys
-            refundBalance := symRefund
-           }
+          accessedStorageKeys :=  symAccessedStorageKeys
+          refundBalance := symRefund
+         }
+    execLength := symExecLength}
+  EVM.step_arith op gas gasCost ss =
+  EvmYul.step_arith op
+    {ss with
+    stack := op.stack word₁ word₂ word₃ symStack,
+    gasAvailable := symGasAvailable - UInt256.ofNat gasCost
+    pc := symPc,
     execLength := symExecLength + 1} := by
       cases gas; contradiction
       simp [EVM.step_arith, EVM.step]; cases op <;> rfl
 
 theorem EVM.step_add_summary (gpos : 0 < gas) (symState : EVM.State):
-  EVM.step_arith op gas gasCost
-    {symState with
-      stack := op.stack word₁ word₂ word₃ symStack,
-      pc := symPc,
-      gasAvailable := symGasAvailable,
-      returnData := symReturnData,
-      executionEnv := {symState.executionEnv with
-                    code := symCode,
-                    codeOwner := symCodeOwner,
-                    perm := symPerm},
-      accountMap := symAccounts,
-      activeWords := symActiveWords,
-      memory := symMemory,
-      substate := {symState.substate with
-            accessedStorageKeys :=  symAccessedStorageKeys
-            refundBalance := symRefund
-           }
-      execLength := symExecLength} =
-    .ok {symState with
+  let ss := {symState with
+    stack := op.stack word₁ word₂ word₃ symStack,
+    pc := symPc,
+    gasAvailable := symGasAvailable,
+    returnData := symReturnData,
+    executionEnv := {symState.executionEnv with
+                  code := symCode,
+                  codeOwner := symCodeOwner,
+                  sender := symSender,
+                  source := symSource,
+                  gasPrice := symGasPrice,
+                  header := {symState.executionEnv.header with
+                    beneficiary := symCoinbase,
+                    timestamp := symTimestamp,
+                    number := symNumber,
+                    prevRandao := symPrevrandao,
+                    gasLimit := symGaslimit
+                  }
+                  perm := symPerm},
+    accountMap := symAccounts,
+    activeWords := symActiveWords,
+    memory := symMemory,
+    substate := {symState.substate with
+          accessedStorageKeys :=  symAccessedStorageKeys
+          refundBalance := symRefund
+         }
+    execLength := symExecLength}
+  EVM.step_arith op gas gasCost ss =
+  .ok {ss with
           stack := op.do word₁ word₂ word₃ :: symStack,
           pc := UInt256.add symPc (.ofNat 1),
-          gasAvailable := symGasAvailable - UInt256.ofNat gasCost,
-          returnData := symReturnData,
-          executionEnv := {symState.executionEnv with
-                        code := symCode,
-                        codeOwner := symCodeOwner,
-                        perm := symPerm},
-          accountMap := symAccounts,
-          activeWords := symActiveWords,
-          memory := symMemory,
-          substate := {symState.substate with
-            accessedStorageKeys :=  symAccessedStorageKeys
-            refundBalance := symRefund
-           }
-          execLength := symExecLength + 1} := by
-  rw [EVM.step_add_to_step_add]; cases op <;> rfl; assumption
+          gasAvailable := symGasAvailable - UInt256.ofNat gasCost
+          execLength := symExecLength + 1
+          } := by
+  intro ss; rw [EVM.step_add_to_step_add]; cases op <;> rfl; assumption
 
 ----
 -- For having symbolic programs instead of singleton ones
@@ -466,6 +464,16 @@ theorem X_arith_summary
     executionEnv := {symState.executionEnv with
                   code := op.to_bin,
                   codeOwner := symCodeOwner,
+                  sender := symSender,
+                  source := symSource,
+                  gasPrice := symGasPrice,
+                  header := {symState.executionEnv.header with
+                    beneficiary := symCoinbase,
+                    timestamp := symTimestamp,
+                    number := symNumber,
+                    prevRandao := symPrevrandao,
+                    gasLimit := symGaslimit
+                  }
                   perm := symPerm},
     accountMap := symAccounts,
     activeWords := symActiveWords,
@@ -491,7 +499,7 @@ theorem X_arith_summary
   have enough_gas_rw : (symGasAvailable.toNat < GasConstants.Gverylow) = False :=
     by aesop (add simp [arith_op.C'_comp, arith_op.C'_noexp])
     (add safe (by omega))
-  simp [α/- , stack_ok_rw -/, enough_gas_rw]
+  simp [α, enough_gas_rw]
   have : ((decode ss.executionEnv.code ss.pc).getD (Operation.STOP, none)).1 = op.t := by
     cases op <;> simp [ss, arith_op.t]
   simp [this]
@@ -501,7 +509,7 @@ theorem X_arith_summary
   have gPos : (0 < g_pos) := by
     revert enoughGas; simp [arith_op.C'_comp]
     cases op <;> simp [ss] <;> aesop (add safe (by omega))
-  have step_rw (cost : ℕ) := (EVM.step_add_summary op word₁ word₂ word₃ g_pos cost symStack (.ofNat 0) symGasAvailable symRefund symActiveWords symExecLength symReturnData op.to_bin symMemory symAccessedStorageKeys symAccounts symCodeOwner symPerm gPos)
+  have step_rw (cost : ℕ) := (EVM.step_add_summary op word₁ word₂ word₃ g_pos cost symGasPrice symTimestamp symNumber symGaslimit symStack (.ofNat 0) symGasAvailable symRefund symActiveWords symPrevrandao symExecLength symReturnData op.to_bin symMemory symAccessedStorageKeys symAccounts symCodeOwner symSender symSource symCoinbase symPerm gPos)
   have stack_ok_rw : (1024 < List.length symStack + 1) = False := by
     cases op <;> aesop (add safe (by omega))
   cases cop: op <;> simp [cop] at symStack_ok <;>

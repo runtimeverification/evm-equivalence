@@ -10,15 +10,16 @@ namespace Push0Summary
 
 section
 
-variable (gas gasCost : ℕ)
+variable (gas gasCost symGasPrice symTimestamp symNumber symGaslimit : ℕ)
 variable (symStack : Stack UInt256)
 variable (symPc symGasAvailable symRefund symActiveWords : UInt256)
+variable (symPrevrandao : UInt256)
 variable (symExecLength : ℕ)
 variable (symReturnData symCode symMemory : ByteArray)
 variable (symAccessedStorageKeys : Batteries.RBSet (AccountAddress × UInt256) Substate.storageKeysCmp)
 variable (symAccessedStorageKeys : Batteries.RBSet (AccountAddress × UInt256) Substate.storageKeysCmp)
 variable (symAccounts : AccountMap)
-variable (symCodeOwner : AccountAddress)
+variable (symCodeOwner symSender symSource symCoinbase : AccountAddress)
 variable (symPerm : Bool)
 
 variable (symValidJumps : Array UInt256)
@@ -53,14 +54,24 @@ theorem EVM.step_push0_summary_simple (gpos : 0 < gas) (symState : EVM.State):
   cases gas; contradiction; rfl
 
 theorem EVM.step_push0_summary (gpos : 0 < gas) (symState : EVM.State):
-  @EVM.step_push0 gas gasCost
-    {symState with
+  let ss :=
+  {symState with
       stack := symStack,
       pc := symPc,
       gasAvailable := symGasAvailable,
       executionEnv := {symState.executionEnv with
                   code := symCode,
                   codeOwner := symCodeOwner,
+                  sender := symSender,
+                  source := symSource,
+                  gasPrice := symGasPrice,
+                  header := {symState.executionEnv.header with
+                    beneficiary := symCoinbase,
+                    timestamp := symTimestamp,
+                    number := symNumber,
+                    prevRandao := symPrevrandao,
+                    gasLimit := symGaslimit
+                  }
                   perm := symPerm},
       accountMap := symAccounts,
       activeWords := symActiveWords,
@@ -70,23 +81,12 @@ theorem EVM.step_push0_summary (gpos : 0 < gas) (symState : EVM.State):
             refundBalance := symRefund
            }
       returnData := symReturnData,
-      execLength := symExecLength} =
-    .ok {symState with
+      execLength := symExecLength}
+  @EVM.step_push0 gas gasCost ss =
+    .ok {ss with
     stack := (.ofNat 0) :: symStack
     gasAvailable := symGasAvailable - UInt256.ofNat gasCost
     pc := symPc + .ofNat 1,
-    executionEnv := {symState.executionEnv with
-                  code := symCode,
-                  codeOwner := symCodeOwner,
-                  perm := symPerm},
-    accountMap := symAccounts,
-    activeWords := symActiveWords,
-    memory := symMemory,
-    substate := {symState.substate with
-            accessedStorageKeys :=  symAccessedStorageKeys
-            refundBalance := symRefund
-           }
-    returnData := symReturnData,
     execLength := symExecLength + 1} := by
   cases gas; contradiction; rfl
 
@@ -106,7 +106,7 @@ theorem C'_push0 (symState : EVM.State) :
 theorem X_push0_summary (enoughGas : GasConstants.Gbase < symGasAvailable.toNat)
                       (symStack_ok : symStack.length < 1024)
                       (symState : EVM.State):
-  X symGasAvailable.toNat symValidJumps
+  let ss :=
   {symState with
     stack := symStack,
     pc := .ofNat 0,
@@ -114,6 +114,16 @@ theorem X_push0_summary (enoughGas : GasConstants.Gbase < symGasAvailable.toNat)
     executionEnv := {symState.executionEnv with
                   code := ⟨#[(0x5F : UInt8)]⟩,
                   codeOwner := symCodeOwner,
+                  sender := symSender,
+                  source := symSource,
+                  gasPrice := symGasPrice,
+                  header := {symState.executionEnv.header with
+                    beneficiary := symCoinbase,
+                    timestamp := symTimestamp,
+                    number := symNumber,
+                    prevRandao := symPrevrandao,
+                    gasLimit := symGaslimit
+                  }
                   perm := symPerm},
     accountMap := symAccounts,
     activeWords := symActiveWords,
@@ -123,22 +133,12 @@ theorem X_push0_summary (enoughGas : GasConstants.Gbase < symGasAvailable.toNat)
             refundBalance := symRefund
            }
     returnData := symReturnData,
-    execLength := symExecLength} =
-  Except.ok (.success {symState with
+    execLength := symExecLength}
+  X symGasAvailable.toNat symValidJumps ss =
+  Except.ok (.success {ss with
         stack := (.ofNat 0) :: symStack,
         pc := .ofNat 1,
         gasAvailable := symGasAvailable - .ofNat GasConstants.Gbase,
-        executionEnv := {symState.executionEnv with
-                  code := ⟨#[(0x5F : UInt8)]⟩,
-                  codeOwner := symCodeOwner,
-                  perm := symPerm},
-        accountMap := symAccounts,
-        activeWords := symActiveWords,
-        memory := symMemory,
-        substate := {symState.substate with
-            accessedStorageKeys :=  symAccessedStorageKeys
-            refundBalance := symRefund
-           }
         returnData := ByteArray.empty,
         execLength := symExecLength + 2} ByteArray.empty):= by
   cases g_case: symGasAvailable.toNat; rw [g_case] at enoughGas; contradiction
@@ -152,7 +152,7 @@ theorem X_push0_summary (enoughGas : GasConstants.Gbase < symGasAvailable.toNat)
   rename_i evm _ stateOk; revert stateOk
   simp [pure, Except.pure]; intro evm_eq cost; subst cost evm_eq
   dsimp [Except.instMonad, Except.bind]
-  have step_rw := (@EVM.step_push0_summary g_pos GasConstants.Gbase symStack (.ofNat 0) symGasAvailable symRefund symActiveWords symExecLength symReturnData ⟨#[(0x5F : UInt8)]⟩ symMemory symAccessedStorageKeys symAccounts symCodeOwner symPerm gPos)
+  have step_rw := (@EVM.step_push0_summary g_pos GasConstants.Gbase symGasPrice symTimestamp symNumber symGaslimit symStack (.ofNat 0) symGasAvailable symRefund symActiveWords symPrevrandao symExecLength symReturnData ⟨#[(0x5F : UInt8)]⟩ symMemory symAccessedStorageKeys symAccounts symCodeOwner symSender symSource symCoinbase symPerm gPos)
   rw [EVM.step_push0, push0_instr] at step_rw; simp [step_rw]
   rw [X_bad_pc] <;> aesop (add simp [GasConstants.Gbase]) (add safe (by omega))
 

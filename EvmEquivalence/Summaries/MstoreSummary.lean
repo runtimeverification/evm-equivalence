@@ -16,15 +16,15 @@ section
 
 /- It's more handy to have the `op` variable at the top -/
 variable (op : mstore_op)
-variable (gas gasCost : ℕ)
+variable (gas gasCost symGasPrice symTimestamp symNumber symGaslimit : ℕ)
 variable (symStack : Stack UInt256)
 variable (symPc symGasAvailable symRefund offset value : UInt256)
-variable (symActiveWords : UInt256)
+variable (symActiveWords symPrevrandao : UInt256)
 variable (symExecLength : ℕ)
 variable (symReturnData symCode symMemory : ByteArray)
 variable (symAccessedStorageKeys : Batteries.RBSet (AccountAddress × UInt256) Substate.storageKeysCmp)
 variable (symAccounts : AccountMap)
-variable (symCodeOwner : AccountAddress)
+variable (symCodeOwner symSender symSource symCoinbase : AccountAddress)
 variable (symPerm : Bool)
 variable (symValidJumps : Array UInt256)
 
@@ -90,13 +90,23 @@ theorem mstore_bypass_private
   gasAvailable := symGasAvailable,
   executionEnv := {symState.executionEnv with
                   code := symCode,
-                  codeOwner := symCodeOwner
+                  codeOwner := symCodeOwner,
+                  sender := symSender,
+                  source := symSource,
+                  gasPrice := symGasPrice,
+                  header := {symState.executionEnv.header with
+                    beneficiary := symCoinbase,
+                    timestamp := symTimestamp,
+                    number := symNumber,
+                    prevRandao := symPrevrandao,
+                    gasLimit := symGaslimit
+                  }
                   perm := symPerm},
   accountMap := symAccounts,
   activeWords := symActiveWords,
   memory := symMemory,
   substate := {symState.substate with
-               accessedStorageKeys :=  symAccessedStorageKeys
+               accessedStorageKeys := symAccessedStorageKeys
                refundBalance := symRefund}
   returnData := symReturnData,
   execLength := symExecLength}
@@ -138,13 +148,23 @@ theorem EvmYul.step_mstore_summary (symState : EVM.State):
     gasAvailable := symGasAvailable,
     executionEnv := {symState.executionEnv with
                   code := symCode,
-                  codeOwner := symCodeOwner
+                  codeOwner := symCodeOwner,
+                  sender := symSender,
+                  source := symSource,
+                  gasPrice := symGasPrice,
+                  header := {symState.executionEnv.header with
+                    beneficiary := symCoinbase,
+                    timestamp := symTimestamp,
+                    number := symNumber,
+                    prevRandao := symPrevrandao,
+                    gasLimit := symGaslimit
+                  }
                   perm := symPerm},
     accountMap := symAccounts,
     activeWords := symActiveWords,
     memory := symMemory,
     substate := {symState.substate with
-                 accessedStorageKeys :=  symAccessedStorageKeys
+                 accessedStorageKeys := symAccessedStorageKeys
                  refundBalance := symRefund}
     returnData := symReturnData,
     execLength := symExecLength}
@@ -164,13 +184,23 @@ theorem EVM.step_mstore_summary
     gasAvailable := symGasAvailable,
     executionEnv := {symState.executionEnv with
                   code := symCode,
-                  codeOwner := symCodeOwner
+                  codeOwner := symCodeOwner,
+                  sender := symSender,
+                  source := symSource,
+                  gasPrice := symGasPrice,
+                  header := {symState.executionEnv.header with
+                    beneficiary := symCoinbase,
+                    timestamp := symTimestamp,
+                    number := symNumber,
+                    prevRandao := symPrevrandao,
+                    gasLimit := symGaslimit
+                  }
                   perm := symPerm},
     accountMap := symAccounts,
     activeWords := symActiveWords,
     memory := symMemory,
     substate := {symState.substate with
-                 accessedStorageKeys :=  symAccessedStorageKeys
+                 accessedStorageKeys := symAccessedStorageKeys
                  refundBalance := symRefund}
     returnData := symReturnData,
     execLength := symExecLength}
@@ -184,7 +214,7 @@ theorem EVM.step_mstore_summary
           execLength := symExecLength + 1} := by
   cases gas; contradiction
   simp [step_mstore, EVM.step]
-  have srw := EvmYul.step_mstore_summary op symStack symPc (symGasAvailable - UInt256.ofNat gasCost) symRefund offset value symActiveWords (symExecLength + 1) symReturnData symCode symMemory
+  have srw := EvmYul.step_mstore_summary op symGasPrice symTimestamp symNumber symGaslimit symStack symPc (symGasAvailable - UInt256.ofNat gasCost) symRefund offset value symActiveWords symPrevrandao (symExecLength + 1) symReturnData symCode symMemory
   simp [EvmYul.step_mstore, Operation.MSTORE] at srw
   cases op <;> aesop
 
@@ -225,13 +255,23 @@ theorem X_mstore_summary (symState : EVM.State)
     gasAvailable := symGasAvailable,
     executionEnv := {symState.executionEnv with
                   code := op.to_bin,
-                  codeOwner := symCodeOwner
+                  codeOwner := symCodeOwner,
+                  sender := symSender,
+                  source := symSource,
+                  gasPrice := symGasPrice,
+                  header := {symState.executionEnv.header with
+                    beneficiary := symCoinbase,
+                    timestamp := symTimestamp,
+                    number := symNumber,
+                    prevRandao := symPrevrandao,
+                    gasLimit := symGaslimit
+                  }
                   perm := symPerm},
     accountMap := symAccounts,
     activeWords := symActiveWords,
     memory := symMemory,
     substate := {symState.substate with
-                 accessedStorageKeys :=  symAccessedStorageKeys
+                 accessedStorageKeys := symAccessedStorageKeys
                  refundBalance := symRefund}
     returnData := symReturnData,
     execLength := symExecLength}
@@ -256,7 +296,7 @@ theorem X_mstore_summary (symState : EVM.State)
   have lt_fls_rw {n m : ℕ} (_ : n < m) : (m < n) = False := by
     simp; apply Nat.ge_of_not_lt; simp; omega
   simp [(lt_fls_rw enoughGas), α]
-  have fls1 : (symGasAvailable.toNat < memoryExpansionCost ss op.t) = False :=  by
+  have fls1 : (symGasAvailable.toNat < memoryExpansionCost ss op.t) = False := by
     rw [Nat.lt_sub_iff_add_lt] at enoughGas
     aesop (add safe (by linarith))
   have decode_rw : ((decode ss.executionEnv.code ss.pc).getD ⟨@Operation.STOP .EVM, none⟩).1 = op.t := by aesop
@@ -275,11 +315,11 @@ theorem X_mstore_summary (symState : EVM.State)
     apply eq_false_intro; rw [Nat.not_lt]
     rw [UInt256.toNat_sub_dist, UInt256.ofNat_toNat] <;>
     aesop (add simp [UInt256.ofNat_le, UInt256.ofNat_toNat])
-  have ss_lt2_f  (n : ℕ) : (n + 1 + 1 < 2) = False := by simp
+  have ss_lt2_f (n : ℕ) : (n + 1 + 1 < 2) = False := by simp
   simp [fls2, ss]
   have g_pos0 : 0 < g_pos := by omega
   have g_pos1 : 1 < g_pos := by omega
-  have step_rw (g : UInt256) := (EVM.step_mstore_summary op g_pos GasConstants.Gverylow symStack (.ofNat 0) (symGasAvailable - g) symRefund offset value symActiveWords symExecLength symReturnData op.to_bin symMemory symAccessedStorageKeys symAccounts symCodeOwner symPerm g_pos0 symState)
+  have step_rw (g : UInt256) := (EVM.step_mstore_summary op g_pos GasConstants.Gverylow symGasPrice symTimestamp symNumber symGaslimit symStack (.ofNat 0) (symGasAvailable - g) symRefund offset value symActiveWords symPrevrandao symExecLength symReturnData op.to_bin symMemory symAccessedStorageKeys symAccounts symCodeOwner symSender symSource symCoinbase symPerm g_pos0 symState)
   let op_stack := match op with | .mstore => 1024 | .mstore8 => 1025
   have : (op_stack < List.length symStack) = False := by aesop
   cases cop : op <;> simp [δ] <;>
