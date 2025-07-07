@@ -149,6 +149,21 @@ theorem sizeWordStack_def {ws : SortWordStack} :
   sizeWordStackAux ws 0 = some (List.length (wordStackMap ws)) :=
   wsLength_eq_length_wordStackMap ▸ sizeWordStackIsSome
 
+-- Behavior of `dropWordStack`
+
+def dropWordStack_comp (x0 : SortInt) (x1 : SortWordStack) : Option SortWordStack :=
+  if _ : x0 ≤ 0 then some x1 else
+  if _ : x1 = .«.WordStack_EVM-TYPES_WordStack» then some .«.WordStack_EVM-TYPES_WordStack» else
+  match x0, x1 with
+  | 1, .«_:__EVM-TYPES_WordStack_Int_WordStack» W WS => WS
+  | Int.ofNat (n + 2), WS => do
+    dropWordStack_comp 1 (←dropWordStack_comp (Int.ofNat (n- 1)) WS)
+  | Int.negSucc _, _ => by simp_all
+  termination_by x0.toNat
+
+theorem dropWordStack_eq (x0 : SortInt) (x1 : SortWordStack) :
+  dropWordStack_comp (x0 : SortInt) (x1 : SortWordStack) = dropWordStack (x0 : SortInt) (x1 : SortWordStack) := by
+  unfold dropWordStack_comp; aesop <;> sorry
 
 -- Behavior of `AccountCellMapItem`
 -- TODO: Complete or delete
