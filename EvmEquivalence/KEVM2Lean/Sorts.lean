@@ -328,6 +328,10 @@ structure SortTransactionsRootCell : Type where
   val : SortInt
   deriving BEq, DecidableEq
 
+inductive SortStackOp : Type where
+  | DUP (x0 : SortInt) : SortStackOp
+  deriving BEq, DecidableEq
+
 structure SortOmmersHashCell : Type where
   val : SortInt
   deriving BEq, DecidableEq
@@ -428,21 +432,6 @@ structure SortLogsBloomCell : Type where
   val : SortBytes
   deriving BEq, DecidableEq
 
-mutual
-  inductive SortInternalOp : Type where
-    | «#next[_]_EVM_InternalOp_MaybeOpCode» (x0 : SortMaybeOpCode) : SortInternalOp
-    deriving BEq, DecidableEq
-
-  inductive SortMaybeOpCode : Type where
-    | inj_SortBinStackOp (x : SortBinStackOp) : SortMaybeOpCode
-    | inj_SortInternalOp (x : SortInternalOp) : SortMaybeOpCode
-    | inj_SortNullStackOp (x : SortNullStackOp) : SortMaybeOpCode
-    | inj_SortPushOp (x : SortPushOp) : SortMaybeOpCode
-    | inj_SortTernStackOp (x : SortTernStackOp) : SortMaybeOpCode
-    | inj_SortUnStackOp (x : SortUnStackOp) : SortMaybeOpCode
-    deriving BEq, DecidableEq
-end
-
 structure SortStaticCell : Type where
   val : SortBool
   deriving BEq, DecidableEq
@@ -490,6 +479,22 @@ structure SortOriginCell : Type where
 structure SortCallerCell : Type where
   val : SortAccount
   deriving BEq, DecidableEq
+
+mutual
+  inductive SortInternalOp : Type where
+    | «#next[_]_EVM_InternalOp_MaybeOpCode» (x0 : SortMaybeOpCode) : SortInternalOp
+    deriving BEq, DecidableEq
+
+  inductive SortMaybeOpCode : Type where
+    | inj_SortBinStackOp (x : SortBinStackOp) : SortMaybeOpCode
+    | inj_SortInternalOp (x : SortInternalOp) : SortMaybeOpCode
+    | inj_SortNullStackOp (x : SortNullStackOp) : SortMaybeOpCode
+    | inj_SortPushOp (x : SortPushOp) : SortMaybeOpCode
+    | inj_SortStackOp (x : SortStackOp) : SortMaybeOpCode
+    | inj_SortTernStackOp (x : SortTernStackOp) : SortMaybeOpCode
+    | inj_SortUnStackOp (x : SortUnStackOp) : SortMaybeOpCode
+    deriving BEq, DecidableEq
+end
 
 structure SortCodeCell : Type where
   val : SortAccountCode
@@ -744,6 +749,7 @@ mutual
     | inj_SortSigSCell (x : SortSigSCell) : SortKItem
     | inj_SortSigVCell (x : SortSigVCell) : SortKItem
     | inj_SortSignedness (x : SortSignedness) : SortKItem
+    | inj_SortStackOp (x : SortStackOp) : SortKItem
     | inj_SortStateRootCell (x : SortStateRootCell) : SortKItem
     | inj_SortStaticCell (x : SortStaticCell) : SortKItem
     | inj_SortStatusCode (x : SortStatusCode) : SortKItem
