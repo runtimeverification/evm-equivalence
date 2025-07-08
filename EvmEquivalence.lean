@@ -32,6 +32,7 @@ import EvmEquivalence.Summaries.SstoreSummary
 import EvmEquivalence.Summaries.SloadSummary
 import EvmEquivalence.Summaries.MstoreSummary
 import EvmEquivalence.Summaries.MloadSummary
+import EvmEquivalence.Summaries.DupSummary
 
 -- Equivalence
 import EvmEquivalence.Equivalence.Operations.OneOpEquivalence
