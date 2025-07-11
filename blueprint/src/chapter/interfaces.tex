@@ -1,0 +1,99 @@
+\chapter{Interfaces}
+
+We have to reason about the EvmYul model and the generated K code. But we soon
+face the challenge that the EvmYul model is more geared towards execution than
+reasoning and that the generated K code is particularly idiosyncratic.
+
+This is not to the detriment of any of the models, but we do need reasoning
+interfaces for these models to smooth the reasoning process.
+
+\section{EvmYul Interface}
+
+This interface contains results that aid with the reasoning of EvmYul functions.
+There are several type of results in this interface:
+
+\begin{itemize}
+\item \texttt{USize} results
+\item Compatibility axioms
+\item Bytes manipulation results
+\item \texttt{UInt256} results and conversions
+\item Opcode semantics
+\end{itemize}
+
+We won't describe the entirety of the results provided in this interface, but
+we'll discuss the two most pressing categories: compatibility axioms and opcode semantics.
+
+\subsection{Compatibility Axioms}
+
+Of particular importance are two axioms necessary to the whole operation. The
+first one is \texttt{ffi_zeroes}, which involves the EvmYul \texttt{zeroes} function.
+
+\subsubsection{\textbf{Aixiom \texttt{ffi_zeroes}}}
+
+\begin{definition}[zeroes]\label{def:zeroes}\lean{ffi.ByteArray.zeroes}
+\texttt{zeroes len} produces a byte array of size \texttt{len} where every byte
+is the zero byte.
+
+This part of the EvmYul FFI.
+\end{definition}
+
+Crucially, the \texttt{zeroes} function is a
+\href{https://en.wikipedia.org/wiki/Foreign_function_interface}{foregin function interface (FFI)}
+function. This means that there is no Lean implementation of it. Rather, when
+executed, Lean will call en external function to perform the computational
+action.
+However, the \texttt{zeroes} function plays a crucial role in important
+functions such as writing to memory.
+
+That is why, in order to reason about it, we pose an axiom stating the desired
+behavior of the \texttt{zeroes} function.
+
+\begin{theorem}[Axiom: ffi_zeroes]\label{ax:ffi_zeroes}\lean{Axioms.ffi_zeroes}\uses{def:zeroes}
+\texttt{zeroes len} returns a byte array of size \texttt{len} where every byte
+is the zero byte.
+\end{theorem}
+
+\subsubsection{\textbf{Aixiom \texttt{toBytesBigEndian_rw}}}
+
+The second needed axiom is to bypass a \texttt{private} attribute of the EvmYul
+\texttt{toBytes'} function defined below:
+
+\begin{definition}[toBytes']\label{def:toBytes'}\leanok
+\texttt{toBytes' n} converts a given natural number \texttt{n} to its little
+endian bytes represenation.
+
+Crucially, this definition is \texttt{private}.
+\end{definition}
+
+The \texttt{toBytes'} function is used by \texttt{toBytesBigEndian}:
+
+\begin{definition}[toBytesBigEndian]
+\label{def:toBytesBigEndian}\uses{def:toBytes'}\lean{EvmYul.toBytesBigEndian}\leanok
+\texttt{toBytes' n} converts a given natural number \texttt{n} to its big
+endian bytes represenation.
+
+\texttt{toBytesBigEndian = List.reverse ∘ toBytes'✝}
+\end{definition}
+
+When dealing with \texttt{toBytesBigEndian} we need to also deal with
+\texttt{toBytes'}. The following axiom states that \texttt{toBytesBigEndian} is
+equal to a \texttt{List.reverse ∘ toBytes'_ax} where \texttt{toBytes'_ax} is a
+dummy definition copied from the EvmYul model.
+
+As future work, we coudl submit a PR to the EvmYul model repository to change
+these \texttt{private} attributes.
+
+\begin{theorem}[Axiom: toBytesBigEndian_rw]
+\label{thm:toBytesBigEndian_rw}\lean{Axioms.toBytesBigEndian_rw}
+\texttt{EvmYul.toBytesBigEndian n = (List.reverse ∘ toBytes'_ax) n}
+\end{theorem}
+
+\subsection{Opcode Semantics}
+
+The most relevant theorem of this kind is the behavior of the \texttt{X}
+function when executing a single-opcode program and having the program counter
+be 1.
+
+\begin{definition}[EvmYul: Function X]\label{def:X}\lean{EvmYul.EVM.X}\leanok
+
+\end{definition}
