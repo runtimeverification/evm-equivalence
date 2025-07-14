@@ -48,9 +48,9 @@ theorem andBool_def (b₁ b₂ : SortBool) : _andBool_ b₁ b₂ = some (b₁ &&
 theorem notBool_def (b : SortBool) : notBool_ b = some (!b) := by
   aesop (add simp [notBool_, _17ebc68])
 
--- Behavior of `==Int` and `=/=Int`
+-- Behavior of boolean Int comparisons
 @[simp]
-theorem eqInt_def (n m : SortInt) : «_==Int_» n m = some (n == m) := by aesop
+theorem eqInt_def (n m : SortInt) : «_==Int_» n m = some (n == m) := rfl
 @[simp]
 theorem neqInt_def (n m : SortInt) : «_=/=Int_» n m = some (n != m) := by
   aesop (add simp [«_=/=Int_», _4de6e05, Option.bind, not])
