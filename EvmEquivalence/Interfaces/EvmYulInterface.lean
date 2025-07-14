@@ -7,6 +7,8 @@ import EvmEquivalence.Utils.ListByteArrayUtils
 open EvmYul
 open EVM
 
+set_option linter.deprecated false
+
 namespace USize
 
 theorem toNat_ofNat_le (n : ℕ) :
@@ -102,8 +104,6 @@ theorem fromByteArrayBigEndian_empty : fromByteArrayBigEndian .empty = 0 := by
 namespace UInt256
 
 section
-
-set_option linter.deprecated false
 
 variable {n : ℕ}
 variable {p : ℤ}
