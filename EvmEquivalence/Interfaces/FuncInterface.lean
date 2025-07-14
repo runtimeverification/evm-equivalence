@@ -139,10 +139,6 @@ theorem inStorage_def {ACCESSEDSTORAGE_CELL : SortMap} {ID_CELL W0 : SortInt} :
 @[simp]
 theorem inj_ID_CELL (ID_CELL : SortInt) : @inj SortInt SortAccount instInjSortIntSortAccount ID_CELL = .inj_SortInt ID_CELL := rfl
 
-@[simp]
-theorem accountAddressIsSome (n : ℕ) (size : n < AccountAddress.size) : AccountAddress.ofNat n = ⟨n, size⟩ := by
-  simp [AccountAddress.ofNat, Fin.ofNat]; aesop
-
 attribute [local simp] «_<Int_» «_+Int_» «_<=Int_» «_-Int_» «_/Int_» «_=/=Int_» «_==Int_»
 theorem memoryUsageUpdate_rw
   (MEMORYUSED_CELL offset width : SortInt)

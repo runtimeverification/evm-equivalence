@@ -165,6 +165,10 @@ end
 end UInt256
 
 @[simp]
+theorem accountAddressIsSome (n : ℕ) (size : n < AccountAddress.size) : AccountAddress.ofNat n = ⟨n, size⟩ := by
+  simp [AccountAddress.ofNat, Fin.ofNat]; aesop
+
+@[simp]
 theorem isCreate_false {τ : OperationType} (opcode : Operation τ) (noCreate : opcode ≠ Operation.CREATE) (noCreate2 : opcode ≠ Operation.CREATE2):
   opcode.isCreate = false := by
   cases opc: opcode <;> rw [Operation.isCreate]; next op =>
