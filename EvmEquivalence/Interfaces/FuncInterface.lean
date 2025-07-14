@@ -16,11 +16,6 @@ namespace KEVMInterface
 -- Some functions are uninterpreted for now, so we have to axiomatize the behavior
 -- For functions that are defined, the axioms are theorems
 
--- Behavior for `ite`
--- `Ite` not present in the moment
-/- theorem iteMap {SortSort : Type} (c : SortBool) (x1 x2 : SortSort) :
-  kite c x1 x2  = ite c x1 x2 := by aesop -/
-
 section
 
 variable {m n : SortInt}
@@ -63,22 +58,6 @@ end
 
 -- Utils to aid in proofs
 def SortGas.val (g : SortGas) : SortInt := g.1
-
-/-
-`«_-Gas__GAS-SYNTAX_Gas_Gas_Gas»` and `«_<=Gas__GAS-SYNTAX_Bool_Gas_Gas»` not present at the moment
- -/
-/- section
-
-variable {g₁ g₂ : SortGas}
-
-theorem subGas_def :
-  «_-Gas__GAS-SYNTAX_Gas_Gas_Gas»  g₁ g₂ = SortGas.inj_SortInt («_-Int'_» (SortGas.val g₁) (SortGas.val g₂)) := rfl
-
-theorem leGas_def :
-  «_<=Gas__GAS-SYNTAX_Bool_Gas_Gas»  g₁ g₂ = «_<=Int_» (SortGas.val g₁) (SortGas.val g₂) := rfl
-
-end -/
-
 
 -- Behavior of `_orBool_`, `_andBool_` and `notBool_`
 @[simp]
