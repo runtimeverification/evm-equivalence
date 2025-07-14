@@ -1,5 +1,9 @@
 \chapter{Interfaces}
 
+We are describing the files in the
+\href{https://github.com/runtimeverification/evm-equivalence/tree/master/EvmEquivalence/Interfaces}{Interfaces}
+folder.
+
 We have to reason about the EvmYul model and the generated K code. But we soon
 face the challenge that the EvmYul model is more geared towards execution than
 reasoning and that the generated K code is particularly idiosyncratic.
@@ -9,7 +13,10 @@ interfaces for these models to smooth the reasoning process.
 
 \section{EvmYul Interface}
 
-This interface contains results that aid with the reasoning of EvmYul functions.
+This
+\href{https://github.com/runtimeverification/evm-equivalence/blob/master/EvmEquivalence/Interfaces/EvmYulInterface.lean}{interface}
+contains results that aid with the reasoning of EvmYul functions.
+
 There are several type of results in this interface:
 
 \begin{itemize}
@@ -95,5 +102,67 @@ function when executing a single-opcode program and having the program counter
 be 1.
 
 \begin{definition}[EvmYul: Function X]\label{def:X}\lean{EvmYul.EVM.X}\leanok
-
+Function $X$ defined in the yellow paper.
 \end{definition}
+
+We then specify the result of running the $X$ function on a bad opcode.
+
+\begin{theorem}[X_bad_pc]\label{thm:X_bad_pc}\lean{X_bad_pc}\uses{def:X}\leanok
+Given
+\begin{itemize}
+\item a single-opcode program $P$,
+\item a gas amount greater than 1,
+\item the program counter set to 1,
+\item the symbolic and well constrained remaining inputs of $X$.
+\end{itemize}
+Executing $X$ on $P$ with a fully symbolic state with the above conditions
+is successful and returns an empty output with the following modifications to
+the symbolic state:
+\begin{itemize}
+\item The parameter \texttt{returnData} is empty.
+\item The \texttt{executionLength} is increased by one.
+\end{itemize}
+\end{theorem}
+
+\section{KEVM Interface}
+
+We use this
+\href{https://runtimeverification.github.io/evm-equivalence/docs/EvmEquivalence/Interfaces/FuncInterface.html}{interface}
+to provide intermediate lemmas or better representations for the K-generated
+Lean definitions.
+
+This interface contains results about the following categories:
+\begin{itemize}
+\item Simple function behavior: results about simple functions like arithmetic
+  or boolean operations.
+\item Behavior of \texttt{«#sizeWordStack»}: Equating \texttt{«#sizeWordStack»}
+  to \texttt{List.length}.
+\item Behavior of K's \texttt{in_keys} function.
+\item Behavior of \texttt{#inStorage} function.
+\item Results that have to do with memory-related operations.
+\item Bytes manipulation: ease the reasoning about `SortBytes` manipulation functions.
+\end{itemize}
+
+\section{Gas Interface}
+
+KEVM models \textbf{all} EVM hardforks (schedules). So, when executing a program in KEVM, we
+need to keep track of which hardfork (schedule) are we executin with.
+Knowing the schedule we're executing with allows us to know the correct gas cost
+of an opcode, and to know which rules apply to our schedule of choice.
+
+There are two functions involved in this:
+\texttt{«_<_>_SCHEDULE_Int_ScheduleConst_Schedule»} (or \texttt{<<_>>}) for
+short) and
+\texttt{«_<<_>>_SCHEDULE_Bool_ScheduleFlag_Schedule»} (or \texttt{<_>}) for
+short).
+
+\\
+The function \texttt{<_>} takes as arguments a gas constant (such as
+$G_{\text{verylow}}$) and a schedule (such as $CANCUN$) and returns how much is
+that gas constant in that schedule.
+
+\\
+The function \texttt{<<_>>} takes as arguments a schedule flag (such as
+$G_{\text{hascreate2}}$) and  a schedule and returns the corresponding boolean
+if the schedule has the schedule flag.
+
