@@ -10,7 +10,6 @@ open KEVMInterface
 
 attribute [local simp] Option.bind.eq_def
 attribute [local simp] plusIntIsSome mulIntIsSome subIntIsSome
-attribute [local simp] Keq_def Kneq_def
 attribute [local simp] orBool_def andBool_def notBool_def
 
 variable (const : SortScheduleConst)

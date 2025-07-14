@@ -79,11 +79,6 @@ theorem leGas_def :
 
 end -/
 
--- TODO: Add to a specific `axioms` namespace when enough functions have been interpreted
-
--- Behavior of `«_==K_»` and `«_=/=K_»`
-axiom Keq_def (k₁ k₂ : SortK) : «_==K_» k₁ k₂ = some (k₁ == k₂)
-axiom Kneq_def (k₁ k₂ : SortK) : «_=/=K_» k₁ k₂ = some (k₁ != k₂)
 
 -- Behavior of `_orBool_`, `_andBool_` and `notBool_`
 @[simp]
