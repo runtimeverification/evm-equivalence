@@ -285,7 +285,7 @@ theorem push0_poststate_equiv
   stateMap symState rhs =
   {symState with
     stack := .ofNat 0 :: wordStackMap WS
-    pc := intMap («_+Int'_» PC_CELL 1)
+    pc := intMap (PC_CELL + 1)
     gasAvailable := intMap _Val8
     executionEnv := executionEnv_map rhs symState,
     accountMap := Axioms.SortAccountsCellMap rhs.accounts
@@ -296,7 +296,7 @@ theorem push0_poststate_equiv
             refundBalance := intMap _Gen17.refund.val
            }
     returnData := _Gen11.val
-    } := by aesop (add simp [«_+Int'_»])
+    } := by aesop
 
 theorem step_push0_equiv
   {GAS_CELL PC_CELL _Val0 _Val2 _Val6 _Val7 _Val8 : SortInt}

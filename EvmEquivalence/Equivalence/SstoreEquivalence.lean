@@ -561,7 +561,7 @@ theorem sstore_poststate_equiv
   stateMap symState rhs =
   {symState with
     stack := wordStackMap WS
-    pc := intMap («_+Int'_» PC_CELL 1)
+    pc := intMap (PC_CELL + 1)
     gasAvailable := intMap (GAS_CELL - sstore_gas ACCESSEDSTORAGE_CELL W1 _Val22 _Val23 ID_CELL W0)
     executionEnv := {symState.executionEnv with
                   code := _Gen0.val,
@@ -578,11 +578,11 @@ theorem sstore_poststate_equiv
             accessedStorageKeys :=  Axioms.SortAccessedStorageCellMap  rhs.accessedStorage
             -- TODO: Replace `_Val32` with a more explicit computation
             -- such as `rsstore` above
-            refundBalance := intMap («_+Int'_» REFUND_CELL _Val32)
+            refundBalance := intMap (REFUND_CELL + _Val32)
            }
     returnData := _Gen13.val
   } := by
-  simp_all [sstoreRHS, stateMap, «_-Int_», plusInt_def, «_+Int_», ←inj_ID_CELL]
+  simp_all [sstoreRHS, stateMap, «_-Int_», «_+Int_», ←inj_ID_CELL]
   congr
   aesop (add simp [inj, Inj.inj, sstore_gas]) (add safe (by linarith))
 
@@ -737,7 +737,7 @@ theorem step_sstore_equiv
   . rw [(UInt256.ofNat_toSigned gasCostValue), sstore_gas] at *
     rw [cancun, Csstore_def, Option.some.injEq] at defn_Val10 defn_Val3
     aesop (add safe (by rw [intMap_sub_dist])) (add simp [Csstore_compute])
-  . rw [plusInt_def, ←UInt256.add_succ_mod_size, intMap_add_dist] <;> aesop
+  . rw [←UInt256.add_succ_mod_size, intMap_add_dist] <;> aesop
   . aesop (add safe (by linarith))
 
 theorem X_sstore_equiv
@@ -912,7 +912,7 @@ theorem X_sstore_equiv
           have fls := sstore_gas_pos ACCESSEDSTORAGE_CELL W1 _Val22 _Val23 ID_CELL W0
           rw [cg] at fls; contradiction
       . aesop (add simp [sstore_gas, Csstore_compute]) (add safe (by omega))
-    . aesop (add simp [plusInt_def])
+    . aesop
   . /- We should have a theorem saying that `sstore_gas` and `Csstore` compute the same value -/
     sorry
 

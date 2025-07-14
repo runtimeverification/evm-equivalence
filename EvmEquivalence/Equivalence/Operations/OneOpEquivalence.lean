@@ -730,72 +730,72 @@ theorem X_oneOp_equiv
     simp [arith_op.from_k, arith_op.C'_comp, arith_op.C'_noexp] <;>
     simp [cancun, GasInterface.cancun_def] at defn_Val0 defn_Val5
     . -- `div` case
-      aesop (add simp [GasInterface.cancun_def, «_-Int_», chop_def, plusInt_def, intMap_add_dist, oneOpLHS, oneOpRHS, arith_op.from_k])
+      aesop (add simp [GasInterface.cancun_def, «_-Int_», intMap_add_dist, oneOpLHS, oneOpRHS, arith_op.from_k])
       (add safe (by rw [intMap_sub_dist])) (add safe (by apply le_of_lt))
       sorry
     . -- `sdiv`
       -- To prove this, first `arith_op.do` needs to be fixed for `sdiv`
-      aesop (add simp [GasInterface.cancun_def, «_-Int_», chop_def, plusInt_def, intMap_add_dist, oneOpLHS, oneOpRHS, arith_op.from_k])
+      aesop (add simp [GasInterface.cancun_def, «_-Int_», intMap_add_dist, oneOpLHS, oneOpRHS, arith_op.from_k])
       (add safe (by rw [intMap_sub_dist])) (add safe (by apply le_of_lt))
       sorry
     . -- `mod`
       -- To prove this, first `arith_op.do` needs to be fixed for `mod`
-      aesop (add simp [GasInterface.cancun_def, «_-Int_», chop_def, plusInt_def, intMap_add_dist, oneOpLHS, oneOpRHS, arith_op.from_k])
+      aesop (add simp [GasInterface.cancun_def, «_-Int_», intMap_add_dist, oneOpLHS, oneOpRHS, arith_op.from_k])
       (add safe (by rw [intMap_sub_dist])) (add safe (by apply le_of_lt))
       sorry
     . -- `smod`
       -- To prove this, first `arith_op.do` needs to be fixed for `smod`
-      aesop (add simp [GasInterface.cancun_def, «_-Int_», chop_def, plusInt_def, intMap_add_dist, oneOpLHS, oneOpRHS, arith_op.from_k])
+      aesop (add simp [GasInterface.cancun_def, «_-Int_», intMap_add_dist, oneOpLHS, oneOpRHS, arith_op.from_k])
       (add safe (by rw [intMap_sub_dist])) (add safe (by apply le_of_lt))
       sorry
     . -- `signextend`
       -- To prove this, first `arith_op.do` needs to be fixed for `signextend`
-      aesop (add simp [GasInterface.cancun_def, «_-Int_», chop_def, plusInt_def, intMap_add_dist, oneOpLHS, oneOpRHS, arith_op.from_k])
+      aesop (add simp [GasInterface.cancun_def, «_-Int_», intMap_add_dist, oneOpLHS, oneOpRHS, arith_op.from_k])
       (add safe (by rw [intMap_sub_dist])) (add safe (by apply le_of_lt))
       sorry
     . -- `slt`
       -- To prove this, first `arith_op.do` needs to be fixed for `slt`
-      aesop (add simp [GasInterface.cancun_def, «_-Int_», chop_def, plusInt_def, intMap_add_dist, oneOpLHS, oneOpRHS, arith_op.from_k])
+      aesop (add simp [GasInterface.cancun_def, «_-Int_», intMap_add_dist, oneOpLHS, oneOpRHS, arith_op.from_k])
       (add safe (by rw [intMap_sub_dist])) (add safe (by apply le_of_lt))
       sorry
     . -- `sgt`
       -- To prove this, first `arith_op.do` needs to be fixed for `sgt`
-      aesop (add simp [GasInterface.cancun_def, «_-Int_», chop_def, plusInt_def, intMap_add_dist, oneOpLHS, oneOpRHS, arith_op.from_k])
+      aesop (add simp [GasInterface.cancun_def, «_-Int_», intMap_add_dist, oneOpLHS, oneOpRHS, arith_op.from_k])
       (add safe (by rw [intMap_sub_dist])) (add safe (by apply le_of_lt))
       sorry
     . -- `and`
       -- To prove this, first `arith_op.do` needs to be fixed for `and`
-      aesop (add simp [GasInterface.cancun_def, «_-Int_», chop_def, plusInt_def, intMap_add_dist, oneOpLHS, oneOpRHS, arith_op.from_k])
+      aesop (add simp [GasInterface.cancun_def, «_-Int_», intMap_add_dist, oneOpLHS, oneOpRHS, arith_op.from_k])
       (add safe (by rw [intMap_sub_dist])) (add safe (by apply le_of_lt))
       sorry
     . -- `xor`
       -- To prove this, first `arith_op.do` needs to be fixed for `xor`
-      aesop (add simp [GasInterface.cancun_def, «_-Int_», chop_def, plusInt_def, intMap_add_dist, oneOpLHS, oneOpRHS, arith_op.from_k])
+      aesop (add simp [GasInterface.cancun_def, «_-Int_», intMap_add_dist, oneOpLHS, oneOpRHS, arith_op.from_k])
       (add safe (by rw [intMap_sub_dist])) (add safe (by apply le_of_lt))
       sorry
     . -- `xor`
       -- To prove this, first `arith_op.do` needs to be fixed for `xor`
-      aesop (add simp [GasInterface.cancun_def, «_-Int_», chop_def, plusInt_def, intMap_add_dist, oneOpLHS, oneOpRHS, arith_op.from_k])
+      aesop (add simp [GasInterface.cancun_def, «_-Int_», intMap_add_dist, oneOpLHS, oneOpRHS, arith_op.from_k])
       (add safe (by rw [intMap_sub_dist])) (add safe (by apply le_of_lt))
       sorry
     . -- `byte`
       -- To prove this, first `arith_op.do` needs to be fixed for `byte`
-      aesop (add simp [GasInterface.cancun_def, «_-Int_», chop_def, plusInt_def, intMap_add_dist, oneOpLHS, oneOpRHS, arith_op.from_k])
+      aesop (add simp [GasInterface.cancun_def, «_-Int_», intMap_add_dist, oneOpLHS, oneOpRHS, arith_op.from_k])
       (add safe (by rw [intMap_sub_dist])) (add safe (by apply le_of_lt))
       sorry
     . -- `shl`
       -- To prove this, first `arith_op.do` needs to be fixed for `shl`
-      aesop (add simp [GasInterface.cancun_def, «_-Int_», chop_def, plusInt_def, intMap_add_dist, oneOpLHS, oneOpRHS, arith_op.from_k])
+      aesop (add simp [GasInterface.cancun_def, «_-Int_», intMap_add_dist, oneOpLHS, oneOpRHS, arith_op.from_k])
       (add safe (by rw [intMap_sub_dist])) (add safe (by apply le_of_lt))
       sorry
     . -- `shr`
       -- To prove this, first `arith_op.do` needs to be fixed for `shr`
-      aesop (add simp [GasInterface.cancun_def, «_-Int_», chop_def, plusInt_def, intMap_add_dist, oneOpLHS, oneOpRHS, arith_op.from_k])
+      aesop (add simp [GasInterface.cancun_def, «_-Int_», intMap_add_dist, oneOpLHS, oneOpRHS, arith_op.from_k])
       (add safe (by rw [intMap_sub_dist])) (add safe (by apply le_of_lt))
       sorry
     . -- `sar`
       -- To prove this, first `arith_op.do` needs to be fixed for `sar`
-      aesop (add simp [GasInterface.cancun_def, «_-Int_», chop_def, plusInt_def, intMap_add_dist, oneOpLHS, oneOpRHS, arith_op.from_k])
+      aesop (add simp [GasInterface.cancun_def, «_-Int_», intMap_add_dist, oneOpLHS, oneOpRHS, arith_op.from_k])
       (add safe (by rw [intMap_sub_dist])) (add safe (by apply le_of_lt))
       sorry
   · cases op <;> simp_all [arith_op.from_k, sizeWordStack_def]

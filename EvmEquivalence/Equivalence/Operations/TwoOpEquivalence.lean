@@ -350,8 +350,8 @@ theorem modWord_eq (n m : SortInt) :
 @[simp]
 def arith_op.do (W0 W1 W2 : SortInt) : SortInt :=
   match op with
-  | .add => chop' (W0 + W1)
-  | .sub => chop' (W0 - W1)
+  | .add => (W0 + W1) % UInt256.size
+  | .sub => (W0 - W1) % UInt256.size
   | .addmod => modWord (W0 + W1) W2
   | .mulmod => modWord (W0 * W1) W2
   | .lt => ite (W0 < W1) 1 0
@@ -416,7 +416,7 @@ theorem twoOp_poststate_equiv
            }
     returnData := _Gen11.val
     } := by
-    aesop (add simp [«_-Int_», «_+Int_», «_*Int_», chop', chopIsSome])
+    aesop (add simp [«_-Int_», «_+Int_», «_*Int_», chopIsSome])
     (add simp [arith_op.to_defn_Val3, arith_op.to_defn_Val4, twoOpRHS, stateMap])
     (add simp [bool2Word, _4bd3e13, _cb4e96d])
 
@@ -497,7 +497,7 @@ theorem step_twoOp_equiv
     . rw [←UInt256.add_succ_mod_size, intMap_add_dist] <;> aesop
     . cases op <;> simp [arith_op.from_k]
       . -- `add` case
-        aesop (add simp [intMap, chop_def, plusInt_def, intMap_add_dist])
+        aesop (add simp [intMap, intMap_add_dist])
       . -- `sub` case
         sorry
       . -- `addmod` case
@@ -596,7 +596,7 @@ theorem X_twoOp_equiv
       simp [«_-Int_»] at defn_Val7; simp [←defn_Val7]
       simp [GasInterface.cancun_def] at defn_Val6 defn_Val0
       simp [defn_Val6] at defn_Val0
-      aesop (add simp [GasInterface.cancun_def, «_-Int_», chop_def, plusInt_def, intMap_add_dist, twoOpLHS, twoOpRHS, arith_op.C'_comp])
+      aesop (add simp [GasInterface.cancun_def, «_-Int_», intMap_add_dist, twoOpLHS, twoOpRHS, arith_op.C'_comp])
       (add simp [arith_op.from_k])
       (add safe (by rw [intMap_sub_dist])) (add safe (by apply le_of_lt))
     . -- `sub` case

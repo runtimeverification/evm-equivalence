@@ -617,13 +617,13 @@ theorem X_exp_equiv
   · cases ec <;> simp [arith_op.C'_comp]
     . -- `gt0` case
       -- To prove this, first `TODO.exp_representation` needs to be fixed for `gt0`
-      aesop (add simp [GasInterface.cancun_def, plusInt_def, intMap_add_dist, expLHS, expRHS])
+      aesop (add simp [GasInterface.cancun_def, intMap_add_dist, expLHS, expRHS])
       (add safe (by rw [intMap_sub_dist]))
       (add safe (by apply le_of_lt))
       all_goals sorry
     . -- `eq0` case
       -- To prove this, first `TODO.exp_representation` needs to be fixed for `eq0`
-      aesop (add simp [GasInterface.cancun_def, plusInt_def, intMap_add_dist, expLHS, expRHS])
+      aesop (add simp [GasInterface.cancun_def, intMap_add_dist, expLHS, expRHS])
       (add safe (by rw [intMap_sub_dist]))
       (add safe (by apply le_of_lt))
       (add safe (by contradiction))
