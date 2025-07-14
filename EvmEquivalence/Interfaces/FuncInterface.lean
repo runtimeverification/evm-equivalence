@@ -24,35 +24,13 @@ variable {m n : SortInt}
 @[simp]
 theorem plusIntIsSome : «_+Int_» n m = some (n + m) := rfl
 
-def «_+Int'_» (n m : SortInt) : SortInt :=
-  («_+Int_» n m).get rfl
-
-@[simp]
-theorem plusInt_def : «_+Int'_» n m = n + m := rfl
-
 @[simp]
 theorem subIntIsSome : «_-Int_» n m = some (n - m) := rfl
 
-def «_-Int'_» (n m : SortInt) : SortInt :=
-  («_-Int_» n m).get rfl
-
-theorem subInt_def : «_-Int'_» n m = n - m := rfl
-
 theorem mulIntIsSome : «_*Int_» n m = some (n * m) := rfl
-
-def «_*Int'_» (n m : SortInt) : SortInt :=
-  («_*Int_» n m).get rfl
-
-theorem mulInt_def : «_*Int'_» n m = n * m := rfl
 
 -- Behavior for `chop`
 theorem chopIsSome : chop n = some (n % UInt256.size) := rfl
-
-def chop' (n : SortInt) : SortInt :=
-  (chop n).get (by simp [chopIsSome])
-
-theorem chop_def (n : SortInt) : chop' n = n % UInt256.size := by
-  aesop (add simp [chop', chopIsSome])
 
 end
 
@@ -122,18 +100,6 @@ theorem wsLength_eq_length_wordStackMap {ws : SortWordStack} :
 theorem sizeWordStack_def {ws : SortWordStack} :
   sizeWordStackAux ws 0 = some (List.length (wordStackMap ws)) :=
   wsLength_eq_length_wordStackMap ▸ sizeWordStackIsSome
-
-
--- Behavior of `AccountCellMapItem`
--- TODO: Complete or delete
-/--
-Note that this function is dependent on the current implementation of `SortAccountCellMap`
-
-The current implementation is `List (SortAcctIDCell × SortAccountCell)` but
-this might change in the future
--/
-def accountCellMapItem_def (x0 : SortAcctIDCell) (x1 : SortAccountCell) : Option SortAccountCellMap :=
-  some (⟨[(x0, x1)]⟩)
 
 -- Behavior of `kite`
 @[simp]
