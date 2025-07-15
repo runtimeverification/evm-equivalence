@@ -146,23 +146,44 @@ This interface contains results about the following categories:
 \section{Gas Interface}
 
 KEVM models \textbf{all} EVM hardforks (schedules). So, when executing a program in KEVM, we
-need to keep track of which hardfork (schedule) are we executin with.
+need to keep track of which hardfork (schedule) are we executing with.
 Knowing the schedule we're executing with allows us to know the correct gas cost
 of an opcode, and to know which rules apply to our schedule of choice.
 
 There are two functions involved in this:
-\texttt{«_<_>_SCHEDULE_Int_ScheduleConst_Schedule»} (or \texttt{<<_>>}) for
-short) and
-\texttt{«_<<_>>_SCHEDULE_Bool_ScheduleFlag_Schedule»} (or \texttt{<_>}) for
-short).
-
-\\
-The function \texttt{<_>} takes as arguments a gas constant (such as
-$G_{\text{verylow}}$) and a schedule (such as $CANCUN$) and returns how much is
-that gas constant in that schedule.
-
-\\
-The function \texttt{<<_>>} takes as arguments a schedule flag (such as
+\begin{definition}[\texttt{_<_>}]\label{def:gasConstSched}\lean{«_<_>_SCHEDULE_Int_ScheduleConst_Schedule»}\leanok
+The \texttt{«_<_>_SCHEDULE_Int_ScheduleConst_Schedule»} function (or \texttt{_<_>} for
+short) takes as arguments a gas constant (such as $G_{\text{verylow}}$) and a
+schedule (such as CANCUN) and returns how much is that gas constant in that
+schedule.
+\end{definition}
+\begin{definition}[\texttt{_<<_>>}]\label{def:flagConstSched}\lean{«_<<_>>_SCHEDULE_Bool_ScheduleFlag_Schedule»}\leanok
+The function \texttt{«_<<_>>_SCHEDULE_Bool_ScheduleFlag_Schedule»} (or
+\texttt{_<<_>>} for short) takes as arguments a schedule flag (such as
 $G_{\text{hascreate2}}$) and  a schedule and returns the corresponding boolean
-if the schedule has the schedule flag.
+if the schedule has the schedule flag. This is used to discriminate which rules
+can be applied depending on the schedule we're working with.
 
+In this example, working on an schedule \texttt{SCHED}, any rule involving the
+\texttt{CREATE2} opcode will have to satisfy $G_{\text{hascreate2}}$\texttt{<<
+  SCHED >>} in order to be applied.
+\end{definition}
+
+Given that EvmYul works with the Cancun schedule, the two main results of this
+\href{https://runtimeverification.github.io/evm-equivalence/docs/EvmEquivalence/Interfaces/GasInterface.html}{interface}
+are a plain rewrite of the \texttt{_<_>} and \texttt{_<<_>>} functions to the
+Cancun schedule.
+
+\begin{theorem}[cancun_def]
+\label{thm:cancun_def}\lean{GasInterface.cancun_def}\leanok\uses{def:gasConstSched}
+Given \texttt{const : SortScheduleConst}, we equate
+\texttt{«_<_>_SCHEDULE_Int_ScheduleConst_Schedule» const .CANCUN_EVM} to a
+simple match statement on \texttt{const}.
+\end{theorem}
+
+\begin{theorem}[flag_cancun_def]
+\label{thm:flag_cancun_def}\lean{GasInterface.flag_cancun_def}\leanok\uses{def:flagConstSched}
+Given \texttt{flag : SortScheduleFlag}, we equate
+\texttt{«_<<_>>_SCHEDULE_Bool_ScheduleFlag_Schedule» flag .CANCUN_EVM} to a
+simple match statement on \texttt{flag}.
+\end{theorem}
