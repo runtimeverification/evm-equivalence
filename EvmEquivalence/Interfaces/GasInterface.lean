@@ -1,8 +1,11 @@
-/-
-Interface for the `«_<_>_SCHEDULE_Int_ScheduleConst_Schedule»` function
- -/
 import EvmEquivalence.Interfaces.FuncInterface
 import EvmEquivalence.Interfaces.Tactics
+
+/-! # Schedule Interface
+
+Interface for the `«_<_>_SCHEDULE_Int_ScheduleConst_Schedule»`
+and `«_<<_>>_SCHEDULE_Bool_ScheduleFlag_Schedule»` functions.
+ -/
 
 namespace GasInterface
 
@@ -14,6 +17,13 @@ attribute [local simp] orBool_def andBool_def notBool_def
 
 variable (const : SortScheduleConst)
 variable (flag : SortScheduleFlag)
+
+/-! ## Needed (axiomatic) Instances
+
+We need the `DecidableEq` and `LawfulBEq` instances for `SortK`.
+At the moment, these instances are sorried out, but should be
+provable at some point.
+-/
 
 -- These should be temporary axioms
 instance: DecidableEq SortK := fun
@@ -32,6 +42,11 @@ theorem neq_gconst_fls (c₁ c₂ : SortScheduleConst) : c₁ ≠ c₂ →
 theorem neq_gconst_true (c₁ c₂ : SortScheduleConst) : c₁ ≠ c₂ →
   (SortK.kseq (inj c₁) SortK.dotk != SortK.kseq (inj c₂) SortK.dotk) := by
     aesop (add simp [bne])
+
+/-! ## Schedule Constants
+
+Interface for schedule constants on any given schedule.
+-/
 
 set_option maxRecDepth 100000
 
@@ -306,6 +321,11 @@ theorem cancun_def :
   := by
   sorry --simp [«_<_>_SCHEDULE_Int_ScheduleConst_Schedule»]
   --cases const <;> simp
+
+/-! ## Schedule Flags
+
+Interface for schedule flags on any given schedule.
+-/
 
 @[local simp]
 theorem flag_default_def :
