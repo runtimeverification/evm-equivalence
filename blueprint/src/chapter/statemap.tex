@@ -1,3 +1,105 @@
 \chapter{State Map}
 
-Mapping KEVM states to EvmYul states.
+One of the key components of this project is the notion of state mapping. Since
+we want to show that KEVM and the EvmYul models agree on opcode execution, we
+need a notion of state equivalence to evaluate the agreement.
+
+So far we are only doing one side of the equiavlence. Namely, from KEVM to
+EvmYul. This shows that what KEVM does is agreed on by the EvmYul model. Hence,
+the state mapping we present here will map a KEVM state into an EvmYul one.
+
+\section{Type Mapping}
+
+The first thing for mapping KEVM states to EvmYul states is to convert KEVM
+types to their corresponding EvmYul ones.
+Because KEVM operates on integers and then imposes restrictions on their value
+when applying rules, such restrictions don't exist at the type level. This is
+important to keep in mind since when mapping integers representing EVM values,
+we don't have to translate the full generality of the KEVM types. But we need to
+be mindful on how the integers are used in each instance in order to provide an
+accurate mapping.
+
+The first step is to choose a default on how to map integers themselves to
+EvmYul's \texttt{UInt256}.
+
+\begin{definition}[intMap]\lean{StateMap.intMap}\leanok\label{def:intMap}
+Given $n$ of type \texttt{SortInt},
+$\text{intMap}\, n =\,
+$\href{https://runtimeverification.github.io/evm-equivalence/docs/EvmYul/UInt256.html#EvmYul.UInt256.toSigned}{UInt256.toSigned}$\,n$.
+\end{definition}
+
+Once we have the mapping of one of the fundamental KEVM underlying types, we
+have to map KEVM's cells. K cells are extracted to Lean as \texttt{struct}s that
+act as a wrapper for an integer value or for another wrapper.
+
+As an example, take \texttt{SortGasCell},  Lean's extraction of KEVM's gas cell
+which is used to track the amount of gas left:
+
+\begin{verbatim}
+structure SortGasCell : Type where
+  val : SortGas
+\end{verbatim}
+
+We see that it's a wrapper for a \texttt{SortGas} value, and that
+\texttt{SortGas} follows the same structure:
+
+\begin{verbatim}
+inductive SortGas : Type where
+  | inj_SortInt (x : SortInt) : SortGas
+\end{verbatim}
+
+The fact that \texttt{SortGasCell} has a \texttt{SortGas} value and not a plain
+\texttt{SortInt} is to avoid the mixing of integer values at the cell level.
+
+Given this, the mapping of \texttt{SortGasCell} will come down to unwrapping it
+to its \texttt{SortGas} value and in turn map its \texttt{SortInt} contents
+through the \texttt{intMap} function to EvmYul's \texttt{UInt256}.
+
+\section{State Mapping}
+
+Once we have mapped a subset of KEVM generated types to their corresponding
+EvmYul's images, we can map KEVM states to EvmYul ones.
+
+\begin{definition}[stateMap]
+\lean{StateMap.stateMap}\leanok\label{def:stateMap}\uses{def:intMap}
+
+KEVM states are represented by the type
+\href{https://runtimeverification.github.io/evm-equivalence/docs/EvmEquivalence/KEVM2Lean/Sorts.html#SortGeneratedTopCell}{\texttt{SortGeneratedTopCell}}.
+Hence, we will be taking as input a \texttt{SortGeneratedTopCell} and converting
+it to an
+\href{https://runtimeverification.github.io/evm-equivalence/docs/EvmYul/EVM/State.html#EvmYul.EVM.State}{\texttt{EVM.State}}.
+
+The state mapping function will take an extra \texttt{EVM.State} argument to
+perform the identity mapping on the parts of the state that are not yet mapped.
+\end{definition}
+
+\section{Axiomatic Mapping}
+
+Some of the state mapping is done in an axiomatic manner. This is because of two
+different reasons. First, have not yet committed to a definitive map structure
+for the Lean extracted code. Second, since the EvmYul model is more geared
+towards execution than reasoning, we've decided to not commit to their
+underlying map structure based on Red-Black trees.
+
+To this effect, we postulate as axioms the existence of the
+\href{https://runtimeverification.github.io/evm-equivalence/docs/EvmEquivalence/Interfaces/Axioms.html}{following
+  functions}:
+
+\begin{itemize}
+\item \texttt{SortAccountsCellMap}: maps \texttt{SortAccoutsCell} to
+  \texttt{AccountMap}.
+\item \texttt{SortAccessedStorageCellMap}: maps \texttt{SortAccessedStorageCell}
+  to the type of \texttt{accessedStorageKeys}.
+\item \texttt{SortStorageCellMap}: maps \texttt{SortStorageCell} to
+  \texttt{Storage}.
+\item \texttt{SortTransientStorageCellMap}: maps
+  \texttt{SortTransientStorageCell} to \texttt{Storage}.
+\end{itemize}
+
+\subsection{Axioms as pre-theorems}
+
+Since these are uninterpreted functions, we also assert
+\href{https://runtimeverification.github.io/evm-equivalence/docs/EvmEquivalence/StateMap.html#Axioms.findAccountInAccountCellMap}{behavioral
+  axioms} on how these functions have to behave. These axioms serve as a
+blueprint for any future implementation of these functions, since whatever
+implementation is chosen should render the behavioral axioms as theorems.
