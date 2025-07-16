@@ -1,3 +1,71 @@
 \chapter{Equivalences}
 
-Equivalence theorems.
+With what we have defined so far we are in a position to start proving
+equivalence between KEVM and the EvmYul model. However, first, we need to
+pinpoint exactly what do we mean by equivalence.
+
+\section{Defining Equivalence}
+
+We define now the notion of equivalence we're dealing with, and to what extent
+is it formalized and proven.
+
+The overarching goal is to prove that there exists a bisimulation relation between
+KEVM and the EvmYul model.
+
+We start by refreshing the definition of a bisimulation.
+
+\begin{definition}[Bisimulation relation]\label{def:bisimulation}
+Given a transition system $(S, \rightarrow)$, a binary relation $R$ on $S$ is a
+bisimulation if and only if for every pair of states $(p, q)\in R$ we have:
+\begin{itemize}
+\item if $p \rightarrow p'$ then there is $q \rightarrow q'$ with $(p', q') \in
+  R$;
+\item if $q \rightarrow q'$ then there is $p \rightarrow p'$ with $(p', q') \in
+  R$.
+\end{itemize}
+\end{definition}
+
+In our context,
+\begin{itemize}
+\item $S$ is the union of both KEVM and EvmYul states ($S_{\text{KEVM}}$ and
+  $S_{\text{EvmYul}}$ respectively). So we have $S_{\text{KEVM}}\, \bigcup\, S_{\text{EvmYul}} = S$ and $S_{\text{KEVM}}\, \bigcap\, S_{\text{EvmYul}} = \emptyset$.
+\item The transition relation $\rightarrow$ is execution in any of the models. In particular, we have that $\rightarrow\,
+\subset S_{\text{KEVM}} \times S_{\text{KEVM}} \,\bigcup\, S_{\text{EvmYul}} \times S_{\text{EvmYul}}$.
+\item $R = \bigl\{\bigl( p, \text{stateMap}(p) \bigr)\, |\, p\in S_{\text{KEVM}}\bigr\} \,\bigcup\, \bigl\{\bigl(\text{stateMap}'(q),
+  q\bigr)\, |\, p\in S_{\text{EvmYul}}\bigr\}$ where $\text{stateMap}$ is
+  defined in \ref{def:stateMap} and $\text{stateMap}'\,:\,
+  S_{\text{EvmYul}}\rightarrow S_{\text{KEVM}}$ has not yet been defined.
+
+\end{itemize}
+Notice that $R \subsetneq S_{\text{KEVM}}\times S_{\text{EvmYul}}$.
+% Given this particularities, for every $\lambda\in\Lambda$ there is only one of
+% the above implications to be proven. For example, if $\lambda = \text{KEVM}$,
+% the second item in the above definition is vacuously true since for every $(p,
+% q)\in R$ there is no $q'\in S_{\text{EvmYul}}$ such that $q
+% \overset{\text{KEVM}}{\rightarrow} q'$.
+With this in mind, we have machinnery to prove the first implication of the
+bisimulation definition.
+
+To do this, given KEVM states $p, p'$ with $p \rightarrow p'$, we know that
+$\bigl( p, \text{stateMap}(p) \bigr)$ and $\bigl( p', \text{stateMap}(p')
+\bigr)$ belong to $R$. Hence, to prove the first item we only need to show that
+$\text{stateMap}(p) \rightarrow \text{stateMap}(p')$.
+
+\subsubsection{Clarifications on $\rightarrow$}
+
+Saying ``the transition relation $\rightarrow$ is execution in any of the
+models'' is admittedly quite loose. So we can make its definition more precise
+as follows.
+
+\begin{definition}[Transition function $\rightarrow$]
+Given $p, p' \in S$, we have that $p\rightarrow p'$ if
+\begin{itemize}
+\item $p, p'\in S_{\text{KEVM}}$ and \texttt{Rewrites} $p$ $p'$ holds.
+\item $p, p'\in S_{\text{EvmYul}}$ and executing the
+  \texttt{step}[\ref{def:EVM.step}] or \texttt{X}[\ref{def:EVM.X}] function on $p$ yields $p'$.
+\end{itemize}
+\end{definition}
+
+\section{Proof Outline}
+
+
