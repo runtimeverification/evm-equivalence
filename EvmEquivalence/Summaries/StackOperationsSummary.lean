@@ -9,7 +9,7 @@ open StopSummary
 
 namespace StackOpsSummary
 
-inductive arith_op where
+inductive stackOps_op where
 | add
 | sub
 | div
@@ -38,7 +38,7 @@ deriving BEq, DecidableEq
 
 section
 
-variable (op : arith_op)
+variable (op : stackOps_op)
 variable (word₁ word₂ word₃: UInt256)
 variable (gas gasCost symGasPrice symTimestamp symNumber symGaslimit : ℕ)
 variable (symStack : Stack UInt256)
@@ -105,7 +105,7 @@ abbrev sar_instr : Option (Operation .EVM × Option (UInt256 × Nat)) := some �
 
 
 @[simp]
-def arith_op.get : (Option (Operation .EVM × Option (UInt256 × Nat))) :=
+def stackOps_op.get : (Option (Operation .EVM × Option (UInt256 × Nat))) :=
   match op with
   | .add  => add_instr
   | .sub  => sub_instr
@@ -133,7 +133,7 @@ def arith_op.get : (Option (Operation .EVM × Option (UInt256 × Nat))) :=
   | .sar => sar_instr
 
 --@[simp]
-def arith_op.t : Operation .EVM :=
+def stackOps_op.t : Operation .EVM :=
   match op with
   | .add  => (add_instr.get rfl).1
   | .sub  => (sub_instr.get rfl).1
@@ -160,12 +160,12 @@ def arith_op.t : Operation .EVM :=
   | .shr => (shr_instr.get rfl).1
   | .sar => (sar_instr.get rfl).1
 
-def EVM.step_arith : Transformer := EVM.step gas gasCost op.get
+def EVM.step_stackOps : Transformer := EVM.step gas gasCost op.get
 
-def EvmYul.step_arith : Transformer := @EvmYul.step .EVM op.t
+def EvmYul.step_stackOps : Transformer := @EvmYul.step .EVM op.t
 
 @[simp]
-def arith_op.do :=
+def stackOps_op.do :=
   match op with
   | .add  => word₁ + word₂
   | .sub  => word₁ - word₂
@@ -193,14 +193,14 @@ def arith_op.do :=
   | .sar => word₁.sar word₂
 
 @[simp]
-def arith_op.stack :=
+def stackOps_op.stack :=
   match op with
   | .iszero | .not => word₁ :: symStack
   | .addmod | .mulmod => word₁ :: word₂ :: word₃ :: symStack
   | _ => word₁ :: word₂ :: symStack
 
 theorem EvmYul.step_op_summary (symState : EVM.State):
-  EvmYul.step_arith op {symState with
+  EvmYul.step_stackOps op {symState with
     stack := op.stack word₁ word₂ word₃ symStack,
     pc := symPc} =
   .ok {symState with
@@ -237,15 +237,15 @@ theorem EVM.step_add_to_step_add (gpos : 0 < gas) (symState : EVM.State):
           refundBalance := symRefund
          }
     execLength := symExecLength}
-  EVM.step_arith op gas gasCost ss =
-  EvmYul.step_arith op
+  EVM.step_stackOps op gas gasCost ss =
+  EvmYul.step_stackOps op
     {ss with
     stack := op.stack word₁ word₂ word₃ symStack,
     gasAvailable := symGasAvailable - UInt256.ofNat gasCost
     pc := symPc,
     execLength := symExecLength + 1} := by
       cases gas; contradiction
-      simp [EVM.step_arith, EVM.step]; cases op <;> rfl
+      simp [EVM.step_stackOps, EVM.step]; cases op <;> rfl
 
 theorem EVM.step_add_summary (gpos : 0 < gas) (symState : EVM.State):
   let ss := {symState with
@@ -275,7 +275,7 @@ theorem EVM.step_add_summary (gpos : 0 < gas) (symState : EVM.State):
           refundBalance := symRefund
          }
     execLength := symExecLength}
-  EVM.step_arith op gas gasCost ss =
+  EVM.step_stackOps op gas gasCost ss =
   .ok {ss with
           stack := op.do word₁ word₂ word₃ :: symStack,
           pc := UInt256.add symPc (.ofNat 1),
@@ -312,7 +312,7 @@ theorem array_append_size_le {α : Type} (a1 a2 : Array α) :
 ----
 
 @[simp]
-def arith_op.to_bin : ByteArray :=
+def stackOps_op.to_bin : ByteArray :=
   match op with
   | .add  => ⟨#[0x1]⟩
   | .sub  => ⟨#[0x3]⟩
@@ -413,37 +413,37 @@ theorem decode_singleton_sar :
   decode ⟨#[0x1D]⟩ (.ofNat 0) = some (sarEVM, none) := rfl
 
 @[simp]
-theorem decode_singleton_arith :
+theorem decode_singleton_stackOps :
   decode op.to_bin (.ofNat 0) = some ⟨op.t, none⟩ := by cases op <;> rfl
 
 @[simp]
-theorem memoryExpansionCost_arith (symState : EVM.State) :
+theorem memoryExpansionCost_stackOps (symState : EVM.State) :
   memoryExpansionCost symState op.t = 0 := by
-  cases op <;> simp [arith_op.t, memoryExpansionCost, memoryExpansionCost.μᵢ']
+  cases op <;> simp [stackOps_op.t, memoryExpansionCost, memoryExpansionCost.μᵢ']
 
 @[simp]
 def C'_exp (symState : EVM.State) :=
   if (symState.stack[1]?.getD default == { val := 0 }) = true then GasConstants.Gexp
   else GasConstants.Gexp + GasConstants.Gexpbyte * (1 + Nat.log 256 (symState.stack[1]?.getD default).toNat)
 
-def arith_op.C'_noexp :=
+def stackOps_op.C'_noexp :=
   match op with
   | .div | .sdiv | .mod | .smod | .signextend => GasConstants.Glow
   | .addmod | .mulmod => GasConstants.Gmid
   | _ => GasConstants.Gverylow
 
-def arith_op.C'_comp (symState : EVM.State) :=
+def stackOps_op.C'_comp (symState : EVM.State) :=
   match op with
   | .exp => C'_exp symState
   | _ => op.C'_noexp
 
 @[simp]
-theorem C'_arith (symState : EVM.State) :
+theorem C'_stackOps (symState : EVM.State) :
   C' symState op.t = op.C'_comp symState := by
-  cases op <;> aesop (add simp [C', arith_op.t, arith_op.C'_comp, C'_exp])
+  cases op <;> aesop (add simp [C', stackOps_op.t, stackOps_op.C'_comp, C'_exp])
 
 @[simp]
-def arith_op.to_stack_length :=
+def stackOps_op.to_stack_length :=
   match op with
   | .iszero | .not => 1024
   | .addmod | .mulmod => 1022
@@ -451,7 +451,7 @@ def arith_op.to_stack_length :=
 
 attribute [local simp] GasConstants.Gverylow GasConstants.Glow GasConstants.Gmid GasConstants.Gexp GasConstants.Gexpbyte
 
-theorem X_arith_summary
+theorem X_stackOps_summary
                       /- (enoughGas : op.C'_comp < symGasAvailable.toNat) -/
                       (symStack_ok : symStack.length < op.to_stack_length)
                       (symState : EVM.State):
@@ -497,17 +497,17 @@ theorem X_arith_summary
   case succ g_pos =>
   simp [X, δ]
   have enough_gas_rw : (symGasAvailable.toNat < GasConstants.Gverylow) = False :=
-    by aesop (add simp [arith_op.C'_comp, arith_op.C'_noexp])
+    by aesop (add simp [stackOps_op.C'_comp, stackOps_op.C'_noexp])
     (add safe (by omega))
   simp [α, enough_gas_rw]
   have : ((decode ss.executionEnv.code ss.pc).getD (Operation.STOP, none)).1 = op.t := by
-    cases op <;> simp [ss, arith_op.t]
+    cases op <;> simp [ss, stackOps_op.t]
   simp [this]
   have : (ss.gasAvailable.toNat < op.C'_comp ss) = False := by
-    aesop (add simp [arith_op.C'_comp, ss]) (add safe (by linarith))
+    aesop (add simp [stackOps_op.C'_comp, ss]) (add safe (by linarith))
   simp [this]
   have gPos : (0 < g_pos) := by
-    revert enoughGas; simp [arith_op.C'_comp]
+    revert enoughGas; simp [stackOps_op.C'_comp]
     cases op <;> simp [ss] <;> aesop (add safe (by omega))
   have step_rw (cost : ℕ) := (EVM.step_add_summary op word₁ word₂ word₃ g_pos cost symGasPrice symTimestamp symNumber symGaslimit symStack (.ofNat 0) symGasAvailable symRefund symActiveWords symPrevrandao symExecLength symReturnData op.to_bin symMemory symAccessedStorageKeys symAccounts symCodeOwner symSender symSource symCoinbase symPerm gPos)
   have stack_ok_rw : (1024 < List.length symStack + 1) = False := by
@@ -515,13 +515,13 @@ theorem X_arith_summary
   cases cop: op <;> simp [cop] at symStack_ok <;>
   split <;> rename_i evm cost exec <;> try contradiction
   all_goals (
-    simp [EVM.step_arith, cop, add_instr, sub_instr, div_instr] at step_rw
-    simp only [cop, arith_op.to_stack_length] at stack_ok_rw
-    simp [arith_op.t, ss, cop, stack_ok_rw] at exec
+    simp [EVM.step_stackOps, cop, add_instr, sub_instr, div_instr] at step_rw
+    simp only [cop, stackOps_op.to_stack_length] at stack_ok_rw
+    simp [stackOps_op.t, ss, cop, stack_ok_rw] at exec
     cases exec
   )
   all_goals (
-    simp [Except.instMonad, Except.bind, ss, cop, step_rw, arith_op.t]
+    simp [Except.instMonad, Except.bind, ss, cop, step_rw, stackOps_op.t]
     rw [X_bad_pc] <;> aesop (add safe (by omega))
   )
 

@@ -10,9 +10,14 @@ open KEVMInterface
 
 namespace TwoOpEquivalence
 
-/- Equivalence proofs for arithmetic opcodes that take two operations to summarize -/
+/-! # TwoOp Stack Operations
 
-inductive arith_op where
+Equivalence proofs for opcodes that perform operations on the elements of the stack.
+
+The opcodes on this file are summarized on the KEVM side with two operations.
+-/
+
+inductive stackOps_op where
   | add
   | sub
   | addmod
@@ -22,10 +27,10 @@ inductive arith_op where
   | eq
   | iszero
 
-variable (op : arith_op)
+variable (op : stackOps_op)
 
 @[simp]
-def arith_op.to_binop : arith_op → SortBinStackOp ⊕ (SortTernStackOp ⊕ SortUnStackOp)
+def stackOps_op.to_binop : stackOps_op → SortBinStackOp ⊕ (SortTernStackOp ⊕ SortUnStackOp)
   | .add => .inl .ADD_EVM_BinStackOp
   | .sub => .inl .SUB_EVM_BinStackOp
   | .addmod => .inr (.inl .ADDMOD_EVM_TernStackOp)
@@ -36,13 +41,13 @@ def arith_op.to_binop : arith_op → SortBinStackOp ⊕ (SortTernStackOp ⊕ Sor
   | .iszero => .inr (.inr .ISZERO_EVM_UnStackOp)
 
 @[simp]
-def arith_op.to_maybeOpcode : SortMaybeOpCode :=
+def stackOps_op.to_maybeOpcode : SortMaybeOpCode :=
   match op.to_binop with
   | .inl op => (@inj SortBinStackOp SortMaybeOpCode) op
   | .inr (.inl op) => (@inj SortTernStackOp SortMaybeOpCode) op
   | .inr (.inr op) => (@inj SortUnStackOp SortMaybeOpCode) op
 
-def arith_op.from_k : arith_op → StackOpsSummary.arith_op
+def stackOps_op.from_k : stackOps_op → StackOpsSummary.stackOps_op
  | .add => .add
  | .sub => .sub
  | .addmod => .addmod
@@ -53,7 +58,7 @@ def arith_op.from_k : arith_op → StackOpsSummary.arith_op
  | .iszero => .iszero
 
 @[simp]
-def arith_op.to_stack (W0 W1 W2 : SortInt) (WS : SortWordStack) : SortWordStack :=
+def stackOps_op.to_stack (W0 W1 W2 : SortInt) (WS : SortWordStack) : SortWordStack :=
   match op.to_binop with
   | .inl _ => SortWordStack.«_:__EVM-TYPES_WordStack_Int_WordStack» W0 (SortWordStack.«_:__EVM-TYPES_WordStack_Int_WordStack» W1 WS)
   | .inr (.inl _) => SortWordStack.«_:__EVM-TYPES_WordStack_Int_WordStack» W0 (SortWordStack.«_:__EVM-TYPES_WordStack_Int_WordStack» W1 (SortWordStack.«_:__EVM-TYPES_WordStack_Int_WordStack» W2 WS))
@@ -200,7 +205,7 @@ def twoOpRHS
 /--
 First Op for summarization
 -/
-def arith_op.to_defn_Val3 (W0 W1 _Val3_int : SortInt) (_Val3_bool : SortBool) : Prop :=
+def stackOps_op.to_defn_Val3 (W0 W1 _Val3_int : SortInt) (_Val3_bool : SortBool) : Prop :=
   match op with
   | .add | .addmod => «_+Int_» W0 W1 = some _Val3_int
   | .sub => «_-Int_» W0 W1 = some _Val3_int
@@ -213,14 +218,14 @@ def arith_op.to_defn_Val3 (W0 W1 _Val3_int : SortInt) (_Val3_bool : SortBool) : 
 /--
 Second Op for summarization
 -/
-def arith_op.to_defn_Val4 (_Val3_bool : SortBool) (_Val3_int _Val4 W2: SortInt) : Prop :=
+def stackOps_op.to_defn_Val4 (_Val3_bool : SortBool) (_Val3_int _Val4 W2: SortInt) : Prop :=
   match op with
   | .add | .sub => chop _Val3_int = some _Val4
   | .addmod | .mulmod => «_%Word__EVM-TYPES_Int_Int_Int» _Val3_int W2 = some _Val4
   | .lt | .gt | .eq | .iszero => bool2Word _Val3_bool = some _Val4
 
 @[simp]
-def arith_op.to_gas : arith_op → SortScheduleConst
+def stackOps_op.to_gas : stackOps_op → SortScheduleConst
  | .addmod | .mulmod => .Gmid_SCHEDULE_ScheduleConst
  | _ => .Gverylow_SCHEDULE_ScheduleConst
 
@@ -336,7 +341,7 @@ theorem twoOp_prestate_equiv
     returnData := _Gen11.val
     } := by
     cases cop: op <;>
-    simp [twoOpLHS, cop, stateMap, arith_op.from_k] <;> rfl
+    simp [twoOpLHS, cop, stateMap, stackOps_op.from_k] <;> rfl
 
 def modWord (n m : SortInt) := ite (m = 0) 0 n % m
 
@@ -348,7 +353,7 @@ theorem modWord_eq (n m : SortInt) :
   (add simp [_17ebc68, _modInt_, modWord])
 
 @[simp]
-def arith_op.do (W0 W1 W2 : SortInt) : SortInt :=
+def stackOps_op.do (W0 W1 W2 : SortInt) : SortInt :=
   match op with
   | .add => (W0 + W1) % UInt256.size
   | .sub => (W0 - W1) % UInt256.size
@@ -360,7 +365,7 @@ def arith_op.do (W0 W1 W2 : SortInt) : SortInt :=
   | .iszero => ite (W0 = 0) 1 0
 
 @[simp]
-def arith_op.gas_comp : arith_op → SortInt
+def stackOps_op.gas_comp : stackOps_op → SortInt
   | .addmod | .mulmod => 8
   | _ => 3
 
@@ -417,7 +422,7 @@ theorem twoOp_poststate_equiv
     returnData := _Gen11.val
     } := by
     aesop (add simp [«_-Int_», «_+Int_», «_*Int_», chopIsSome])
-    (add simp [arith_op.to_defn_Val3, arith_op.to_defn_Val4, twoOpRHS, stateMap])
+    (add simp [stackOps_op.to_defn_Val3, stackOps_op.to_defn_Val4, twoOpRHS, stateMap])
     (add simp [bool2Word, _4bd3e13, _cb4e96d])
 
 open StackOpsSummary
@@ -479,7 +484,7 @@ theorem step_twoOp_equiv
   (pcountNonneg : 0 ≤ PC_CELL)
   (W0ge0 : 0 ≤ W0)
   (W1ge0 : 0 ≤ W1):
-  EVM.step_arith op.from_k gas gasCost (stateMap symState (@twoOpLHS op GAS_CELL PC_CELL W0 W1 W2 K_CELL SCHEDULE_CELL USEGAS_CELL WS _DotVar0 _DotVar2 _Gen0 _Gen1 _Gen10 _Gen11 _Gen12 _Gen13 _Gen14 _Gen15 _Gen16 _Gen17 _Gen18 _Gen19 _Gen2 _Gen20 _Gen21 _Gen22 _Gen23 _Gen3 _Gen4 _Gen5 _Gen6 _Gen7 _Gen8 _Gen9)) =
+  EVM.step_stackOps op.from_k gas gasCost (stateMap symState (@twoOpLHS op GAS_CELL PC_CELL W0 W1 W2 K_CELL SCHEDULE_CELL USEGAS_CELL WS _DotVar0 _DotVar2 _Gen0 _Gen1 _Gen10 _Gen11 _Gen12 _Gen13 _Gen14 _Gen15 _Gen16 _Gen17 _Gen18 _Gen19 _Gen2 _Gen20 _Gen21 _Gen22 _Gen23 _Gen3 _Gen4 _Gen5 _Gen6 _Gen7 _Gen8 _Gen9)) =
   .ok (stateMap {symState with execLength := symState.execLength + 1} (@twoOpRHS _Val0 _Val4 _Val5 _Val6 _Val7 K_CELL SCHEDULE_CELL _Val1 _Val2 WS _DotVar0 _DotVar2 _Gen0 _Gen1 _Gen10 _Gen11 _Gen12 _Gen13 _Gen14 _Gen15 _Gen16 _Gen17 _Gen18 _Gen19 _Gen2 _Gen20 _Gen21 _Gen22 _Gen23 _Gen3 _Gen4 _Gen5 _Gen6 _Gen7 _Gen8 _Gen9)) := by
   have gasAvailEnough : op.gas_comp ≤ GAS_CELL := by
    cases op <;> aesop (add simp [_andBool_, _5b9db8d, _61fbef3, «_<=Int_»])
@@ -495,7 +500,7 @@ theorem step_twoOp_equiv
       simp [defn_Val6] at defn_Val0
       cases cop : op <;> rw [intMap_sub_dist] <;> aesop
     . rw [←UInt256.add_succ_mod_size, intMap_add_dist] <;> aesop
-    . cases op <;> simp [arith_op.from_k]
+    . cases op <;> simp [stackOps_op.from_k]
       . -- `add` case
         aesop (add simp [intMap, intMap_add_dist])
       . -- `sub` case
@@ -516,7 +521,7 @@ theorem step_twoOp_equiv
         sorry
 
 
-attribute [local simp] StackOpsSummary.arith_op.C'_comp
+attribute [local simp] StackOpsSummary.stackOps_op.C'_comp
 
 /- Deviations from the KEVM produced specifications:
  1. The program is not symbolic, it is instead a 1-opcode (`ADD`) program
@@ -590,14 +595,14 @@ theorem X_twoOp_equiv
   -- If we don't apply this lemma we cannot rewrite X_add_summary
   have pc_equiv : intMap 0 = UInt256.ofNat 0 := rfl
   simp only [executionEnv_map, blockHeader_map, twoOpLHS, SortGeneratedTopCell.program]
-  rw [pc_equiv, X_arith_summary]
-  · cases op <;> simp [arith_op.from_k]
+  rw [pc_equiv, X_stackOps_summary]
+  · cases op <;> simp [stackOps_op.from_k]
     . -- `add` case
       simp [«_-Int_»] at defn_Val7; simp [←defn_Val7]
       simp [GasInterface.cancun_def] at defn_Val6 defn_Val0
       simp [defn_Val6] at defn_Val0
-      aesop (add simp [GasInterface.cancun_def, «_-Int_», intMap_add_dist, twoOpLHS, twoOpRHS, arith_op.C'_comp])
-      (add simp [arith_op.from_k])
+      aesop (add simp [GasInterface.cancun_def, «_-Int_», intMap_add_dist, twoOpLHS, twoOpRHS, stackOps_op.C'_comp])
+      (add simp [stackOps_op.from_k])
       (add safe (by rw [intMap_sub_dist])) (add safe (by apply le_of_lt))
     . -- `sub` case
       sorry
@@ -616,7 +621,7 @@ theorem X_twoOp_equiv
   · simp_all [sizeWordStack_def]
   · simp [GasInterface.cancun_def] at defn_Val6 defn_Val0
     simp [defn_Val6] at defn_Val0
-    cases op <;> simp [arith_op.from_k] <;>
+    cases op <;> simp [stackOps_op.from_k] <;>
     rw [intMap_toNat] <;> aesop (add safe (by linarith))
 
 end TwoOpEquivalence

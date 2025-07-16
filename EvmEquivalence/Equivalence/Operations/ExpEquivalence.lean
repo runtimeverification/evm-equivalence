@@ -10,6 +10,14 @@ open KEVMInterface
 
 namespace ExpOpcodeEquivalence
 
+/-! # `EXP` opcode
+
+Equivalence proofs for the `exp` opcode
+
+The `exp` opcode requires a satandalone file because its summaries
+are not easily generalizable to the OneOp or TwoOp ones.
+-/
+
 /--
 We have two cases for the summaries: one where the exponent is 0,
 and where the exponent is greater than 0
@@ -479,7 +487,7 @@ theorem step_exp_equiv
   _DotVar0 _DotVar2 _Gen0 _Gen1 _Gen10 _Gen11 _Gen12 _Gen13 _Gen14
   _Gen15 _Gen16 _Gen17 _Gen18 _Gen19 _Gen2 _Gen20 _Gen21 _Gen22
   _Gen23 _Gen3 _Gen4 _Gen5 _Gen6 _Gen7 _Gen8 _Gen9 _K_CELL)
-  EVM.step_arith .exp gas gasCost (stateMap symState lhs) =
+  EVM.step_stackOps .exp gas gasCost (stateMap symState lhs) =
   .ok (stateMap {symState with execLength := symState.execLength + 1} rhs) := by
   intro lhs rhs
   rw [exp_prestate_equiv, @exp_poststate_equiv PC_CELL W0 W1 _ _ _Val12]
@@ -487,7 +495,7 @@ theorem step_exp_equiv
   cases gas; contradiction
   case succ gas =>
     have : intMap W0 :: intMap W1 :: wordStackMap WS =
-    StackOpsSummary.arith_op.stack .exp
+    StackOpsSummary.stackOps_op.stack .exp
       (intMap W0) (intMap W1) (intMap W1) (wordStackMap WS) := by aesop
     rw [this]
     rw [executionEnv_map, blockHeader_map, EVM.step_add_summary]
@@ -603,18 +611,18 @@ theorem X_exp_equiv
   -- If we don't apply this lemma we cannot rewrite X_add_summary
   have pc_equiv : intMap 0 = UInt256.ofNat 0 := rfl
   have stack_op : intMap W0 :: intMap W1 :: wordStackMap WS =
-    StackOpsSummary.arith_op.stack .exp
+    StackOpsSummary.stackOps_op.stack .exp
       (intMap W0) (intMap W1) (intMap W1) (wordStackMap WS) := rfl
-  have code_op : ⟨#[0xA]⟩ = StackOpsSummary.arith_op.to_bin .exp := rfl
+  have code_op : ⟨#[0xA]⟩ = StackOpsSummary.stackOps_op.to_bin .exp := rfl
   simp [executionEnv_map, blockHeader_map, expLHS]
-  rw [stack_op, code_op, pc_equiv, X_arith_summary]
+  rw [stack_op, code_op, pc_equiv, X_stackOps_summary]
   /- This have could be subsumed, but it's useful for the `gt0` case above -/
   have W1_zero_eq : (intMap W1 == { val := 0 }) = true → W1 = 0 := by
     sorry
   have W1_zero_eq' : ec = .eq0 → W1 = 0 := by
     intro ecc; simp [ecc] at defn_Val0
     aesop (add simp [«_<=Int_»]) (add safe (by linarith))
-  · cases ec <;> simp [arith_op.C'_comp]
+  · cases ec <;> simp [stackOps_op.C'_comp]
     . -- `gt0` case
       -- To prove this, first `TODO.exp_representation` needs to be fixed for `gt0`
       aesop (add simp [GasInterface.cancun_def, intMap_add_dist, expLHS, expRHS])
@@ -629,7 +637,7 @@ theorem X_exp_equiv
       (add safe (by contradiction))
       sorry
   · cases ec <;> simp <;> simp [sizeWordStack_def] at wordStackOk <;> assumption
-  · cases ec <;> simp [arith_op.C'_comp] <;>
+  · cases ec <;> simp [stackOps_op.C'_comp] <;>
     simp [exp_case.gas] at enoughGas <;>
     simp [exp_case.to_defn_Val0] at defn_Val0
     . -- Enough Gas `gt0`
