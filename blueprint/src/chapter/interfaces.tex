@@ -98,16 +98,16 @@ these \texttt{private} attributes.
 \subsection{Opcode Semantics}
 
 The most relevant theorem of this kind is the behavior of the \texttt{X}
-function when executing a single-opcode program and having the program counter
-be 1.
+function (defined in \ref{def:EVM.X}) when executing a single-opcode program and
+having the program counter be 1.
 
-\begin{definition}[EvmYul: Function X]\label{def:X}\lean{EvmYul.EVM.X}\leanok
-Function $X$ defined in the yellow paper.
-\end{definition}
+% \begin{definition}[EvmYul: Function X]\label{def:X}\lean{EvmYul.EVM.X}\leanok
+% Function $X$ defined in the yellow paper.
+% \end{definition}
 
 We then specify the result of running the $X$ function on a bad opcode.
 
-\begin{theorem}[X_bad_pc]\label{thm:X_bad_pc}\lean{X_bad_pc}\uses{def:X}\leanok
+\begin{theorem}[X_bad_pc]\label{thm:X_bad_pc}\lean{X_bad_pc}\uses{def:EVM.X}\leanok
 Given
 \begin{itemize}
 \item a single-opcode program $P$,
