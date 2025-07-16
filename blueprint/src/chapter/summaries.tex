@@ -1,3 +1,94 @@
 \chapter{EvmYul Summaries}
 
-We summarize the big step semantics present in EvmYul.
+A prior step to proving any notion of equivalence is to encapsulate or summarize
+the computational content of both models. In the KEVM case, the computational
+content is summarized by a rewrite rule on the KEVM side, and then extracted to
+Lean as shown in the
+\href{https://runtimeverification.github.io/evm-equivalence/docs/EvmEquivalence/KEVM2Lean/Rewrite.html}{Rewrite.lean}
+file.
+
+The way summarizing the computational content for the EvmYul model will come in
+the form of theorems. To know which theorems we need to take a step back and
+look at which parts of the two models we want to equate. On the KEVM side, it's
+the summaries in form of constructors of the \texttt{Rewrites} type.
+On the EvmYul side, we don't have as fine-grained semantic steps as KEVM's
+rewrite rules for opcode execution, so we will show equivalence. With this in
+mind, we will focus on two of the core EvmYul functions: \texttt{EVM.step} and
+\texttt{EVM.X}.
+
+\begin{definition}[EVM.step]
+\label{def:EVM.step}\lean{EvmYul.EVM.step}\leanok
+\texttt{EVM.step} orchestrates opcode execution, taking the following arguments.
+\begin{itemize}
+\item Amount of gas left: \texttt{fuel}
+\item Cost of executing the opcode: \texttt{gasCost}
+\item Opcode to be executed: \texttt{instr}
+\end{itemize}
+
+Given these arguments and an \texttt{EVM.state}, the \texttt{step} function will
+perform the correspondent updates on the provided state according to the
+semantics of \texttt{instr}.
+\end{definition}
+
+From this definition there are a couple of things to be noted.
+\begin{itemize}
+\item The \texttt{instr} parameter is of type \texttt{Option} and as such
+can be \texttt{none}, in which case the opcode is fetched from the execution
+environment's bytecode.
+\item \texttt{gasCost} is always given by functions calling \texttt{step}.
+\item If \texttt{fuel} is not strictly positive, \texttt{step} will immediately fail.
+\end{itemize}
+This means that while the \texttt{step} function captures a big portion of the
+executed opcode's semantics, it is not the full picture.
+
+To incorporate a most complete picture of opcode semantics execution we turn to
+the \texttt{EVM.X} function. This function iterates the above \texttt{EVM.step}
+and performs several important actions.
+
+\begin{definition}[EVM.X]
+\label{def:EVM.X}\lean{EvmYul.EVM.X}\leanok\uses{def:EVM.step}
+Formalization of the yellow paper's $X$ function as defined in section 9.4.
+
+Given the following arguments:
+\begin{itemize}
+\item Amount of gas left: \texttt{fuel}.
+\item Valid jumpdests: \texttt{validJumps}.
+\item An \texttt{EVM.State}: \texttt{evmState}.
+\end{itemize}
+
+The function \texttt{X} performs the following tasks:
+\begin{itemize}
+\item Decode the opcodes present in \texttt{evmState}'s execution
+environment.
+\item Perform sanity checks and halt execution if these are not met.
+\item Assign gas costs depending on the decoded opcode.
+\item Execute \texttt{EVM.step} with the current decoded opcode.
+\item Iterate if the conditions are right.
+\end{itemize}
+\end{definition}
+
+Since the \texttt{X} function operates on the \texttt{evmState}'s bytecode, in
+order to exercise its semantic content we will execute it but restricting
+\texttt{evmState}'s bytecode to be a one-opcode program.
+
+\section{\texttt{EVM.step} and \texttt{EVM.X} summary}
+
+We can now state summarization theorems for \texttt{step} and \texttt{X}. Given
+a fully symbolic \texttt{EVM.State} $S$, summarization theorems clearly state
+which are the precise state updates that occur to $S$ after executing the
+\texttt{step} or \texttt{X} functions with the following:
+
+\begin{itemize}
+\item A set of concrete opcodes.
+\item Enough gas to perform execution.
+\item Well-formedness of other inputs to the functions such as a symbolic stack.
+\end{itemize}
+
+The sets of concrete opcodes are created by grouping opcodes that have similar
+effects to $S$.
+For instance, we can
+\href{https://runtimeverification.github.io/evm-equivalence/docs/EvmEquivalence/Summaries/StackOperationsSummary.html}{group
+  all opcodes} that perform operations on the stack such as \texttt{ADD},
+\texttt{SHL} and so on, and have a general enough theorem that captures the
+effects of these opcodes on $S$ without having to do a separate summary for each
+of them.
