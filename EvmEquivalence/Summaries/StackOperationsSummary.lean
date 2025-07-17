@@ -284,33 +284,6 @@ theorem EVM.step_add_summary (gpos : 0 < gas) (symState : EVM.State):
           } := by
   intro ss; rw [EVM.step_add_to_step_add]; cases op <;> rfl; assumption
 
-----
--- For having symbolic programs instead of singleton ones
-/- abbrev addBytecode (preCode postCode : Array UInt8) : ByteArray :=
-  ⟨preCode ++ #[(0x01 : UInt8)] ++ postCode⟩
-
-abbrev addInstr (preCode postCode : Array UInt8) : Option (Operation .EVM × Option (UInt256 × Nat)) :=
-decode (addBytecode preCode postCode) (.ofNat preCode.size)
-
-theorem array_append_size_comm {α : Type} (a1 a2 : Array α) :
-  (a1 ++ a2).size <= (a2 ++ a1).size := by sorry
-
-theorem array_append_size_le {α : Type} (a1 a2 : Array α) :
-  a1.size <= (a1 ++ a2).size := by sorry -/
-
---set_option maxHeartbeats 3000000
-/- theorem addInst_eq (preCode postCode : Array UInt8)
-                   (preCode_size_ok : preCode.size < UInt256.size) : addInstr preCode postCode = add_instr := by
-  simp [add_instr, addEVM, addInstr, addBytecode, decode] -/
-  /- split
-  case isTrue => sorry
-    --simp [parseInstr]
-    --rw [ofNat_toNat_eq]
-  case isFalse fls =>
-    have h_true : (UInt256.ofNat preCode.size).toNat < preCode.size + (1 + postCode.size) := sorry
-    contradiction -/
-----
-
 @[simp]
 def stackOps_op.to_bin : ByteArray :=
   match op with
