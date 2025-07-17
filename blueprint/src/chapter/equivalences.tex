@@ -32,21 +32,16 @@ In our context,
 \item The transition relation $\rightarrow$ is execution in any of the models. In particular, we have that $\rightarrow\,
 \subset S_{\text{KEVM}} \times S_{\text{KEVM}} \,\bigcup\, S_{\text{EvmYul}} \times S_{\text{EvmYul}}$.
 \item $R = \bigl\{\bigl( p, \text{stateMap}(p) \bigr)\, |\, p\in S_{\text{KEVM}}\bigr\} \,\bigcup\, \bigl\{\bigl(\text{stateMap}'(q),
-  q\bigr)\, |\, p\in S_{\text{EvmYul}}\bigr\}$ where $\text{stateMap}$ is
+  q\bigr)\, |\, q\in S_{\text{EvmYul}}\bigr\}$ where $\text{stateMap}$ is
   defined in \ref{def:stateMap} and $\text{stateMap}'\,:\,
   S_{\text{EvmYul}}\rightarrow S_{\text{KEVM}}$ has not yet been defined.
 
 \end{itemize}
-Notice that $R \subsetneq S_{\text{KEVM}}\times S_{\text{EvmYul}}$.
-% Given this particularities, for every $\lambda\in\Lambda$ there is only one of
-% the above implications to be proven. For example, if $\lambda = \text{KEVM}$,
-% the second item in the above definition is vacuously true since for every $(p,
-% q)\in R$ there is no $q'\in S_{\text{EvmYul}}$ such that $q
-% \overset{\text{KEVM}}{\rightarrow} q'$.
-With this in mind, we have machinnery to prove the first implication of the
-bisimulation definition.
+Note that $R \subsetneq S_{\text{KEVM}}\times S_{\text{EvmYul}}$.
+With this in mind, we currently have machinnery to prove the first implication
+of the bisimulation definition.
 
-To do this, given KEVM states $p, p'$ with $p \rightarrow p'$, we know that
+Given KEVM states $p, p'$ with $p \rightarrow p'$, we know that
 $\bigl( p, \text{stateMap}(p) \bigr)$ and $\bigl( p', \text{stateMap}(p')
 \bigr)$ belong to $R$. Hence, to prove the first item we only need to show that
 $\text{stateMap}(p) \rightarrow \text{stateMap}(p')$.
@@ -66,6 +61,305 @@ Given $p, p' \in S$, we have that $p\rightarrow p'$ if
 \end{itemize}
 \end{definition}
 
+Now we can start describing the proof process more clearly.
+
 \section{Proof Outline}
 
+Given all the above and $f\in\{\texttt{step}, \texttt{X}\}$, the first
+implication translates to
 
+\begin{equation}\label{eq:bisimulation-explicit1}
+\forall p, p'\in S_{\text{KEVM}}\,\, \texttt{Rewrites}\,\, p \,\, p'
+\Rightarrow f\bigl(\text{stateMap}(p)\bigr) = \text{stateMap}(p').
+\end{equation}
+
+While the second translates to
+\begin{equation}\label{eq:bisimulation-explicit2}
+\forall q, q'\in S_{\text{EvmYul}}\,\, f(q) = q' \Rightarrow
+\texttt{Rewrites}\,\, \text{stateMap}'(q)\,\, \text{stateMap}'(q').
+\end{equation}
+
+The above statement is still not fully precise, since we're only feeding
+elements of $S_{\text{EvmYul}}$ to $f$, but both \texttt{step} and \texttt{X}
+take more arguments. However, the only argument that we'll fix is the opcode
+being executed.
+
+This means that we will be reproducing the above argument on a per-opcode basis.
+The reasoning being that showing equivalence at the opcode-execution level is
+fundamental enough to argue that both models share the same understanding of the
+semantics.
+
+The following example should shine enough light on the
+specificities that we have left out so far.
+
+\section{Case Study: Stack Operations}
+
+In this example we will be covering proofs for \ref{eq:bisimulation-explicit1}
+for ``stack operation opcodes'', meaning opcodes that perform operations on the
+stack such as \texttt{ADD} or \texttt{SHL}. Since we're reproducing the same
+argument for each opcode, the proof process is architecturally similar across
+the files.
+
+In fact, for some opcodes, we can bundle them together and reproduce the above
+argument at once per opcode class.
+
+\subsection{Opcode Bundling}
+
+The main criteria for creating these opcode classes is based on their KEVM
+summaries. To understand how KEVM summaries condition which opcodes go to each
+class (which is still a somewhat arbitrary taxonomy) we assume understanding of
+the
+\href{https://github.com/runtimeverification/evm-equivalence/tree/master/EvmEquivalence/Equivalence#anatomy-of-a-rewrite-rule}{anatomy
+  of rewrite rules}.
+
+There are two main frictions when bundling opcodes together: how fine-grained we
+need the state representation to be and how many ``steps'' does it take for KEVM
+to encode the state changes.
+
+The fine-grainedness of the state refers to how abstracted the satate is. For
+instance, instead of specifying symbolic values for all the components of the
+\texttt{network} cell, we just have a symbolic \texttt{network} cell variable.
+This is not troublesome in general.
+
+What is more defining for opcode bundling is the amount of steps or conditions
+needed to encode the state changes performed per opcode. For example, for the
+\texttt{ADD} opcode we need two conditions (one per operation) to define the
+value that will be put on the top of the stack. The first condition adds the
+first two items of the stack, and the second one takes the corresponding
+modulus:
+\begin{verbatim}
+(defn_Val3 : «_+Int_» W0 W1 = some _Val3)
+(defn_Val4 : chop _Val3 = some _Val4)
+\end{verbatim}
+In this case, \texttt{_Val4} is going to be the value introduced at the top of
+the stack.
+
+We can contrast this to the \texttt{DIV} opcode, which only takes one condition
+to encode the value of the newly added stack item:
+\begin{verbatim}
+(defn_Val3 : «_/Word__EVM-TYPES_Int_Int_Int» W0 W1 = some _Val3)
+\end{verbatim}
+
+With this in mind, we first define an inductive type representing all opcodes in
+this class. The class being ``opcodes that perform stack operations and take one
+condition to summarize the new value added to the stack.''
+
+\begin{definition}[stackOps_op]\label{def:OneOp.stackOps}
+\lean{OneOpEquivalence.stackOps_op}\leanok
+Class of opcodes consisting of
+\texttt{DIV}, \texttt{SDIV}, \texttt{MOD}, \texttt{SMOD}, \texttt{SIGNEXT},
+\texttt{SLT}, \texttt{SGT}, \texttt{AND}, \texttt{XOR}, \texttt{NOT},
+\texttt{BYTE}, \texttt{SHL}, \texttt{SHR}, \texttt{SAR}.
+\end{definition}
+
+This definition will allow us to generalize the rest of the description to the
+whole class of opcodes.
+
+In the remaining of this chapter we're going to be lying down the formalization
+process for \ref{eq:bisimulation-explicit1} for the opcode class
+\texttt{stackOps_op}.
+
+\subsection{$\forall p, p'\in S_{\text{KEVM}}\,\, \texttt{Rewrites}\,\, p \,\, p'$}
+
+The first stop is to, given the class of opcodes \texttt{stackOps_op},
+identify all $p, p'\in S_{\text{KEVM}}$ such that $\texttt{Rewrites}\,\, p \,\,
+p'$ holds by means of executing any of the opcodes in that equivalence class
+(written as $\texttt{Rewrites}_{\texttt{stackOps_op}}\,\, p \,\, p'$).
+To achieve this we rely on the following two definitions.
+
+\begin{definition}[oneOpLHS]\label{def:oneOpLHS}
+\lean{OneOpEquivalence.oneOpLHS}\leanok\uses{def:OneOp.stackOps}
+
+\texttt{oneOpLHS} is a symbolic state representing all KEVM states that
+rewrite to some other state by means of executing any opcode of the
+\texttt{stackOps_op} class. Viewed as a
+function, $$\mathcal{Im}(\texttt{oneOpLHS}) \supset \{p\,\, |\,\, \exists
+p'\,\,\texttt{Rewrites}_{\texttt{stackOps_op}}\,\, p \,\, p'\}.$$
+
+\end{definition}
+
+\begin{definition}[oneOpRHS]\label{def:oneOpRHS}
+\lean{OneOpEquivalence.oneOpRHS}\leanok\uses{def:OneOp.stackOps}
+
+\texttt{oneOpRHS} is a symbolic state representing all KEVM states that are a
+rewrite of some other state by means of executing any opcode of the
+\texttt{stackOps_op} class. Viewed as a
+function, $$\mathcal{Im}(\texttt{oneOpRHS}) \supset \{p'\,\, |\,\, \exists
+p\,\,\texttt{Rewrites}_{\texttt{stackOps_op}}\,\, p \,\, p'\}.$$
+
+\end{definition}
+
+The next step is, given $p\in\mathcal{Im}(\texttt{oneOpLHS})$ and
+$p'\in\mathcal{Im}(\texttt{oneOpRHS})$, to find which are the necessary
+conditions such that $\texttt{Rewrites}_{\texttt{stackOps_op}}\,\, p \,\, p'$
+holds. For this we turn to the constructors of the $\texttt{Rewrites}$ type.
+
+Each constructor represents an opcode, encoding the KEVM summary of executing such
+opcode on a symbolic state. The constructors of the rewrite type in turn contain
+all the conditions (such as \texttt{defn_Val3} above) to satisfy the rewrite
+summary. That is, the necessary conditions that ensure
+$\texttt{Rewrites}_{\texttt{stackOps_op}}\,\, p \,\, p'$. The following theorem
+proves that for any two such $p, p'$, under the restrictions posed by the
+constructors associated to the \texttt{stackOps_op} class, $p\rightarrow p'$.
+
+Note that, \texttt{oneOpLHS} and \texttt{oneOpRHS} being symbolic states, it is
+also correct to state \texttt{Rewrites} \texttt{oneOpLHS} \texttt{oneOpRHS}.
+However, this means that \texttt{oneOpLHS} rewrites to \texttt{oneOpRHS} for all
+possible value of its symbolic parameters. This is generally a false statement
+without restricting their symbolic values.
+
+\begin{theorem}[Rewrites oneOpLHS oneOpRHS]\label{thm:oneOpRw}
+\lean{OneOpEquivalence.rw_oneOpLHS_oneOpRHS}\leanok
+\uses{def:oneOpLHS,def:oneOpRHS,def:Rewrites}
+
+Given the restrictions posed by the \texttt{Rewrites} constructors corresponding
+to the \texttt{stackOps_op} opcode class,
+$\texttt{Rewrites}_{\texttt{stackOps_op}}$ \texttt{oneOpLHS} \texttt{oneOpRHS}.
+
+\end{theorem}
+
+\begin{proof}
+\leanok
+
+We have that \texttt{oneOpLHS} and \texttt{oneOpRHS} are generalizations of the
+states represented in the \texttt{Rewrites} constructors for the
+\texttt{stackOps_op} class. As such, if we specialize the definitions of
+\texttt{oneOpLHS} and \texttt{oneOpRHS} down to the opcode, since we're assuming
+the conditions of satisfaction for every \texttt{stackOps_op} opcode summary,
+the result follows.
+
+\end{proof}
+
+\subsection{$f\bigl(\text{stateMap}(p)\bigr) = \text{stateMap}(p')$}
+
+Now that we know the conditions under which
+$\texttt{Rewrites}_{\texttt{stackOps_op}}$ \texttt{oneOpLHS} \texttt{oneOpRHS} holds,
+we have to show $f\bigl(\text{stateMap}(\texttt{oneOpLHS})\bigr) =
+\text{stateMap}(\texttt{oneOpRHS})$ for $f\in\{\texttt{step}, \texttt{X}\}$.
+
+But in order to compute $f$, first we need to know the values of
+$\text{stateMap}(\texttt{oneOpLHS})$ and $\text{stateMap}(\texttt{oneOpRHS})$.
+Similarly as with the EvmYul summaries [\ref{chap:EvmYulSummaries}], we do this
+with theorems.
+
+\begin{theorem}[oneOpLHS_equiv]\label{thm:oneOpLHS_equiv}
+\lean{OneOpEquivalence.oneOp_prestate_equiv}\leanok\uses{def:stateMap}
+This theorem allows for a clean rewrite of $\text{stateMap}(\texttt{oneOpLHS})$.
+\end{theorem}
+\begin{proof}
+\leanok
+This result follows by specifying it down to the opcode and executing the
+stateMap function.
+\end{proof}
+
+\begin{theorem}[oneOpRHS_equiv]\label{thm:oneOpRHS_equiv}
+\lean{OneOpEquivalence.oneOp_poststate_equiv}\leanok\uses{def:stateMap}
+This theorem allows for a clean rewrite of $\text{stateMap}(\texttt{oneOpRHS})$.
+We tipically go beyond just a pure rewrite of the stateMap function and also
+simplify some of the initial expressions present either in \texttt{oneOpRHS} or
+as a result of the stateMap computation.
+\end{theorem}
+\begin{proof}
+This result follows by specifying it down to the opcode and executing the
+stateMap function.
+\end{proof}
+
+Equipped with these theorems, we can now state and prove the main theorems for
+the functions \texttt{step} and \texttt{X}. Since \texttt{X} iteratively applies
+\texttt{step}, we start with the \texttt{step} function.
+
+\begin{theorem}[step_oneOp]\label{thm:step_oneOp}
+\lean{OneOpEquivalence.step_oneOp_equiv}\leanok
+\uses{def:stateMap,def:EVM.step,def:oneOpLHS,def:oneOpRHS}
+
+Assume
+
+\begin{itemize}
+\item All the conditions needed to satify the summaries of
+  $\texttt{Rewrites}_{\texttt{stackOps_op}}$,
+\item A schedule set to CANCUN,
+\item Enough gas per opcode,
+\item Well formed gas and program counter parameters in \texttt{oneOpLHS},
+\item Non-negative elements in the stack of \texttt{oneOpLHS}.
+\end{itemize}
+
+Then, evaluating the function \texttt{EVM.step} with any of the
+\texttt{stackOps_op} opcodes on $\text{stateMap}(\texttt{oneOpLHS})$ results in
+$\text{stateMap}(\texttt{oneOpRHS})$.
+
+\end{theorem}
+
+\begin{proof}
+\uses{thm:oneOpLHS_equiv,thm:oneOpRHS_equiv,thm:cancun_def}
+
+The proof consists of several parts, but many are shared among the
+\texttt{stackOps_op} class, such as the gas or program counter proof
+obligations.
+
+The main semantic challenge for this class of opcodes is to show that the
+operations performed on the stack correspond to each other. So, for example, for
+the \texttt{DIV} case, once all the execution-related bureaucracies have been
+dealt with, the main goal is the following:
+
+\begin{verbatim}
+intMap W0 / intMap W1 = intMap (divWord W0 W1)
+\end{verbatim}
+
+Where \texttt{W0} and \texttt{W1} are the first two elements of
+\texttt{oneOpLHS}'s stack.
+
+What this proof obligation is stating is that mapping the first two elements of
+a KEVM stack to EvmYul and then dividing them, is the same as dividing the two
+elements in KEVM and them mapping them to EvmYul.
+
+\end{proof}
+
+\begin{theorem}[X_oneOp]\label{thm:X_oneOp}
+\lean{OneOpEquivalence.X_oneOp_equiv}\leanok
+\uses{def:stateMap,def:EVM.X,def:oneOpLHS,def:oneOpRHS}
+
+Assume
+
+\begin{itemize}
+\item All the conditions needed to satify the summaries of
+  $\texttt{Rewrites}_{\texttt{stackOps_op}}$,
+\item A schedule set to CANCUN,
+\item Enough gas per opcode,
+\item Well formed gas parameter in \texttt{oneOpLHS},
+\item The program counter of \texttt{oneOpLHS} set to zero,
+\item Non-negative elements in the stack of \texttt{oneOpLHS},
+\item A well formed stack in \texttt{oneOpLHS}
+\item The program to be executed in \texttt{oneOpLHS} be a single-opcode program
+  consisting of any opcode of the \texttt{stackOps_op} class.
+\end{itemize}
+
+Then, evaluating the function \texttt{EVM.X} with any of the
+\texttt{stackOps_op} opcodes on $\text{stateMap}(\texttt{oneOpLHS})$ results in
+$\text{stateMap}(\texttt{oneOpRHS})$.
+
+\end{theorem}
+
+\begin{proof}
+\uses{thm:oneOpLHS_equiv,thm:oneOpRHS_equiv,thm:cancun_def,thm:X_bad_pc}
+
+Similarly as for the \texttt{EVM.step} function, we use tactics to execute
+\texttt{EVM.X} symbolically. The hypothesis space allows us to get rid of all
+reverting cases and confront the semantic equivalence similarly as in the proof
+for the \texttt{EVM.step} function.
+
+\end{proof}
+
+With these two theorems proven we can conclude that under the conditions of
+satisfaction of the summaries for the \texttt{stackOps_op} opcodes, together
+with some well-formedness constraints, there is a similarity relationship
+(equation \ref{eq:bisimulation-explicit1}) between executing the
+\texttt{stackOps_op} opcodes in KEVM and executing them in the EvmYul model.
+
+\section{Future Work}
+
+There are a number of items that remain as future work. For one, formalizing and
+proving equation \ref{eq:bisimulation-explicit2} in a similar fashon to what
+we've shown with equation \ref{eq:bisimulation-explicit1}.
+But within the formalization efforts of equation
+\ref{eq:bisimulation-explicit1}, it remains to close a number of proof
+obligations and formalizing other classes of opcodes.
