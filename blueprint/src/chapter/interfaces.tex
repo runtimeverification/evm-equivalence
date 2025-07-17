@@ -123,6 +123,11 @@ the symbolic state:
 \item The \texttt{executionLength} is increased by one.
 \end{itemize}
 \end{theorem}
+\begin{proof}
+\leanok
+Massaging with tactics the execution path that evaluates if the program counter
+is out of bounds derives this result.
+\end{proof}
 
 \section{KEVM Interface}
 
@@ -180,6 +185,12 @@ Given \texttt{const : SortScheduleConst}, we equate
 \texttt{«_<_>_SCHEDULE_Int_ScheduleConst_Schedule» const .CANCUN_EVM} to a
 simple match statement on \texttt{const}.
 \end{theorem}
+\begin{proof}
+\leanok
+This result follows from applying the custom tactics found in
+\href{https://runtimeverification.github.io/evm-equivalence/docs/EvmEquivalence/Interfaces/Tactics.html}{\texttt{Tactics.lean}},
+which boil down to a bunch of simplifications.
+\end{proof}
 
 \begin{theorem}[flag_cancun_def]
 \label{thm:flag_cancun_def}\lean{GasInterface.flag_cancun_def}\leanok\uses{def:flagConstSched}
@@ -187,3 +198,9 @@ Given \texttt{flag : SortScheduleFlag}, we equate
 \texttt{«_<<_>>_SCHEDULE_Bool_ScheduleFlag_Schedule» flag .CANCUN_EVM} to a
 simple match statement on \texttt{flag}.
 \end{theorem}
+\begin{proof}
+\leanok
+This result follows from applying the custom tactics found in
+\href{https://runtimeverification.github.io/evm-equivalence/docs/EvmEquivalence/Interfaces/Tactics.html}{\texttt{Tactics.lean}},
+which boil down to a bunch of simplifications.
+\end{proof}
