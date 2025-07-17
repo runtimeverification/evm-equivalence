@@ -1,4 +1,4 @@
-\chapter{EvmYul Summaries}
+\chapter{EvmYul Summaries}\label{chap:EvmYulSummaries}
 
 A prior step to proving any notion of equivalence is to encapsulate or summarize
 the computational content of both models. In the KEVM case, the computational
@@ -12,7 +12,8 @@ the form of theorems. To know which theorems we need to take a step back and
 look at which parts of the two models we want to equate. On the KEVM side, it's
 the summaries in form of constructors of the \texttt{Rewrites} type.
 On the EvmYul side, we don't have as fine-grained semantic steps as KEVM's
-rewrite rules for opcode execution, so we will show equivalence. With this in
+rewrite rules for opcode execution, so we will produce theorems that state the
+specific semantic steps we're interested in. With this in
 mind, we will focus on two of the core EvmYul functions: \texttt{EVM.step} and
 \texttt{EVM.X}.
 
