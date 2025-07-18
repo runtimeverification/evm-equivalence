@@ -40,6 +40,10 @@ theorem chopIsSome : chop n = some (n % UInt256.size) := rfl
 
 end
 
+-- Behavior of `«_==K_»` and `«_=/=K_»`
+axiom Axioms.Keq_def (k₁ k₂ : SortK) : «_==K_» k₁ k₂ = some (k₁ == k₂)
+axiom Axioms.Kneq_def (k₁ k₂ : SortK) : «_=/=K_» k₁ k₂ = some (k₁ != k₂)
+
 -- Behavior of `_orBool_`, `_andBool_` and `notBool_`
 @[simp]
 theorem orBool_def (b₁ b₂ : SortBool) : _orBool_ b₁ b₂ = some (b₁ || b₂) := by
