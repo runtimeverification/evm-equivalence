@@ -110,7 +110,7 @@ theorem sched_default_def :
   | .Rmaxquotient_SCHEDULE_ScheduleConst           => some 2
   | .Gpointeval_SCHEDULE_ScheduleConst             => some 0
   := by
-  sorry --simp_schedule1; cases const <;> simp_schedule2
+  simp_schedule1; cases const <;> simp_schedule2
 
 @[local simp]
 theorem sched_frontier_def :
@@ -118,13 +118,13 @@ theorem sched_frontier_def :
   match const with
   | .Gtxcreate_SCHEDULE_ScheduleConst => some 21000
   | const => «_<_>_SCHEDULE_Int_ScheduleConst_Schedule» const .DEFAULT_EVM := by
-  sorry --simp_schedule1; cases const <;> simp_schedule2
+  simp_schedule1; cases const <;> simp_schedule2
 
 @[local simp]
 theorem sched_homestead_def :
   «_<_>_SCHEDULE_Int_ScheduleConst_Schedule» const .HOMESTEAD_EVM =
   «_<_>_SCHEDULE_Int_ScheduleConst_Schedule» const .DEFAULT_EVM := by
-  sorry --simp_schedule1; cases const <;> simp_schedule2
+  simp_schedule1; cases const <;> simp_schedule2
 
 @[local simp]
 theorem sched_tangerine_whistle_def :
@@ -137,7 +137,7 @@ theorem sched_tangerine_whistle_def :
   | .Gextcodesize_SCHEDULE_ScheduleConst  => some 700
   | .Gextcodecopy_SCHEDULE_ScheduleConst  => some 700
   | const => «_<_>_SCHEDULE_Int_ScheduleConst_Schedule» const .HOMESTEAD_EVM := by
-  sorry --simp_schedule1; cases const <;> simp_schedule2
+  simp_schedule1; cases const <;> simp_schedule2
 
 @[local simp]
 theorem sched_spurious_dragon_def :
@@ -146,7 +146,7 @@ theorem sched_spurious_dragon_def :
   | .Gexpbyte_SCHEDULE_ScheduleConst    => some 50
   | .maxCodeSize_SCHEDULE_ScheduleConst => some 24576
   | const => «_<_>_SCHEDULE_Int_ScheduleConst_Schedule» const .TANGERINE_WHISTLE_EVM := by
-  sorry --simp_schedule1; cases const <;> simp_schedule2
+  simp_schedule1; cases const <;> simp_schedule2
 
 @[local simp]
 theorem sched_bythantium_def :
@@ -154,7 +154,7 @@ theorem sched_bythantium_def :
   match const with
   | .Rb_SCHEDULE_ScheduleConst => some 3000000000000000000
   | const => «_<_>_SCHEDULE_Int_ScheduleConst_Schedule» const .SPURIOUS_DRAGON_EVM := by
-  sorry --simp_schedule1; cases const <;> simp_schedule2
+  simp_schedule1; cases const <;> simp_schedule2
 
 @[local simp]
 theorem sched_constantinople_def :
@@ -162,13 +162,13 @@ theorem sched_constantinople_def :
   match const with
   | .Rb_SCHEDULE_ScheduleConst => some 2000000000000000000
   | const => «_<_>_SCHEDULE_Int_ScheduleConst_Schedule» const .BYZANTIUM_EVM := by
-  sorry --simp_schedule1; cases const <;> simp_schedule2
+  simp_schedule1; cases const <;> simp_schedule2
 
 @[local simp]
 theorem sched_petersburg_def :
   «_<_>_SCHEDULE_Int_ScheduleConst_Schedule» const .PETERSBURG_EVM =
   «_<_>_SCHEDULE_Int_ScheduleConst_Schedule» const .CONSTANTINOPLE_EVM := by
-  sorry --simp_schedule1; cases const <;> simp_schedule2
+  simp_schedule1; cases const <;> simp_schedule2
 
 @[local simp]
 theorem sched_istanbul_def :
@@ -182,7 +182,7 @@ theorem sched_istanbul_def :
   | .Gsload_SCHEDULE_ScheduleConst         => some 800
   | .Gbalance_SCHEDULE_ScheduleConst       => some 700
   | const => «_<_>_SCHEDULE_Int_ScheduleConst_Schedule» const .PETERSBURG_EVM := by
-  sorry --simp_schedule1; cases const <;> simp_schedule2
+  simp_schedule1; cases const <;> simp_schedule2
 
 attribute [local simp] SCHEDULE_GsloadBerlin SCHEDULE_GsstoreresetBerlin
 
@@ -199,26 +199,26 @@ theorem sched_berlin_def :
   | .Gaccessliststoragekey_SCHEDULE_ScheduleConst => some 1900
   | .Gaccesslistaddress_SCHEDULE_ScheduleConst    => some 2400
   | const => «_<_>_SCHEDULE_Int_ScheduleConst_Schedule» const .ISTANBUL_EVM := by
-  sorry --simp_schedule1; cases const <;> simp_schedule2
-  --simp_schedule1; simp_schedule2
-  --simp [«_<_>_SCHEDULE_Int_ScheduleConst_Schedule»];
-  --simp [SCHEDULE_GaccesslistaddressBerlin];
-  --simp [SCHEDULE_GaccesslistaddressDefault];
-  --simp [SCHEDULE_GaccessliststoragekeyBerlin];
-  --simp [SCHEDULE_GaccessliststoragekeyDefault];
-  --simp [SCHEDULE_GbalanceDefault];
-  --simp [SCHEDULE_GbalanceIstanbul];
-  --simp [SCHEDULE_GbalanceTangerine];
-  --simp [SCHEDULE_GbaseDefault];
-  --simp [SCHEDULE_GblockhashDefault];
-  --simp [SCHEDULE_GcallDefault];
-  --simp [SCHEDULE_GcallTangerine];
-  --simp [SCHEDULE_GcallstipendDefault];
-  --simp [SCHEDULE_GcallvalueDefault];
-  --simp [SCHEDULE_GcodedepositDefault];
-  --simp [SCHEDULE_GcoldaccountaccessBerlin];
-  --simp [SCHEDULE_GcoldaccountaccessDefault];
-  --simp [SCHEDULE_GcoldsloadBerlin]
+  simp_schedule1; cases const <;> simp_schedule2
+  simp_schedule1; simp_schedule2
+  simp [«_<_>_SCHEDULE_Int_ScheduleConst_Schedule»];
+  simp [SCHEDULE_GaccesslistaddressBerlin];
+  simp [SCHEDULE_GaccesslistaddressDefault];
+  simp [SCHEDULE_GaccessliststoragekeyBerlin];
+  simp [SCHEDULE_GaccessliststoragekeyDefault];
+  simp [SCHEDULE_GbalanceDefault];
+  simp [SCHEDULE_GbalanceIstanbul];
+  simp [SCHEDULE_GbalanceTangerine];
+  simp [SCHEDULE_GbaseDefault];
+  simp [SCHEDULE_GblockhashDefault];
+  simp [SCHEDULE_GcallDefault];
+  simp [SCHEDULE_GcallTangerine];
+  simp [SCHEDULE_GcallstipendDefault];
+  simp [SCHEDULE_GcallvalueDefault];
+  simp [SCHEDULE_GcodedepositDefault];
+  simp [SCHEDULE_GcoldaccountaccessBerlin];
+  simp [SCHEDULE_GcoldaccountaccessDefault];
+  simp [SCHEDULE_GcoldsloadBerlin]
 
 @[local simp]
 theorem sched_london_def :
@@ -228,8 +228,8 @@ theorem sched_london_def :
   | .Rsstoreclear_SCHEDULE_ScheduleConst  => some 4800
   | .Rmaxquotient_SCHEDULE_ScheduleConst  => some 5
   | const => «_<_>_SCHEDULE_Int_ScheduleConst_Schedule» const .BERLIN_EVM := by
-  sorry --simp_schedule1; cases const <;> simp_schedule2
-  --simp_schedule1; simp_schedule2
+  simp_schedule1; cases const <;> simp_schedule2
+  simp_schedule1; simp_schedule2
 
 @[local simp]
 theorem sched_merge_def :
@@ -237,7 +237,7 @@ theorem sched_merge_def :
   match const with
   | .Rb_SCHEDULE_ScheduleConst => some 0
   | const => «_<_>_SCHEDULE_Int_ScheduleConst_Schedule» const .LONDON_EVM := by
-  sorry --simp_schedule1; cases const <;> simp_schedule2
+  simp_schedule1; cases const <;> simp_schedule2
 
 @[local simp]
 theorem sched_shanghai_def :
@@ -246,8 +246,8 @@ theorem sched_shanghai_def :
   | .maxInitCodeSize_SCHEDULE_ScheduleConst   => some 49152
   | .Ginitcodewordcost_SCHEDULE_ScheduleConst => some 2
   | const => «_<_>_SCHEDULE_Int_ScheduleConst_Schedule» const .MERGE_EVM := by
-  sorry --simp_schedule1; cases const <;> simp_schedule2
-  --simp_schedule1; simp_schedule2
+  simp_schedule1; cases const <;> simp_schedule2
+  simp_schedule1; simp_schedule2
 
 @[local simp]
 theorem sched_cancun_def :
@@ -256,8 +256,8 @@ theorem sched_cancun_def :
   | .Gwarmstoragedirtystore_SCHEDULE_ScheduleConst => some 100
   | .Gpointeval_SCHEDULE_ScheduleConst => some 50000
   | const => «_<_>_SCHEDULE_Int_ScheduleConst_Schedule» const .SHANGHAI_EVM := by
-  sorry --simp_schedule1; cases const <;> simp_schedule2
-  --simp_schedule1; simp_schedule2
+  simp_schedule1; cases const <;> simp_schedule2
+  simp_schedule1; simp_schedule2
 
 @[simp]
 theorem cancun_def :
@@ -319,13 +319,8 @@ theorem cancun_def :
   | .Rmaxquotient_SCHEDULE_ScheduleConst           => some 5
   | .Gpointeval_SCHEDULE_ScheduleConst => some 50000
   := by
-  sorry --simp [«_<_>_SCHEDULE_Int_ScheduleConst_Schedule»]
-  --cases const <;> simp
-
-/-! ## Schedule Flags
-
-Interface for schedule flags on any given schedule.
--/
+  simp [«_<_>_SCHEDULE_Int_ScheduleConst_Schedule»]
+  cases const <;> simp
 
 @[local simp]
 theorem flag_default_def :
@@ -359,13 +354,13 @@ theorem flag_default_def :
   | .Gselfdestructnewaccount_SCHEDULE_ScheduleFlag => false
   | .Gstaticcalldepth_SCHEDULE_ScheduleFlag        => true
   | .Gzerovaluenewaccountgas_SCHEDULE_ScheduleFlag => true := by
-  sorry --simp_flag; cases flag <;> simp
+  simp_flag; cases flag <;> simp
 
 @[local simp]
 theorem flag_homestead_def :
   «_<<_>>_SCHEDULE_Bool_ScheduleFlag_Schedule» flag .HOMESTEAD_EVM =
   «_<<_>>_SCHEDULE_Bool_ScheduleFlag_Schedule» flag .DEFAULT_EVM := by
-  sorry --simp_flag; cases flag <;> simp_flag
+  simp_flag; cases flag <;> simp_flag
 
 @[local simp]
 theorem flag_tangerine_whistle_def :
@@ -375,7 +370,7 @@ theorem flag_tangerine_whistle_def :
   | .Gstaticcalldepth_SCHEDULE_ScheduleFlag        => false
   | flag =>
     «_<<_>>_SCHEDULE_Bool_ScheduleFlag_Schedule» flag .HOMESTEAD_EVM := by
-  sorry --simp_flag; cases flag <;> simp_flag <;> simp [inj, Inj.inj]
+  simp_flag; cases flag <;> simp_flag <;> simp [inj, Inj.inj]
 
 @[local simp]
 theorem flag_spurious_dragon_def :
@@ -385,7 +380,7 @@ theorem flag_spurious_dragon_def :
   | .Gzerovaluenewaccountgas_SCHEDULE_ScheduleFlag => false
   | flag =>
     «_<<_>>_SCHEDULE_Bool_ScheduleFlag_Schedule» flag .TANGERINE_WHISTLE_EVM := by
-  sorry --simp_flag; cases flag <;> simp_flag <;> simp [inj, Inj.inj]
+  simp_flag; cases flag <;> simp_flag <;> simp [inj, Inj.inj]
 
 @[local simp]
 theorem flag_byzantyum_def :
@@ -396,7 +391,7 @@ theorem flag_byzantyum_def :
   | .Ghasstaticcall_SCHEDULE_ScheduleFlag => true
   | flag =>
     «_<<_>>_SCHEDULE_Bool_ScheduleFlag_Schedule» flag .SPURIOUS_DRAGON_EVM  := by
-  sorry --simp_flag; cases flag <;> simp_flag <;> simp [inj, Inj.inj]
+  simp_flag; cases flag <;> simp_flag <;> simp [inj, Inj.inj]
 
 @[local simp]
 theorem flag_constantinople_def :
@@ -408,7 +403,7 @@ theorem flag_constantinople_def :
   | .Ghasextcodehash_SCHEDULE_ScheduleFlag => true
   | flag =>
       «_<<_>>_SCHEDULE_Bool_ScheduleFlag_Schedule» flag .BYZANTIUM_EVM := by
-  sorry --simp_flag; cases flag <;> simp_flag <;> simp [inj, Inj.inj]
+  simp_flag; cases flag <;> simp_flag <;> simp [inj, Inj.inj]
 
 @[local simp]
 theorem flag_petersburg_def :
@@ -417,7 +412,7 @@ theorem flag_petersburg_def :
   | .Ghasdirtysstore_SCHEDULE_ScheduleFlag => false
   | flag =>
       «_<<_>>_SCHEDULE_Bool_ScheduleFlag_Schedule» flag .CONSTANTINOPLE_EVM := by
-  sorry --simp_flag; cases flag <;> simp_flag <;> simp [inj, Inj.inj]
+  simp_flag; cases flag <;> simp_flag <;> simp [inj, Inj.inj]
 
 @[local simp]
 theorem flag_istambul_def :
@@ -429,7 +424,7 @@ theorem flag_istambul_def :
   | .Ghaschainid_SCHEDULE_ScheduleFlag       => true
   | flag =>
       «_<<_>>_SCHEDULE_Bool_ScheduleFlag_Schedule» flag .PETERSBURG_EVM := by
-  sorry --simp_flag; cases flag <;> simp_flag <;> simp [inj, Inj.inj]
+  simp_flag; cases flag <;> simp_flag <;> simp [inj, Inj.inj]
 
 @[local simp]
 theorem flag_berlin_def :
@@ -438,7 +433,7 @@ theorem flag_berlin_def :
   | .Ghasaccesslist_SCHEDULE_ScheduleFlag => true
   | flag =>
       «_<<_>>_SCHEDULE_Bool_ScheduleFlag_Schedule» flag .ISTANBUL_EVM := by
-  sorry --simp_flag; cases flag <;> simp_flag <;> simp [inj, Inj.inj]
+  simp_flag; cases flag <;> simp_flag <;> simp [inj, Inj.inj]
 
 @[local simp]
 theorem flag_london_def :
@@ -448,7 +443,7 @@ theorem flag_london_def :
   | .Ghasrejectedfirstbyte_SCHEDULE_ScheduleFlag => true
   | flag =>
       «_<<_>>_SCHEDULE_Bool_ScheduleFlag_Schedule» flag .BERLIN_EVM := by
-  sorry --simp_flag; cases flag <;> simp_flag <;> simp [inj, Inj.inj]
+  simp_flag; cases flag <;> simp_flag <;> simp [inj, Inj.inj]
 
 @[local simp]
 theorem flag_merge_def :
@@ -457,7 +452,7 @@ theorem flag_merge_def :
   | .Ghasprevrandao_SCHEDULE_ScheduleFlag => true
   | flag =>
       «_<<_>>_SCHEDULE_Bool_ScheduleFlag_Schedule» flag .LONDON_EVM := by
-  sorry --simp_flag; cases flag <;> simp_flag <;> simp [inj, Inj.inj]
+  simp_flag; cases flag <;> simp_flag <;> simp [inj, Inj.inj]
 
 @[local simp]
 theorem flag_shanghai_def :
@@ -469,7 +464,7 @@ theorem flag_shanghai_def :
   | .Ghaswithdrawals_SCHEDULE_ScheduleFlag     => true
   | flag =>
       «_<<_>>_SCHEDULE_Bool_ScheduleFlag_Schedule» flag .MERGE_EVM := by
-  sorry --simp_flag; cases flag <;> simp_flag <;> simp [inj, Inj.inj]
+  simp_flag; cases flag <;> simp_flag <;> simp [inj, Inj.inj]
 
 @[simp]
 theorem flag_cancun_def :
@@ -503,6 +498,6 @@ theorem flag_cancun_def :
   | .Gselfdestructnewaccount_SCHEDULE_ScheduleFlag => true
   | .Gstaticcalldepth_SCHEDULE_ScheduleFlag        => false
   | .Gzerovaluenewaccountgas_SCHEDULE_ScheduleFlag => false := by
-  sorry --simp_flag; cases flag <;> simp_flag <;> simp [inj, Inj.inj]
+  simp_flag; cases flag <;> simp_flag <;> simp [inj, Inj.inj]
 
 end GasInterface
