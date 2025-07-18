@@ -49,10 +49,14 @@ More context on the `klean` tool can be found in the [K repository](https://gith
 
 That should generate all the necessary Lean 4 code to faithfully represent the rule described in `--rule`. In this case, the rule `EVM-OPTIMIZATIONS.optimized.add` is the summary of running the `ADD` opcode in `KEVM`. Such rule can be found [here](https://github.com/runtimeverification/evm-semantics/blob/master/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/optimizations.md).
 
+#### KEVM Version
+
+The KEVM version used for the current proofs is based on commit [https://github.com/runtimeverification/evm-semantics/tree/5dd05ea7936c13f4029389bafd25785ed9ff0a55](5dd05ea7936c13f4029389bafd25785ed9ff0a55).
+
 #### Troubleshooting
 
 If the `poetry install` seems to take too long or to hang, try `export PYTHON_KEYRING_BACKEND=keyring.backends.fail.Keyring` and `poetry install` again.
 
-## Lean 4 Code Modifications
+## Documentation and Blueprint
 
-tbd
+For an in-depth description of the projcet you can consult the README files present in this repository and the [blueprint](https://runtimeverification.github.io/evm-equivalence/).

@@ -7,12 +7,21 @@ import EvmEquivalence.Interfaces.EvmYulInterface
 import EvmEquivalence.Interfaces.Axioms
 import EvmEquivalence.Utils.IntUtils
 
+/-! # State Map
+
+Mapping KEVM to EvmYul states.
+-/
+
 open EvmYul
 open EVM
 
 set_option linter.deprecated false
 
-/- Getters for accessing cells from the Generated Top Cell -/
+
+/-! ## `SortGeneratedTopCell` Getters
+
+Getters for accessing cells from the Generated Top Cell.
+-/
 
 namespace SortGeneratedTopCell
 
@@ -91,14 +100,14 @@ end SortGeneratedTopCell
 
 namespace SortKItem
 
-/- KItem projections to subsorts -/
+/-- KItem projections to subsorts -/
 @[simp]
 def toAccountSort (k : SortKItem) : Option SortAccount :=
   match k with
   | .inj_SortAccount acc => some acc
   | _ => none
 
-/- Subsort projections to KItem -/
+/-- Subsort projections to KItem -/
 @[simp]
 def ofAccountSort(acc : SortAccount) : SortKItem :=
   SortKItem.inj_SortAccount acc
@@ -109,7 +118,11 @@ open SortKItem
 
 namespace StateMap
 
-/- Maps from K types to EvmYul types -/
+/-! ## Type Mapping
+
+Maps from K types to EvmYul types.
+-/
+
 abbrev intMap (n : SortInt) : UInt256 := UInt256.toSigned n
 
 @[simp]
@@ -204,6 +217,11 @@ def executionEnv_map (tc : SortGeneratedTopCell) (s : EVM.State) : ExecutionEnv 
     header := blockHeader_map tc s
     perm := !tc.isStatic.val}
 
+/-! ## State Map
+
+The function mapping KEVM states to EvmYul states.
+-/
+
 /--
 **State Mapping**: Mapping KEVM states to EvmYul states
 
@@ -231,8 +249,10 @@ noncomputable def stateMap (symState : EVM.State) (tc : SortGeneratedTopCell) : 
   memory := memory_map tc.memory
   }
 
-/- State Mapping Results -/
-/- Theorems to make life easier -/
+/-! ## State Mapping Results
+
+Theorems to make life easier.
+-/
 
 theorem intMap_sub_dist {n m : SortInt} (le_m_n : m <= n) (pos : 0 <= m) (size : n < UInt256.size) :
   intMap (n - m) = intMap n - intMap m := by
@@ -273,8 +293,12 @@ end StateMap
 
 open StateMap
 
+/-! ## State Map Axioms
+
+Axioms that have to do with the axiomatic state mapping.
+-/
+
 namespace Axioms
--- Axioms that have to do with the axiomatic state mapping
 
 /--
 This axiom states that if an account is in an `AccountCellMap`, then

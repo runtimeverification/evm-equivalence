@@ -1,5 +1,4 @@
-/-
-K Prelude in Lean 4
+/-! # K Prelude in Lean 4
 
 Functions with the `hook` attribute need to have a manual implementation in the backends.
 This file contains the Lean 4 definitions of the hooked functions in `domains.md`.
@@ -19,13 +18,28 @@ With the theory defined through function rules, simplifications can be stated as
 These theorems should be provable directly from the function rules and the semantics of the Sorts.
  -/
 
--- Basic K types
+/-! ## Basic K types -/
+
+/-! ### Abbreviations -/
+
 abbrev SortBool         : Type := Bool
 abbrev SortBytes        : Type := ByteArray
 abbrev SortId           : Type := String
 abbrev SortInt          : Type := Int
 abbrev SortString       : Type := String
 abbrev SortStringBuffer : Type := String
+
+/-! ### Inductives -/
+
+inductive SortEndianness : Type where
+  | bigEndianBytes : SortEndianness
+  | littleEndianBytes : SortEndianness
+  deriving BEq, DecidableEq
+
+inductive SortSignedness : Type where
+  | signedBytes : SortSignedness
+  | unsignedBytes : SortSignedness
+  deriving BEq, DecidableEq
 
 /-
 The `Map` sort represents a generalized associative array.
@@ -208,6 +222,8 @@ noncomputable def ListHook (T : Type) : listHookSig T :=
     size      := ListHookDef.sizeAx T,
     split     := ListHookDef.splitAx T }
 
+/-! ## `Inj` class -/
+
 class Inj (From To : Type) : Type where
   inj (x : From) : To
   retr (x : To) : Option From
@@ -215,7 +231,9 @@ class Inj (From To : Type) : Type where
 def inj {From To : Type} [inst : Inj From To] := inst.inj
 def retr {From To : Type} [inst : Inj From To] := inst.retr
 
--- Instances
+/-! ## Instances
+  Unrelated to the `Inj` class
+ -/
 
 instance: BEq UInt8 where
   beq a b := decide (Eq a b)
@@ -231,51 +249,57 @@ def ByteArray.decEq (a b : ByteArray) : Decidable (Eq a b) :=
 
 instance: DecidableEq SortBytes := ByteArray.decEq
 
-/-! ### Function Implementations -/
+/-! ## Function Implementations -/
 
--- `SortInt`
+/-! ### `SortInt` -/
 
--- Operations
+/-! #### `Operations` -/
+
 def «_+Int_» (x0 x1 : SortInt) : Option SortInt := some (x0 + x1)
+
 def «_-Int_» (x0 x1 : SortInt) : Option SortInt := some (x0 - x1)
+
 def «_*Int_» (x0 x1 : SortInt) : Option SortInt := some (x0 * x1)
+
 def «_/Int_» (x0 x1 : SortInt) : Option SortInt :=
   ite (x1 == 0) none (Int.tdiv x0 x1)
+
 def _modInt_ (x0 x1 : SortInt) : Option SortInt :=
   ite (x1 == 0) none (Int.emod x0 x1)
+
 def «_^%Int__» (x0 x1 x2 : SortInt) : Option SortInt :=
    if x2 == 0 then none else
    match x1 with -- TODO: Revisit this implementation
    | .ofNat n => some (Int.emod (Int.pow x0 n) x2)
    | _ => none
+
 def «maxInt(_,_)_INT-COMMON_Int_Int_Int» (x0 x1 : SortInt) :=
   some (ite (x0 < x1) x1 x0)
+
 def «log2Int(_)_INT-COMMON_Int_Int» (x0 : SortInt) : Option SortInt :=
   ite (0 < x0) ((Nat.log2 x0.toNat) : Int) none
+
 def «~Int_» (x0 : SortInt) : Option SortInt := some (.not x0)
 
--- Comparisons
+/-! #### `Comparisons` -/
+
 def «_<=Int_» (x0 x1 : SortInt) : Option SortBool := some (x0 <= x1)
+
 def «_>=Int_» (x0 x1 : SortInt) : Option SortBool := some (x0 >= x1)
+
 def «_<Int_» (x0 x1 : SortInt) : Option SortBool := some (x0 < x1)
+
 def «_>Int_» (x0 x1 : SortInt) : Option SortBool := some (x0 > x1)
+
 def «_==Int_» (x0 x1 : SortInt) : Option SortBool := some (x0 == x1)
 
--- `SortBytes`
-
-inductive SortEndianness : Type where
-  | bigEndianBytes : SortEndianness
-  | littleEndianBytes : SortEndianness
-  deriving BEq, DecidableEq
-
-inductive SortSignedness : Type where
-  | signedBytes : SortSignedness
-  | unsignedBytes : SortSignedness
-  deriving BEq, DecidableEq
+/-! ### `SortBytes` -/
 
 def «.Bytes_BYTES-HOOKED_Bytes» : Option SortBytes := some .empty
 
--- Adapted from https://github.com/runtimeverification/haskell-backend/blob/362dab30d6435ec117862fea722be67373572034/kore/src/Kore/Builtin/InternalBytes.hs#L496-L511
+/-! #### `Int` to `Bytes` conversion -/
+
+/-- Adapted from https://github.com/runtimeverification/haskell-backend/blob/362dab30d6435ec117862fea722be67373572034/kore/src/Kore/Builtin/InternalBytes.hs#L496-L511 -/
 def «Int2Bytes(_,_,_)_BYTES-HOOKED_Bytes_Int_Int_Endianness» (x0 x1 : SortInt) (x2 : SortEndianness) : Option SortBytes :=
   match x2 with
   | .littleEndianBytes => some littleEndian.toByteArray
@@ -290,9 +314,9 @@ def «Int2Bytes(_,_,_)_BYTES-HOOKED_Bytes_Int_Int_Endianness» (x0 x1 : SortInt)
       | .succ l, n => ⟨(n % 256).toNat⟩ :: bytes l (n / 256)
     bytes x0.toNat x1
 
--- Adapted from
--- https://github.com/runtimeverification/haskell-backend/blob/362dab30d6435ec117862fea722be67373572034/kore/src/Kore/Builtin/InternalBytes.hs#L527-L543
--- Note that we use `List.foldl` and not `ByteArray.foldl` for ease of reasoning
+/-- Adapted from
+https://github.com/runtimeverification/haskell-backend/blob/362dab30d6435ec117862fea722be67373572034/kore/src/Kore/Builtin/InternalBytes.hs#L527-L543
+Note that we use `List.foldl` and not `ByteArray.foldl` for ease of reasoning -/
 def «Bytes2Int(_,_,_)_BYTES-HOOKED_Int_Bytes_Endianness_Signedness» (bytes : SortBytes) (endian : SortEndianness) (sign : SortSignedness) : Option SortInt :=
   match sign with
   | .unsignedBytes => Int.ofNat unsigned
@@ -314,6 +338,8 @@ def «Bytes2Int(_,_,_)_BYTES-HOOKED_Int_Bytes_Endianness_Signedness» (bytes : S
       let acc := res.2 + res.1 * b.toNat
       ⟨place, acc⟩
     List.foldl go (1, 0) littleEndian
+
+/-! #### `Bytes` manipulation -/
 
 /--
 Pads to the right `len - b.length` bytes with specified `val` value

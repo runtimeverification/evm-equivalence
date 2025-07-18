@@ -10,9 +10,15 @@ open KEVMInterface
 
 namespace OneOpEquivalence
 
-/- Equivalence proofs for arithmetic opcodes that take one operation to summarize -/
+/-! # OneOp Stack Operations
 
-inductive arith_op where
+Equivalence proofs for opcodes that perform operations on the elements of the stack.
+
+The opcodes on this file are summarized on the KEVM side with only
+one operation.
+-/
+
+inductive stackOps_op where
   | div
   | sdiv
   | mod
@@ -28,10 +34,10 @@ inductive arith_op where
   | shr
   | sar
 
-variable (op : arith_op)
+variable (op : stackOps_op)
 
 @[simp]
-def arith_op.to_binop : arith_op → SortBinStackOp ⊕ SortUnStackOp
+def stackOps_op.to_binop : stackOps_op → SortBinStackOp ⊕ SortUnStackOp
   | .div  => .inl .DIV_EVM_BinStackOp
   | .sdiv => .inl .SDIV_EVM_BinStackOp
   | .mod  => .inl .MOD_EVM_BinStackOp
@@ -48,12 +54,12 @@ def arith_op.to_binop : arith_op → SortBinStackOp ⊕ SortUnStackOp
   | .sar => .inl .SAR_EVM_BinStackOp
 
 @[simp]
-def arith_op.to_maybeOpcode : SortMaybeOpCode :=
+def stackOps_op.to_maybeOpcode : SortMaybeOpCode :=
   match op.to_binop with
   | .inl op => (@inj SortBinStackOp SortMaybeOpCode) op
   | .inr op => (@inj SortUnStackOp SortMaybeOpCode) op
 
-def arith_op.from_k : arith_op → StackOpsSummary.arith_op
+def stackOps_op.from_k : stackOps_op → StackOpsSummary.stackOps_op
  | .div  => .div
  | .sdiv => .sdiv
  | .mod  => .mod
@@ -70,7 +76,7 @@ def arith_op.from_k : arith_op → StackOpsSummary.arith_op
  | .sar => .sar
 
 @[simp]
-def arith_op.to_stack (W0 W1 : SortInt) (WS : SortWordStack) : SortWordStack :=
+def stackOps_op.to_stack (W0 W1 : SortInt) (WS : SortWordStack) : SortWordStack :=
   match op.to_binop with
   | .inl _ => SortWordStack.«_:__EVM-TYPES_WordStack_Int_WordStack» W0 (SortWordStack.«_:__EVM-TYPES_WordStack_Int_WordStack» W1 WS)
   | .inr _ => SortWordStack.«_:__EVM-TYPES_WordStack_Int_WordStack» W0 WS
@@ -212,7 +218,7 @@ def oneOpRHS
         network := _DotVar2 } },
     generatedCounter := _DotVar0 }
 
-def arith_op.to_defn_Val3 (W0 W1 _Val3 : SortInt) : Prop :=
+def stackOps_op.to_defn_Val3 (W0 W1 _Val3 : SortInt) : Prop :=
   match op with
   | .div  => «_/Word__EVM-TYPES_Int_Int_Int» W0 W1  = some _Val3
   | .sdiv => «_/sWord__EVM-TYPES_Int_Int_Int» W0 W1 = some _Val3
@@ -230,7 +236,7 @@ def arith_op.to_defn_Val3 (W0 W1 _Val3 : SortInt) : Prop :=
   | .sar => «_>>sWord__EVM-TYPES_Int_Int_Int» W1 W0 = some _Val3
 
 @[simp]
-def arith_op.to_gas : arith_op → SortScheduleConst
+def stackOps_op.to_gas : stackOps_op → SortScheduleConst
  | .div | .sdiv | .mod | .smod | .signext => .Glow_SCHEDULE_ScheduleConst
  | _ => .Gverylow_SCHEDULE_ScheduleConst
 
@@ -368,7 +374,7 @@ theorem oneOp_prestate_equiv
     returnData := _Gen11.val
     } := by
     cases cop: op <;>
-    simp [oneOpLHS, cop, stateMap, arith_op.from_k] <;> rfl
+    simp [oneOpLHS, cop, stateMap, stackOps_op.from_k] <;> rfl
 
 def divWord (n m : SortInt) : SortInt:=
   if h : m == 0 then 0 else
@@ -381,7 +387,7 @@ theorem divWord_divInt_eq (n m : SortInt):
   cases m0: (m == 0) <;> aesop (add simp [«_/Int_», divWord])
 
 @[simp]
-def arith_op.do : SortInt → SortInt → SortInt :=
+def stackOps_op.do : SortInt → SortInt → SortInt :=
   match op with
   | .div  => (divWord · ·)
   | .sdiv => (divWord · ·) -- Blatantly wrong
@@ -455,65 +461,65 @@ theorem oneOp_poststate_equiv
     } := by
     cases op
     . -- `div`
-      aesop (add simp [«_-Int_»,«_+Int_», arith_op.to_defn_Val3, oneOpRHS, stateMap])
+      aesop (add simp [«_-Int_»,«_+Int_», stackOps_op.to_defn_Val3, oneOpRHS, stateMap])
     (add simp [divWord_divInt_eq])
     . -- `sdiv`
-      -- To prove this, first `arith_op.do` needs to be fixed for `sdiv`
-      aesop (add simp [«_-Int_»,«_+Int_», arith_op.to_defn_Val3, oneOpRHS, stateMap])
+      -- To prove this, first `stackOps_op.do` needs to be fixed for `sdiv`
+      aesop (add simp [«_-Int_»,«_+Int_», stackOps_op.to_defn_Val3, oneOpRHS, stateMap])
       sorry
     . -- `mod`
-      -- To prove this, first `arith_op.do` needs to be fixed for `mod`
-      aesop (add simp [«_-Int_»,«_+Int_», arith_op.to_defn_Val3, oneOpRHS, stateMap])
+      -- To prove this, first `stackOps_op.do` needs to be fixed for `mod`
+      aesop (add simp [«_-Int_»,«_+Int_», stackOps_op.to_defn_Val3, oneOpRHS, stateMap])
       sorry
     . -- `smod`
-      -- To prove this, first `arith_op.do` needs to be fixed for `smod`
-      aesop (add simp [«_-Int_»,«_+Int_», arith_op.to_defn_Val3, oneOpRHS, stateMap])
+      -- To prove this, first `stackOps_op.do` needs to be fixed for `smod`
+      aesop (add simp [«_-Int_»,«_+Int_», stackOps_op.to_defn_Val3, oneOpRHS, stateMap])
       sorry
     . -- `signextend`
-      -- To prove this, first `arith_op.do` needs to be fixed for `signextend`
-      aesop (add simp [«_-Int_»,«_+Int_», arith_op.to_defn_Val3, oneOpRHS, stateMap])
+      -- To prove this, first `stackOps_op.do` needs to be fixed for `signextend`
+      aesop (add simp [«_-Int_»,«_+Int_», stackOps_op.to_defn_Val3, oneOpRHS, stateMap])
       sorry
     . -- `slt`
-      -- To prove this, first `arith_op.do` needs to be fixed for `slt`
-      aesop (add simp [«_-Int_»,«_+Int_», arith_op.to_defn_Val3, oneOpRHS, stateMap])
+      -- To prove this, first `stackOps_op.do` needs to be fixed for `slt`
+      aesop (add simp [«_-Int_»,«_+Int_», stackOps_op.to_defn_Val3, oneOpRHS, stateMap])
       sorry
     . -- `sgt`
-      -- To prove this, first `arith_op.do` needs to be fixed for `sgt`
-      aesop (add simp [«_-Int_»,«_+Int_», arith_op.to_defn_Val3, oneOpRHS, stateMap])
+      -- To prove this, first `stackOps_op.do` needs to be fixed for `sgt`
+      aesop (add simp [«_-Int_»,«_+Int_», stackOps_op.to_defn_Val3, oneOpRHS, stateMap])
       sorry
     . -- `and`
-      -- To prove this, first `arith_op.do` needs to be fixed for `and`
-      aesop (add simp [«_-Int_»,«_+Int_», arith_op.to_defn_Val3, oneOpRHS, stateMap])
+      -- To prove this, first `stackOps_op.do` needs to be fixed for `and`
+      aesop (add simp [«_-Int_»,«_+Int_», stackOps_op.to_defn_Val3, oneOpRHS, stateMap])
       sorry
     . -- `xor`
-      -- To prove this, first `arith_op.do` needs to be fixed for `xor`
-      aesop (add simp [«_-Int_»,«_+Int_», arith_op.to_defn_Val3, oneOpRHS, stateMap])
+      -- To prove this, first `stackOps_op.do` needs to be fixed for `xor`
+      aesop (add simp [«_-Int_»,«_+Int_», stackOps_op.to_defn_Val3, oneOpRHS, stateMap])
       sorry
     . -- `not`
-      -- To prove this, first `arith_op.do` needs to be fixed for `not`
-      aesop (add simp [«_-Int_»,«_+Int_», arith_op.to_defn_Val3, oneOpRHS, stateMap])
+      -- To prove this, first `stackOps_op.do` needs to be fixed for `not`
+      aesop (add simp [«_-Int_»,«_+Int_», stackOps_op.to_defn_Val3, oneOpRHS, stateMap])
       sorry
     . -- `byte`
-      -- To prove this, first `arith_op.do` needs to be fixed for `byte`
-      aesop (add simp [«_-Int_»,«_+Int_», arith_op.to_defn_Val3, oneOpRHS, stateMap])
+      -- To prove this, first `stackOps_op.do` needs to be fixed for `byte`
+      aesop (add simp [«_-Int_»,«_+Int_», stackOps_op.to_defn_Val3, oneOpRHS, stateMap])
       sorry
     . -- `shl`
-      -- To prove this, first `arith_op.do` needs to be fixed for `shl`
-      aesop (add simp [«_-Int_»,«_+Int_», arith_op.to_defn_Val3, oneOpRHS, stateMap])
+      -- To prove this, first `stackOps_op.do` needs to be fixed for `shl`
+      aesop (add simp [«_-Int_»,«_+Int_», stackOps_op.to_defn_Val3, oneOpRHS, stateMap])
       sorry
     . -- `shr`
-      -- To prove this, first `arith_op.do` needs to be fixed for `shr`
-      aesop (add simp [«_-Int_»,«_+Int_», arith_op.to_defn_Val3, oneOpRHS, stateMap])
+      -- To prove this, first `stackOps_op.do` needs to be fixed for `shr`
+      aesop (add simp [«_-Int_»,«_+Int_», stackOps_op.to_defn_Val3, oneOpRHS, stateMap])
       sorry
     . -- `sar`
-      -- To prove this, first `arith_op.do` needs to be fixed for `sar`
-      aesop (add simp [«_-Int_»,«_+Int_», arith_op.to_defn_Val3, oneOpRHS, stateMap])
+      -- To prove this, first `stackOps_op.do` needs to be fixed for `sar`
+      aesop (add simp [«_-Int_»,«_+Int_», stackOps_op.to_defn_Val3, oneOpRHS, stateMap])
       sorry
 
 
 open StackOpsSummary
 
-def arith_op.gas :=
+def stackOps_op.gas :=
   match op with
   | .div | .sdiv | .mod | .smod | .signext  => GasConstants.Glow
   | _ => GasConstants.Gverylow
@@ -585,7 +591,7 @@ theorem step_oneOp_equiv
   _Gen13 _Gen14 _Gen15 _Gen16 _Gen17 _Gen18 _Gen19 _Gen2 _Gen20
   _Gen21 _Gen22 _Gen23 _Gen3 _Gen4 _Gen5 _Gen6 _Gen7 _Gen8 _Gen9
   _K_CELL)
-  EVM.step_arith op.from_k gas gasCost (stateMap symState lhs) =
+  EVM.step_stackOps op.from_k gas gasCost (stateMap symState lhs) =
   .ok (stateMap {symState with execLength := symState.execLength + 1} rhs) := by
   intro lhs rhs
   rw [oneOp_prestate_equiv, @oneOp_poststate_equiv _ _ W0 W1 _Val3]
@@ -597,49 +603,49 @@ theorem step_oneOp_equiv
     simp [oneOpLHS, oneOpRHS]; constructor <;> try constructor
     . cases op <;>
       simp [cancun, GasInterface.cancun_def] at defn_Val0 defn_Val5 <;>
-      aesop (add simp [arith_op.gas, GasInterface.cancun_def, «_-Int_», intMap_sub_dist])
+      aesop (add simp [stackOps_op.gas, GasInterface.cancun_def, «_-Int_», intMap_sub_dist])
     . rw [←UInt256.add_succ_mod_size, intMap_add_dist] <;> aesop
-    . cases op <;> simp [arith_op.from_k]
+    . cases op <;> simp [stackOps_op.from_k]
       . -- `div` case
         sorry
       . -- `sdiv`
-      -- To prove this, first `arith_op.do` needs to be fixed for `sdiv`
+      -- To prove this, first `stackOps_op.do` needs to be fixed for `sdiv`
         sorry
       .  -- `mod`
-      -- To prove this, first `arith_op.do` needs to be fixed for `mod`
+      -- To prove this, first `stackOps_op.do` needs to be fixed for `mod`
         sorry
       .  -- `smod`
-      -- To prove this, first `arith_op.do` needs to be fixed for `smod`
+      -- To prove this, first `stackOps_op.do` needs to be fixed for `smod`
         sorry
       .  -- `signextend`
-      -- To prove this, first `arith_op.do` needs to be fixed for `signextend`
+      -- To prove this, first `stackOps_op.do` needs to be fixed for `signextend`
         sorry
       .  -- `slt`
-      -- To prove this, first `arith_op.do` needs to be fixed for `slt`
+      -- To prove this, first `stackOps_op.do` needs to be fixed for `slt`
         sorry
       .  -- `sgt`
-      -- To prove this, first `arith_op.do` needs to be fixed for `sgt`
+      -- To prove this, first `stackOps_op.do` needs to be fixed for `sgt`
         sorry
       .  -- `and`
-      -- To prove this, first `arith_op.do` needs to be fixed for `and`
+      -- To prove this, first `stackOps_op.do` needs to be fixed for `and`
         sorry
       .  -- `xor`
-      -- To prove this, first `arith_op.do` needs to be fixed for `xor`
+      -- To prove this, first `stackOps_op.do` needs to be fixed for `xor`
         sorry
       .  -- `not`
-      -- To prove this, first `arith_op.do` needs to be fixed for `not`
+      -- To prove this, first `stackOps_op.do` needs to be fixed for `not`
         sorry
       .  -- `byte`
-      -- To prove this, first `arith_op.do` needs to be fixed for `byte`
+      -- To prove this, first `stackOps_op.do` needs to be fixed for `byte`
         sorry
       .  -- `shl`
-      -- To prove this, first `arith_op.do` needs to be fixed for `shl`
+      -- To prove this, first `stackOps_op.do` needs to be fixed for `shl`
         sorry
       .  -- `shr`
-      -- To prove this, first `arith_op.do` needs to be fixed for `shr`
+      -- To prove this, first `stackOps_op.do` needs to be fixed for `shr`
         sorry
       .  -- `sar`
-      -- To prove this, first `arith_op.do` needs to be fixed for `sar`
+      -- To prove this, first `stackOps_op.do` needs to be fixed for `sar`
         sorry
 
 attribute [local simp] GasConstants.Glow
@@ -725,81 +731,81 @@ theorem X_oneOp_equiv
   -- If we don't apply this lemma we cannot rewrite X_add_summary
   have pc_equiv : intMap 0 = UInt256.ofNat 0 := rfl
   simp only [executionEnv_map, blockHeader_map, oneOpLHS, SortGeneratedTopCell.program]
-  rw [pc_equiv, X_arith_summary]
+  rw [pc_equiv, X_stackOps_summary]
   · cases op <;>
-    simp [arith_op.from_k, arith_op.C'_comp, arith_op.C'_noexp] <;>
+    simp [stackOps_op.from_k, stackOps_op.C'_comp, stackOps_op.C'_noexp] <;>
     simp [cancun, GasInterface.cancun_def] at defn_Val0 defn_Val5
     . -- `div` case
-      aesop (add simp [GasInterface.cancun_def, «_-Int_», chop_def, plusInt_def, intMap_add_dist, oneOpLHS, oneOpRHS, arith_op.from_k])
+      aesop (add simp [GasInterface.cancun_def, «_-Int_», intMap_add_dist, oneOpLHS, oneOpRHS, stackOps_op.from_k])
       (add safe (by rw [intMap_sub_dist])) (add safe (by apply le_of_lt))
       sorry
     . -- `sdiv`
-      -- To prove this, first `arith_op.do` needs to be fixed for `sdiv`
-      aesop (add simp [GasInterface.cancun_def, «_-Int_», chop_def, plusInt_def, intMap_add_dist, oneOpLHS, oneOpRHS, arith_op.from_k])
+      -- To prove this, first `stackOps_op.do` needs to be fixed for `sdiv`
+      aesop (add simp [GasInterface.cancun_def, «_-Int_», intMap_add_dist, oneOpLHS, oneOpRHS, stackOps_op.from_k])
       (add safe (by rw [intMap_sub_dist])) (add safe (by apply le_of_lt))
       sorry
     . -- `mod`
-      -- To prove this, first `arith_op.do` needs to be fixed for `mod`
-      aesop (add simp [GasInterface.cancun_def, «_-Int_», chop_def, plusInt_def, intMap_add_dist, oneOpLHS, oneOpRHS, arith_op.from_k])
+      -- To prove this, first `stackOps_op.do` needs to be fixed for `mod`
+      aesop (add simp [GasInterface.cancun_def, «_-Int_», intMap_add_dist, oneOpLHS, oneOpRHS, stackOps_op.from_k])
       (add safe (by rw [intMap_sub_dist])) (add safe (by apply le_of_lt))
       sorry
     . -- `smod`
-      -- To prove this, first `arith_op.do` needs to be fixed for `smod`
-      aesop (add simp [GasInterface.cancun_def, «_-Int_», chop_def, plusInt_def, intMap_add_dist, oneOpLHS, oneOpRHS, arith_op.from_k])
+      -- To prove this, first `stackOps_op.do` needs to be fixed for `smod`
+      aesop (add simp [GasInterface.cancun_def, «_-Int_», intMap_add_dist, oneOpLHS, oneOpRHS, stackOps_op.from_k])
       (add safe (by rw [intMap_sub_dist])) (add safe (by apply le_of_lt))
       sorry
     . -- `signextend`
-      -- To prove this, first `arith_op.do` needs to be fixed for `signextend`
-      aesop (add simp [GasInterface.cancun_def, «_-Int_», chop_def, plusInt_def, intMap_add_dist, oneOpLHS, oneOpRHS, arith_op.from_k])
+      -- To prove this, first `stackOps_op.do` needs to be fixed for `signextend`
+      aesop (add simp [GasInterface.cancun_def, «_-Int_», intMap_add_dist, oneOpLHS, oneOpRHS, stackOps_op.from_k])
       (add safe (by rw [intMap_sub_dist])) (add safe (by apply le_of_lt))
       sorry
     . -- `slt`
-      -- To prove this, first `arith_op.do` needs to be fixed for `slt`
-      aesop (add simp [GasInterface.cancun_def, «_-Int_», chop_def, plusInt_def, intMap_add_dist, oneOpLHS, oneOpRHS, arith_op.from_k])
+      -- To prove this, first `stackOps_op.do` needs to be fixed for `slt`
+      aesop (add simp [GasInterface.cancun_def, «_-Int_», intMap_add_dist, oneOpLHS, oneOpRHS, stackOps_op.from_k])
       (add safe (by rw [intMap_sub_dist])) (add safe (by apply le_of_lt))
       sorry
     . -- `sgt`
-      -- To prove this, first `arith_op.do` needs to be fixed for `sgt`
-      aesop (add simp [GasInterface.cancun_def, «_-Int_», chop_def, plusInt_def, intMap_add_dist, oneOpLHS, oneOpRHS, arith_op.from_k])
+      -- To prove this, first `stackOps_op.do` needs to be fixed for `sgt`
+      aesop (add simp [GasInterface.cancun_def, «_-Int_», intMap_add_dist, oneOpLHS, oneOpRHS, stackOps_op.from_k])
       (add safe (by rw [intMap_sub_dist])) (add safe (by apply le_of_lt))
       sorry
     . -- `and`
-      -- To prove this, first `arith_op.do` needs to be fixed for `and`
-      aesop (add simp [GasInterface.cancun_def, «_-Int_», chop_def, plusInt_def, intMap_add_dist, oneOpLHS, oneOpRHS, arith_op.from_k])
+      -- To prove this, first `stackOps_op.do` needs to be fixed for `and`
+      aesop (add simp [GasInterface.cancun_def, «_-Int_», intMap_add_dist, oneOpLHS, oneOpRHS, stackOps_op.from_k])
       (add safe (by rw [intMap_sub_dist])) (add safe (by apply le_of_lt))
       sorry
     . -- `xor`
-      -- To prove this, first `arith_op.do` needs to be fixed for `xor`
-      aesop (add simp [GasInterface.cancun_def, «_-Int_», chop_def, plusInt_def, intMap_add_dist, oneOpLHS, oneOpRHS, arith_op.from_k])
+      -- To prove this, first `stackOps_op.do` needs to be fixed for `xor`
+      aesop (add simp [GasInterface.cancun_def, «_-Int_», intMap_add_dist, oneOpLHS, oneOpRHS, stackOps_op.from_k])
       (add safe (by rw [intMap_sub_dist])) (add safe (by apply le_of_lt))
       sorry
     . -- `xor`
-      -- To prove this, first `arith_op.do` needs to be fixed for `xor`
-      aesop (add simp [GasInterface.cancun_def, «_-Int_», chop_def, plusInt_def, intMap_add_dist, oneOpLHS, oneOpRHS, arith_op.from_k])
+      -- To prove this, first `stackOps_op.do` needs to be fixed for `xor`
+      aesop (add simp [GasInterface.cancun_def, «_-Int_», intMap_add_dist, oneOpLHS, oneOpRHS, stackOps_op.from_k])
       (add safe (by rw [intMap_sub_dist])) (add safe (by apply le_of_lt))
       sorry
     . -- `byte`
-      -- To prove this, first `arith_op.do` needs to be fixed for `byte`
-      aesop (add simp [GasInterface.cancun_def, «_-Int_», chop_def, plusInt_def, intMap_add_dist, oneOpLHS, oneOpRHS, arith_op.from_k])
+      -- To prove this, first `stackOps_op.do` needs to be fixed for `byte`
+      aesop (add simp [GasInterface.cancun_def, «_-Int_», intMap_add_dist, oneOpLHS, oneOpRHS, stackOps_op.from_k])
       (add safe (by rw [intMap_sub_dist])) (add safe (by apply le_of_lt))
       sorry
     . -- `shl`
-      -- To prove this, first `arith_op.do` needs to be fixed for `shl`
-      aesop (add simp [GasInterface.cancun_def, «_-Int_», chop_def, plusInt_def, intMap_add_dist, oneOpLHS, oneOpRHS, arith_op.from_k])
+      -- To prove this, first `stackOps_op.do` needs to be fixed for `shl`
+      aesop (add simp [GasInterface.cancun_def, «_-Int_», intMap_add_dist, oneOpLHS, oneOpRHS, stackOps_op.from_k])
       (add safe (by rw [intMap_sub_dist])) (add safe (by apply le_of_lt))
       sorry
     . -- `shr`
-      -- To prove this, first `arith_op.do` needs to be fixed for `shr`
-      aesop (add simp [GasInterface.cancun_def, «_-Int_», chop_def, plusInt_def, intMap_add_dist, oneOpLHS, oneOpRHS, arith_op.from_k])
+      -- To prove this, first `stackOps_op.do` needs to be fixed for `shr`
+      aesop (add simp [GasInterface.cancun_def, «_-Int_», intMap_add_dist, oneOpLHS, oneOpRHS, stackOps_op.from_k])
       (add safe (by rw [intMap_sub_dist])) (add safe (by apply le_of_lt))
       sorry
     . -- `sar`
-      -- To prove this, first `arith_op.do` needs to be fixed for `sar`
-      aesop (add simp [GasInterface.cancun_def, «_-Int_», chop_def, plusInt_def, intMap_add_dist, oneOpLHS, oneOpRHS, arith_op.from_k])
+      -- To prove this, first `stackOps_op.do` needs to be fixed for `sar`
+      aesop (add simp [GasInterface.cancun_def, «_-Int_», intMap_add_dist, oneOpLHS, oneOpRHS, stackOps_op.from_k])
       (add safe (by rw [intMap_sub_dist])) (add safe (by apply le_of_lt))
       sorry
-  · cases op <;> simp_all [arith_op.from_k, sizeWordStack_def]
-  · cases op <;> simp [arith_op.C'_comp, arith_op.from_k] <;>
+  · cases op <;> simp_all [stackOps_op.from_k, sizeWordStack_def]
+  · cases op <;> simp [stackOps_op.C'_comp, stackOps_op.from_k] <;>
     rw [intMap_toNat] <;> aesop (add safe (by linarith))
 
 end OneOpEquivalence

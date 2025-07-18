@@ -7,6 +7,8 @@ import EvmEquivalence.Utils.ListByteArrayUtils
 open EvmYul
 open EVM
 
+set_option linter.deprecated false
+
 namespace USize
 
 theorem toNat_ofNat_le (n : ℕ) :
@@ -103,8 +105,6 @@ namespace UInt256
 
 section
 
-set_option linter.deprecated false
-
 variable {n : ℕ}
 variable {p : ℤ}
 
@@ -163,6 +163,10 @@ theorem ofNat_le (n m : UInt256) : (n ≤ m) = (n.toNat ≤ m.toNat) := by aesop
 end
 
 end UInt256
+
+@[simp]
+theorem accountAddressIsSome (n : ℕ) (size : n < AccountAddress.size) : AccountAddress.ofNat n = ⟨n, size⟩ := by
+  simp [AccountAddress.ofNat, Fin.ofNat]; aesop
 
 @[simp]
 theorem isCreate_false {τ : OperationType} (opcode : Operation τ) (noCreate : opcode ≠ Operation.CREATE) (noCreate2 : opcode ≠ Operation.CREATE2):

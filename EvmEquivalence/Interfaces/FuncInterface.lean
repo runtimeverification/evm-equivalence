@@ -1,12 +1,13 @@
-/-
-This file provides a proving interface for the KEVM function definitions.
-Some of the contents of this file may be ported to a utils file in the future.
- -/
-
 import EvmYul.UInt256
 import EvmEquivalence.KEVM2Lean.Func
 import EvmEquivalence.Interfaces.EvmYulInterface
 import EvmEquivalence.StateMap
+
+/-! # KEVM Interface
+
+This file provides a proving interface for the KEVM function definitions.
+Some of the contents of this file may be ported to a utils file in the future.
+ -/
 
 open EvmYul
 open StateMap
@@ -16,74 +17,32 @@ namespace KEVMInterface
 -- Some functions are uninterpreted for now, so we have to axiomatize the behavior
 -- For functions that are defined, the axioms are theorems
 
--- Behavior for `ite`
--- `Ite` not present in the moment
-/- theorem iteMap {SortSort : Type} (c : SortBool) (x1 x2 : SortSort) :
-  kite c x1 x2  = ite c x1 x2 := by aesop -/
-
 section
 
 variable {m n : SortInt}
+
+/-! ## Simple function behavior
+
+Behavioral results about simple functions like arithmetic or boolean operations.
+ -/
 
 -- Behavior for `«_?Int_»`
 @[simp]
 theorem plusIntIsSome : «_+Int_» n m = some (n + m) := rfl
 
-def «_+Int'_» (n m : SortInt) : SortInt :=
-  («_+Int_» n m).get rfl
-
-@[simp]
-theorem plusInt_def : «_+Int'_» n m = n + m := rfl
-
 @[simp]
 theorem subIntIsSome : «_-Int_» n m = some (n - m) := rfl
 
-def «_-Int'_» (n m : SortInt) : SortInt :=
-  («_-Int_» n m).get rfl
-
-theorem subInt_def : «_-Int'_» n m = n - m := rfl
-
 theorem mulIntIsSome : «_*Int_» n m = some (n * m) := rfl
-
-def «_*Int'_» (n m : SortInt) : SortInt :=
-  («_*Int_» n m).get rfl
-
-theorem mulInt_def : «_*Int'_» n m = n * m := rfl
 
 -- Behavior for `chop`
 theorem chopIsSome : chop n = some (n % UInt256.size) := rfl
 
-def chop' (n : SortInt) : SortInt :=
-  (chop n).get (by simp [chopIsSome])
-
-theorem chop_def (n : SortInt) : chop' n = n % UInt256.size := by
-  aesop (add simp [chop', chopIsSome])
-
 end
 
--- Utils to aid in proofs
-def SortGas.val (g : SortGas) : SortInt := g.1
-
-/-
-`«_-Gas__GAS-SYNTAX_Gas_Gas_Gas»` and `«_<=Gas__GAS-SYNTAX_Bool_Gas_Gas»` not present at the moment
- -/
-/- section
-
-variable {g₁ g₂ : SortGas}
-
-theorem subGas_def :
-  «_-Gas__GAS-SYNTAX_Gas_Gas_Gas»  g₁ g₂ = SortGas.inj_SortInt («_-Int'_» (SortGas.val g₁) (SortGas.val g₂)) := rfl
-
-theorem leGas_def :
-  «_<=Gas__GAS-SYNTAX_Bool_Gas_Gas»  g₁ g₂ = «_<=Int_» (SortGas.val g₁) (SortGas.val g₂) := rfl
-
-end -/
-
--- TODO: Add to a specific `axioms` namespace when enough functions have been interpreted
-
 -- Behavior of `«_==K_»` and `«_=/=K_»`
-axiom Keq_def (k₁ k₂ : SortK) : «_==K_» k₁ k₂ = some (k₁ == k₂)
-axiom Kneq_def (k₁ k₂ : SortK) : «_=/=K_» k₁ k₂ = some (k₁ != k₂)
+axiom Axioms.Keq_def (k₁ k₂ : SortK) : «_==K_» k₁ k₂ = some (k₁ == k₂)
+axiom Axioms.Kneq_def (k₁ k₂ : SortK) : «_=/=K_» k₁ k₂ = some (k₁ != k₂)
 
 -- Behavior of `_orBool_`, `_andBool_` and `notBool_`
 @[simp]
@@ -96,18 +55,26 @@ theorem andBool_def (b₁ b₂ : SortBool) : _andBool_ b₁ b₂ = some (b₁ &&
 theorem notBool_def (b : SortBool) : notBool_ b = some (!b) := by
   aesop (add simp [notBool_, _17ebc68])
 
--- Behavior of `==Int` and `=/=Int`
+-- Behavior of boolean Int comparisons
 @[simp]
-theorem eqInt_def (n m : SortInt) : «_==Int_» n m = some (n == m) := by aesop
+theorem eqInt_def (n m : SortInt) : «_==Int_» n m = some (n == m) := rfl
 @[simp]
 theorem neqInt_def (n m : SortInt) : «_=/=Int_» n m = some (n != m) := by
   aesop (add simp [«_=/=Int_», _4de6e05, Option.bind, not])
 @[simp]
 theorem ltInt_def (n m : SortInt) : «_<Int_» n m = some (decide (n < m)) := rfl
 
+-- Behavior of `kite`
+@[simp]
+theorem kite_def {SortSort : Type} (cnd : SortBool) (true_branch false_branch: SortSort) :
+  kite cnd true_branch false_branch = ite cnd true_branch false_branch := by
+  aesop
 
--- Behavior of `«#sizeWordStack»`
--- Reasoning-friendly #sizeWordStack
+/-! ## Behavior of `«#sizeWordStack»`
+
+Equating `#sizeWordStack` to `List.length`.
+-/
+
 def wsLength (ws : SortWordStack) : ℕ :=
   match ws with
   | .«.WordStack_EVM-TYPES_WordStack» => 0
@@ -149,27 +116,14 @@ theorem sizeWordStack_def {ws : SortWordStack} :
   sizeWordStackAux ws 0 = some (List.length (wordStackMap ws)) :=
   wsLength_eq_length_wordStackMap ▸ sizeWordStackIsSome
 
+/-! ## Behavior of K's `in_keys` function
 
--- Behavior of `AccountCellMapItem`
--- TODO: Complete or delete
-/--
-Note that this function is dependent on the current implementation of `SortAccountCellMap`
+Axiomatically asserting `in_keys` behavior.
 
-The current implementation is `List (SortAcctIDCell × SortAccountCell)` but
-this might change in the future
+NOTE: These functions depend on the dummy implementation as maps
+being `List (Key × Value)`.
 -/
-def accountCellMapItem_def (x0 : SortAcctIDCell) (x1 : SortAccountCell) : Option SortAccountCellMap :=
-  some (⟨[(x0, x1)]⟩)
 
--- Behavior of `kite`
-@[simp]
-theorem kite_def {SortSort : Type} (cnd : SortBool) (true_branch false_branch: SortSort) :
-  kite cnd true_branch false_branch = ite cnd true_branch false_branch := by
-  aesop
-
--- Behavior of K's `in_keys` function
--- NOTE: These functions depend on the dummy implementation as maps
--- being `List (Key × Value)`
 def keys {K V : Type} (l : List (K × V)) : List K :=
   List.map (λ pair => pair.1) l
 
@@ -181,7 +135,11 @@ axiom Axioms.inKeys_def (map : SortMap) (key : SortInt) :
   «_in_keys(_)_MAP_Bool_KItem_Map» (inj ((inj key) : SortAccount)) map =
   some (inKeys_compute map key)
 
--- Behavior of `#inStorage`
+/-! ### Behavior of `#inStorage` function
+
+This definition of `#inStorage` depends on the above `inKeys_compute`.
+-/
+
 noncomputable def inStorage_compute (map : SortMap) (acc key : SortInt) : Bool :=
   match «Map:lookup» map (inj ((@inj SortInt SortAccount) acc)) with
   | none => false
@@ -194,16 +152,16 @@ theorem inStorage_def {ACCESSEDSTORAGE_CELL : SortMap} {ID_CELL W0 : SortInt} :
   «#inStorage» ACCESSEDSTORAGE_CELL ((@inj SortInt SortAccount) ID_CELL) W0 = some (inStorage_compute ACCESSEDSTORAGE_CELL ID_CELL W0) := by
   aesop (add simp [«#inStorage», _dbb1f9e, _8d90a32, Option.bind, inStorage_compute])
 
--- Helper theorems
+/-! ## Memory results
 
-@[simp]
-theorem inj_ID_CELL (ID_CELL : SortInt) : @inj SortInt SortAccount instInjSortIntSortAccount ID_CELL = .inj_SortInt ID_CELL := rfl
-
-@[simp]
-theorem accountAddressIsSome (n : ℕ) (size : n < AccountAddress.size) : AccountAddress.ofNat n = ⟨n, size⟩ := by
-  simp [AccountAddress.ofNat, Fin.ofNat]; aesop
+Results that have to do with memory-related operations.
+ -/
 
 attribute [local simp] «_<Int_» «_+Int_» «_<=Int_» «_-Int_» «_/Int_» «_=/=Int_» «_==Int_»
+
+/--
+  Explicit account for `«#memoryUsageUpdate»` with positive `width`.
+ -/
 theorem memoryUsageUpdate_rw
   (MEMORYUSED_CELL offset width : SortInt)
   (width_pos : 0 < width):
@@ -214,6 +172,9 @@ theorem memoryUsageUpdate_rw
   simp [_091b7da, _50d266e, _e985b28, _5321d80 ]
   aesop (add simp [Int.max_def, failure]) (add safe (by linarith))
 
+/--
+  Explicit account for `mapWriteRange`.
+-/
 theorem mapWriteRange_rw (mem content : SortBytes) (index : SortInt) :
   mapWriteRange mem index content =
   if _ : index < 0 then some .empty else
@@ -231,19 +192,36 @@ theorem mapWriteRange_rw (mem content : SortBytes) (index : SortInt) :
   aesop; split; aesop; simp [Option.bind, notBool_def, andBool_def]
   aesop (add simp [ByteArray.size]) (add safe (by linarith)) (add safe (by omega))
 
+/-! ## Bytes manipulation
+
+Results to ease the reasoning about `SortBytes` manipulation functions.
+-/
+
+/--
+Explicit account for `«#padToWidth»`.
+-/
 theorem padToWidth_rw (len : SortInt) (b : SortBytes) :
   «#padToWidth» len b =
   if len < 0 then some b else some { data := Array.leftpad len.toNat 0 b.data} := by
   aesop (add simp [«#padToWidth», _67678cd, _ebfe294, notBool_def])
   (add simp [«padLeftBytes(_,_,_)_BYTES-HOOKED_Bytes_Bytes_Int_Int», Option.bind])
 
-/-- `Int2Bytes` behaves as `BE` for positive integers and big endian representation -/
+/--
+This axiom states the following:
+
+`Int2Bytes` behaves as `BE` for positive integers and big endian representation.
+
+Note that the first parameter of `Int2Bytes` is the length of the
+corresponding encoding sequence.
+-/
 axiom Axioms.BE_IntToBytes_eq (n : ℕ) :
   «Int2Bytes(_,_,_)_BYTES-HOOKED_Bytes_Int_Int_Endianness» (Int.tdiv (↑(n + 1).log2 + 8) 8) (n + 1) .bigEndianBytes = some (BE (n + 1))
 
 /--
-This result notoriously depends on `Axioms.BE_IntToBytes_eq`, which should be
-a theorem at some point
+Explicit account for `«#asByteStack»`.
+
+This result notoriously depends on `Axioms.BE_IntToBytes_eq`, which
+should be a theorem at some point.
 -/
 theorem asByteStack_rw {n : ℕ} : «#asByteStack» n = some (BE n) := by
   simp [«#asByteStack», _fdd6ce1, Int2BytesNoLen, _20f05d9, _43f856e, _6c109c0, _ea9648a]
@@ -252,8 +230,9 @@ theorem asByteStack_rw {n : ℕ} : «#asByteStack» n = some (BE n) := by
   refine Axioms.BE_IntToBytes_eq _
 
 /--
-Given `n : ℕ` with `n < UInt256.size`, converting it to `byteStack` and padding
-the result to width 32, is the same as `UInt256.toByteArray (n : UInt256)`
+Given `n : ℕ` with `n < UInt256.size`, converting it to `byteStack`
+and padding the result to width 32, is the same as
+`UInt256.toByteArray (n : UInt256)`.
 -/
 theorem padToWidth32_asByteStack_rw
   {n : ℕ} {b : SortBytes}
@@ -270,10 +249,10 @@ theorem padToWidth32_asByteStack_rw
   all_goals rw [asByteStack_rw] at *; aesop
 
 /--
- For any ByteArray `b`, `Bytes2Int b .bigEndianBytes .unsignedBytes`
- computes the same as `fromByteArrayBigEndian b`
+For any ByteArray `b`, `Bytes2Int b .bigEndianBytes .unsignedBytes`
+computes the same as `fromByteArrayBigEndian b`.
 
- This should be proved at some point
+This should be proved at some point.
 -/
 theorem Bytes2Int_fromByteArrayBigEndian_eq  (b : ByteArray) :
   «Bytes2Int(_,_,_)_BYTES-HOOKED_Int_Bytes_Endianness_Signedness» b .bigEndianBytes .unsignedBytes =
@@ -289,9 +268,9 @@ theorem Bytes2Int_fromByteArrayBigEndian_eq  (b : ByteArray) :
   sorry
 
 /--
-Friendlier interface for `#range`
+Friendlier interface for `#range`.
 
-This should be proven at some point
+This should be proven at some point.
 -/
 theorem range_rw  (b : SortBytes) (start : SortInt) (width : SortInt):
   «#range» b start width =
@@ -304,6 +283,17 @@ theorem range_rw  (b : SortBytes) (start : SortInt) (width : SortInt):
   «substrBytes(_,_,_)_BYTES-HOOKED_Bytes_Bytes_Int_Int» pad start len
   else some .empty := by sorry
 
+/--
+Converting a 32-byte chunk of memory into an unsigned integer never
+overflows `chop`.
+-/
+theorem chop_self_eq
+  {LM b : SortBytes}
+  {start n: SortInt}
+  (defn_b : «#range» LM start 32 = some b)
+  (defn_n : «Bytes2Int(_,_,_)_BYTES-HOOKED_Int_Bytes_Endianness_Signedness» b .bigEndianBytes .unsignedBytes = some n):
+  chop n = n := by sorry
+
 @[simp]
 theorem asWord_empty : asWord .empty = some 0 := by
   simp [asWord, _ef5332a]
@@ -314,14 +304,15 @@ theorem asWord_empty : asWord .empty = some 0 := by
   simp [ByteArray.empty, ByteArray.mkEmpty, ByteArray.toList_empty, ByteArray.toList_empty]
   aesop
 
+/-! ## Misc
+
+Miscellaneous and helpful results.
+ -/
+
 /--
-Converting a 32-byte chunk of memory into an unsigned integer never overflows `chop`
+Explicit account for the `SortInt` → `SortAccount` injection instance.
 -/
-theorem chop_self_eq
-  {LM b : SortBytes}
-  {start n: SortInt}
-  (defn_b : «#range» LM start 32 = some b)
-  (defn_n : «Bytes2Int(_,_,_)_BYTES-HOOKED_Int_Bytes_Endianness_Signedness» b .bigEndianBytes .unsignedBytes = some n):
-  chop n = n := by sorry
+@[simp]
+theorem inj_ID_CELL (ID_CELL : SortInt) : @inj SortInt SortAccount instInjSortIntSortAccount ID_CELL = .inj_SortInt ID_CELL := rfl
 
 end KEVMInterface

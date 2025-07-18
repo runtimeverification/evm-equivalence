@@ -439,7 +439,7 @@ theorem sload_poststate_equiv
   stateMap symState rhs =
   {symState with
     stack := intMap _Val10 :: wordStackMap WS
-    pc := intMap («_+Int'_» PC_CELL 1)
+    pc := intMap (PC_CELL + 1)
     gasAvailable := intMap GAS_CELL -  intMap _Val15 --(sload_gas ACCESSEDSTORAGE_CELL W0)
     executionEnv := executionEnv_map rhs symState
     accountMap := Axioms.SortAccountsCellMap rhs.accounts,
@@ -451,7 +451,7 @@ theorem sload_poststate_equiv
            }
     returnData := _Gen15.val
   } := by
-  simp_all [sloadRHS, stateMap, «_-Int_», plusInt_def, «_+Int_»]
+  simp_all [sloadRHS, stateMap, «_-Int_», «_+Int_»]
   aesop (add simp [inj, Inj.inj]) (add safe (by rw [intMap_sub_dist]))
 
 theorem step_sload_equiv
@@ -563,12 +563,12 @@ theorem step_sload_equiv
     omega
   rw [sload_prestate_equiv, executionEnv_map, blockHeader_map, EVM.step_sload_summary] <;> try assumption
   rw [sloadLHS, sload_poststate_equiv, sloadRHS] <;> try congr
-  . simp[State.lookupAccount, SortGeneratedTopCell.accounts, accountAddressMap, inj_ID_CELL]
+  . simp [State.lookupAccount, SortGeneratedTopCell.accounts, accountAddressMap]
     aesop
   . simp
     apply (Axioms.accessedStorageCell_map_insert defn_Val17 defn_Val18 defn_Val19 defn_Val20 defn_Val21 defn_Val22)
   . simp at defn_Val4; aesop (add simp [intMap])
-  . rw [plusInt_def, ←UInt256.add_succ_mod_size, intMap_add_dist] <;> aesop
+  . rw [←UInt256.add_succ_mod_size, intMap_add_dist] <;> aesop
   . simp [State.lookupAccount]
     cases origc: _Gen27; next orig_storage =>
     rw [@Axioms.findAccountInAccountCellMap ID_CELL _Gen25 _Gen26 STORAGE_CELL orig_storage _Gen28 _Gen29 _Val8 _DotVar6 _Val9]

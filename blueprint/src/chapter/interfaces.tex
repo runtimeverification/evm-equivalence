@@ -1,0 +1,206 @@
+\chapter{Interfaces}
+
+We are describing the files in the
+\href{https://github.com/runtimeverification/evm-equivalence/tree/master/EvmEquivalence/Interfaces}{Interfaces}
+folder.
+
+We have to reason about the EvmYul model and the generated K code. But we soon
+face the challenge that the EvmYul model is more geared towards execution than
+reasoning and that the generated K code is particularly idiosyncratic.
+
+This is not to the detriment of any of the models, but we do need reasoning
+interfaces for these models to smooth the reasoning process.
+
+\section{EvmYul Interface}
+
+This
+\href{https://github.com/runtimeverification/evm-equivalence/blob/master/EvmEquivalence/Interfaces/EvmYulInterface.lean}{interface}
+contains results that aid with the reasoning of EvmYul functions.
+
+There are several type of results in this interface:
+
+\begin{itemize}
+\item \texttt{USize} results
+\item Compatibility axioms
+\item Bytes manipulation results
+\item \texttt{UInt256} results and conversions
+\item Opcode semantics
+\end{itemize}
+
+We won't describe the entirety of the results provided in this interface, but
+we'll discuss the two most pressing categories: compatibility axioms and opcode semantics.
+
+\subsection{Compatibility Axioms}
+
+Of particular importance are two axioms necessary to the whole operation. The
+first one is \texttt{ffi_zeroes}, which involves the EvmYul \texttt{zeroes} function.
+
+\subsubsection{\textbf{Aixiom \texttt{ffi_zeroes}}}
+
+\begin{definition}[zeroes]\label{def:zeroes}\lean{ffi.ByteArray.zeroes}
+\texttt{zeroes len} produces a byte array of size \texttt{len} where every byte
+is the zero byte.
+
+This part of the EvmYul FFI.
+\end{definition}
+
+Crucially, the \texttt{zeroes} function is a
+\href{https://en.wikipedia.org/wiki/Foreign_function_interface}{foregin function interface (FFI)}
+function. This means that there is no Lean implementation of it. Rather, when
+executed, Lean will call en external function to perform the computational
+action.
+However, the \texttt{zeroes} function plays a crucial role in important
+functions such as writing to memory.
+
+That is why, in order to reason about it, we pose an axiom stating the desired
+behavior of the \texttt{zeroes} function.
+
+\begin{theorem}[Axiom: ffi_zeroes]\label{ax:ffi_zeroes}\lean{Axioms.ffi_zeroes}\uses{def:zeroes}
+\texttt{zeroes len} returns a byte array of size \texttt{len} where every byte
+is the zero byte.
+\end{theorem}
+
+\subsubsection{\textbf{Aixiom \texttt{toBytesBigEndian_rw}}}
+
+The second needed axiom is to bypass a \texttt{private} attribute of the EvmYul
+\texttt{toBytes'} function defined below:
+
+\begin{definition}[toBytes']\label{def:toBytes'}\leanok
+\texttt{toBytes' n} converts a given natural number \texttt{n} to its little
+endian bytes represenation.
+
+Crucially, this definition is \texttt{private}.
+\end{definition}
+
+The \texttt{toBytes'} function is used by \texttt{toBytesBigEndian}:
+
+\begin{definition}[toBytesBigEndian]
+\label{def:toBytesBigEndian}\uses{def:toBytes'}\lean{EvmYul.toBytesBigEndian}\leanok
+\texttt{toBytes' n} converts a given natural number \texttt{n} to its big
+endian bytes represenation.
+
+\texttt{toBytesBigEndian = List.reverse ∘ toBytes'✝}
+\end{definition}
+
+When dealing with \texttt{toBytesBigEndian} we need to also deal with
+\texttt{toBytes'}. The following axiom states that \texttt{toBytesBigEndian} is
+equal to a \texttt{List.reverse ∘ toBytes'_ax} where \texttt{toBytes'_ax} is a
+dummy definition copied from the EvmYul model.
+
+As future work, we coudl submit a PR to the EvmYul model repository to change
+these \texttt{private} attributes.
+
+\begin{theorem}[Axiom: toBytesBigEndian_rw]
+\label{thm:toBytesBigEndian_rw}\lean{Axioms.toBytesBigEndian_rw}
+\texttt{EvmYul.toBytesBigEndian n = (List.reverse ∘ toBytes'_ax) n}
+\end{theorem}
+
+\subsection{Opcode Semantics}
+
+The most relevant theorem of this kind is the behavior of the \texttt{X}
+function (defined in \ref{def:EVM.X}) when executing a single-opcode program and
+having the program counter be 1.
+
+% \begin{definition}[EvmYul: Function X]\label{def:X}\lean{EvmYul.EVM.X}\leanok
+% Function $X$ defined in the yellow paper.
+% \end{definition}
+
+We then specify the result of running the $X$ function on a bad opcode.
+
+\begin{theorem}[X_bad_pc]\label{thm:X_bad_pc}\lean{X_bad_pc}\uses{def:EVM.X}\leanok
+Given
+\begin{itemize}
+\item a single-opcode program $P$,
+\item a gas amount greater than 1,
+\item the program counter set to 1,
+\item the symbolic and well constrained remaining inputs of $X$.
+\end{itemize}
+Executing $X$ on $P$ with a fully symbolic state with the above conditions
+is successful and returns an empty output with the following modifications to
+the symbolic state:
+\begin{itemize}
+\item The parameter \texttt{returnData} is empty.
+\item The \texttt{executionLength} is increased by one.
+\end{itemize}
+\end{theorem}
+\begin{proof}
+\leanok
+Massaging with tactics the execution path that evaluates if the program counter
+is out of bounds derives this result.
+\end{proof}
+
+\section{KEVM Interface}
+
+We use this
+\href{https://runtimeverification.github.io/evm-equivalence/docs/EvmEquivalence/Interfaces/FuncInterface.html}{interface}
+to provide intermediate lemmas or better representations for the K-generated
+Lean definitions.
+
+This interface contains results about the following categories:
+\begin{itemize}
+\item Simple function behavior: results about simple functions like arithmetic
+  or boolean operations.
+\item Behavior of \texttt{«#sizeWordStack»}: Equating \texttt{«#sizeWordStack»}
+  to \texttt{List.length}.
+\item Behavior of K's \texttt{in_keys} function.
+\item Behavior of \texttt{#inStorage} function.
+\item Results that have to do with memory-related operations.
+\item Bytes manipulation: ease the reasoning about `SortBytes` manipulation functions.
+\end{itemize}
+
+\section{Gas Interface}
+
+KEVM models \textbf{all} EVM hardforks (schedules). So, when executing a program in KEVM, we
+need to keep track of which hardfork (schedule) are we executing with.
+Knowing the schedule we're executing with allows us to know the correct gas cost
+of an opcode, and to know which rules apply to our schedule of choice.
+
+There are two functions involved in this:
+\begin{definition}[\texttt{_<_>}]\label{def:gasConstSched}\lean{«_<_>_SCHEDULE_Int_ScheduleConst_Schedule»}\leanok
+The \texttt{«_<_>_SCHEDULE_Int_ScheduleConst_Schedule»} function (or \texttt{_<_>} for
+short) takes as arguments a gas constant (such as $G_{\text{verylow}}$) and a
+schedule (such as CANCUN) and returns how much is that gas constant in that
+schedule.
+\end{definition}
+\begin{definition}[\texttt{_<<_>>}]\label{def:flagConstSched}\lean{«_<<_>>_SCHEDULE_Bool_ScheduleFlag_Schedule»}\leanok
+The function \texttt{«_<<_>>_SCHEDULE_Bool_ScheduleFlag_Schedule»} (or
+\texttt{_<<_>>} for short) takes as arguments a schedule flag (such as
+$G_{\text{hascreate2}}$) and  a schedule and returns the corresponding boolean
+if the schedule has the schedule flag. This is used to discriminate which rules
+can be applied depending on the schedule we're working with.
+
+In this example, working on an schedule \texttt{SCHED}, any rule involving the
+\texttt{CREATE2} opcode will have to satisfy $G_{\text{hascreate2}}$\texttt{<<
+  SCHED >>} in order to be applied.
+\end{definition}
+
+Given that EvmYul works with the Cancun schedule, the two main results of this
+\href{https://runtimeverification.github.io/evm-equivalence/docs/EvmEquivalence/Interfaces/GasInterface.html}{interface}
+are a plain rewrite of the \texttt{_<_>} and \texttt{_<<_>>} functions to the
+Cancun schedule.
+
+\begin{theorem}[cancun_def]
+\label{thm:cancun_def}\lean{GasInterface.cancun_def}\leanok\uses{def:gasConstSched}
+Given \texttt{const : SortScheduleConst}, we equate
+\texttt{«_<_>_SCHEDULE_Int_ScheduleConst_Schedule» const .CANCUN_EVM} to a
+simple match statement on \texttt{const}.
+\end{theorem}
+\begin{proof}
+\leanok
+This result follows from applying the custom tactics found in
+\href{https://runtimeverification.github.io/evm-equivalence/docs/EvmEquivalence/Interfaces/Tactics.html}{\texttt{Tactics.lean}},
+which boil down to a bunch of simplifications.
+\end{proof}
+
+\begin{theorem}[flag_cancun_def]
+\label{thm:flag_cancun_def}\lean{GasInterface.flag_cancun_def}\leanok\uses{def:flagConstSched}
+Given \texttt{flag : SortScheduleFlag}, we equate
+\texttt{«_<<_>>_SCHEDULE_Bool_ScheduleFlag_Schedule» flag .CANCUN_EVM} to a
+simple match statement on \texttt{flag}.
+\end{theorem}
+\begin{proof}
+\leanok
+This result follows from applying the custom tactics found in
+\href{https://runtimeverification.github.io/evm-equivalence/docs/EvmEquivalence/Interfaces/Tactics.html}{\texttt{Tactics.lean}},
+which boil down to a bunch of simplifications.
+\end{proof}
