@@ -1,18 +1,65 @@
-\chapter{Axioms}
+\chapter{Axioms}\label{chap:axioms}
 
 We now give a full account of all the axioms / unproven results used
 throughout the project.
 We can differentiate these axioms in the following categories:
 
 \begin{itemize}
-\item Code generation axioms: axioms that are needed for the generated code to be well
-  behaved
-\item Function population: axioms that pose the existence of a function without
-  providing an implementation
-\item Pre-theorems: axioms that should be turned into theorems
-\item Theorem sorries: theorems with absent proofs that should hold
-\item Subgoal sorries: subogals that have been sorried-out but are not the most
-  critical part of the theorems they belong to
+\item \textbf{Generated code instances}: axioms that are needed for the generated code to be well
+  behaved.
+\item \textbf{Uninterpreted functions}: axioms that pose the existence of a function without
+  providing an implementation.
+\item \textbf{Pre-theorems}: axioms that should be turned into theorems.
+\item \textbf{Theorem sorries}: theorems with absent proofs that should hold.
+\item \textbf{Subgoal sorries}: subogals that have been sorried-out but are not the most
+  critical part of the theorems they belong to.
 \end{itemize}
 
-\section{Code Generation Axioms}
+\section{Generated code instances}
+
+There are two instances that we have declared without providing any proof due to
+time constraints. For the \texttt{SortK} we have declared instances of the
+\texttt{DecidableEq} and \texttt{LawfulBEq} classes without providing any
+proofs. This has been done due to time constraints and code stability. However, these should be provable.
+
+\texttt{SortK} is basically a sequence of elemts of sort \texttt{SortKItem},
+which in turn has injections from every sort. This means that every time a new
+type was generated (by including more parts of the KEVM semantics in the
+generated code by adding more summaries) the proof should have to be adjusted.
+
+The main application of these instances is to prove the results presents in
+\href{https://runtimeverification.github.io/evm-equivalence/docs/EvmEquivalence/Interfaces/GasInterface.html}{\texttt{GasInterface.lean}}.
+
+\section{Uninterpreted functions}
+
+Some functions in K are left for the backends to implement. These are called
+``hooked functions''. What this means is that these functions don't have
+definition in the compiled K files. Instead, when such a function is
+encountered, K will use the implementation that the executing backend provides
+(the hook).
+
+In our context, hooked functions come in two flavours: implemented or
+unimplemented. Implemented hooked functions are present in the
+\href{https://runtimeverification.github.io/evm-equivalence/docs/EvmEquivalence/KEVM2Lean/Prelude.html}{\texttt{Prelude.lean}},
+and unimplemented or uninterpreted hooked functions are declared as axioms in
+the
+\href{https://runtimeverification.github.io/evm-equivalence/docs/EvmEquivalence/KEVM2Lean/Func.html}{\texttt{Func.lean}}
+file.
+
+All axioms in \texttt{Func.lean} should only be unimplemented hooked functions.
+
+\section{Pre-theorems and theorem sorries}
+
+All axioms that are not uninterpreted functions should become a theorem at some
+point. We also have theorems that no proof has been attempted. All such
+statements are thought to hold, and not holding would imply discrepancies of
+some sort between the models.
+
+\section{Subgoal sorries}
+
+Some theorems have some subgoals sorried out. This is because we have
+provided the general structure of the proof, but haven't got the time yet to
+close all subgoals.
+
+All such subgoals should be provable requireing at most some small tweaking of
+the surrounding functions.

@@ -1,4 +1,4 @@
-\chapter{Equivalences}
+\chapter{Equivalences}\label{chap:equivalences}
 
 With what we have defined so far we are in a position to start proving
 equivalence between KEVM and the EvmYul model. However, first, we need to
@@ -171,7 +171,7 @@ To achieve this we rely on the following two definitions.
 \lean{OneOpEquivalence.oneOpLHS}\leanok\uses{def:OneOp.stackOps}
 
 \texttt{oneOpLHS} is a symbolic state representing all KEVM states that
-rewrite to some other state by means of executing any opcode of the
+rewrite to some other state by means of executing any opcode from the
 \texttt{stackOps_op} class. Viewed as a
 function, $$\mathcal{Im}(\texttt{oneOpLHS}) \supset \{p\,\, |\,\, \exists
 p'\,\,\texttt{Rewrites}_{\texttt{stackOps_op}}\,\, p \,\, p'\}.$$
@@ -182,7 +182,7 @@ p'\,\,\texttt{Rewrites}_{\texttt{stackOps_op}}\,\, p \,\, p'\}.$$
 \lean{OneOpEquivalence.oneOpRHS}\leanok\uses{def:OneOp.stackOps}
 
 \texttt{oneOpRHS} is a symbolic state representing all KEVM states that are a
-rewrite of some other state by means of executing any opcode of the
+rewrite of some other state by means of executing any opcode from the
 \texttt{stackOps_op} class. Viewed as a
 function, $$\mathcal{Im}(\texttt{oneOpRHS}) \supset \{p'\,\, |\,\, \exists
 p\,\,\texttt{Rewrites}_{\texttt{stackOps_op}}\,\, p \,\, p'\}.$$
