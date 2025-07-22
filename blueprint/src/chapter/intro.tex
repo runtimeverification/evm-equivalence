@@ -21,14 +21,80 @@ refer to the
 
 \section*{Overall Approach}
 
-Here should be a description of the overall approach encompassing
+What follows is a summary of what is explained in the blueprint.
+
+This project consists of several parts that lead up to proving equiavlence
+between the EvmYul model and KEVM.
+
+\subsubsection*{Code generation}
+
+The most fundamental layer from the KEVM side is to extract the compiled KEVM
+definitions to Lean 4. We do this by means of the \texttt{klean} tool.
+
+There are three things of special importance to the generated code.
+
 \begin{itemize}
-\item Notion of equivalence
-\item Code generation
-\item Interfaces
-\item State mapping
-\item Proof sketch
-\item Progress
-\item Axioms/sorries
+\item \textbf{Function termination:} There are some generated functions that
+  Lean can't automatically deduce its termination argument. Modify the code to
+  provide it.
+\item \textbf{Uninterpreted functions:} Some functions require an ad-hoc
+  implementation by the Lean 4 backend. When this implementation is not provided
+  they are declared as axioms.
+\item \textbf{\texttt{Rewrites} type:} The \texttt{Rewrites} is formatted for
+  better reading.
 \end{itemize}
+
+Refer to to \ref{chap:gencode} for details.
+
+\subsubsection*{Reasoning Interfaces}
+
+The second layer is that of reasoning interfaces. Files containing results that
+make reasoning about both models more ammenable.
+
+The results present in these files cover from basic facts about the types we're
+dealing with to conversions to more friendly representations of convoluted
+expressions.
+
+KEVM's \texttt{GasInterface.lean} is particulary time-intensive to execute. For
+debugging anything unrelated to it it's advised to \texttt{sorry} our its
+proofs.
+
+See \ref{chap:interfaces} for more details.
+
+\subsubsection*{EvmYul Summaries}
+
+There is a series of files containing results that encapsulate the computational
+behavior of EvmYul's functions for specific opcodes or classes of opcodes. This
+allows us to have a precise description of the state updates that each opcode
+entails.
+
+Note that we also have the equivalent of these summaries for KEVM. However,
+they're produced differntly: KEVM computes the states updates and then they are
+exported as the constructors of the \texttt{Rewrites} type.
+
+For a more detailed discussion see \ref{chap:EvmYulSummaries}.
+
+\subsubsection*{State Mapping}
+
+Once we have reasonable reasoning interfaces and the summaries of the
+computational behavior at the opcode level for each model, we define a function
+that maps states from one model to the other.
+
+So far, we have a mapping from KEVM states to EvmYul ones. It remains as future
+work to do the inverse direction.
+
+For a more detailed discussion see \ref{chap:statemap}.
+
+\subsubsection*{Proving Equivalence}
+
+The last step is to prove equivalence for each opcode. For a formal deinition of
+the equivalence definition and proof strategy see \ref{chap:equivalences}.
+
+\subsubsection*{Axioms and sorries}
+
+We employ axioms for different uses, from generated uninterpreted functions to
+blueprints for future function implementations or theorems that should be proven
+at some point.
+
+See \ref{chap:axioms} for a more detailed description.
 
