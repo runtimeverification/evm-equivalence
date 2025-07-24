@@ -27,12 +27,12 @@ The generated code is divided into five files. In dependent order:
 
 \begin{itemize}
 \item \texttt{Prelude.lean}: Prelude for K definitions containing bootstrapping
-  the shallow embedding
-\item \texttt{Sorts.lean}: Definition of K sorts as inductive datatypes
-\item \texttt{Inj.lean}: Instances of the \texttt{Inj} type class
-\item \texttt{Func.lean}: Extraction of declared functions
+  the shallow embedding.
+\item \texttt{Sorts.lean}: Definition of K sorts as inductive datatypes.
+\item \texttt{Inj.lean}: Instances of the \texttt{Inj} type class.
+\item \texttt{Func.lean}: Extraction of declared functions.
 \item \texttt{Rewrites.lean}: Rewrite rules coded as constructors or the
-  \texttt{Rewrite} inductive type
+  \texttt{Rewrite} inductive type.
 \end{itemize}
 
 \section{Prelude}
@@ -211,15 +211,64 @@ definition contains commas, and this apparently results in a new line.
 
 \section{Generated Functions}
 
-We will only document those functions that play a topmost role in the theorems.
+Right now there are no generated functions documented. However, we will only document those functions that play a topmost role in the theorems.
 
 \subsection{Modifications to the Generated Code}
 
-TODO
+Modifications to the
+\href{https://runtimeverification.github.io/evm-equivalence/docs/EvmEquivalence/KEVM2Lean/Func.html}{\texttt{Func.lean}}
+file are for adding termination arguments to functions whenever Lean is not able
+to infer it automatically.
+
+At the moment, there are only two \texttt{mutual} blocks of functions that need
+an explicit termination argument. These most important functions of those blocks
+are defined here [\ref{def:gasConstSched}, \ref{def:flagConstSched}].
+
+To prove termination we define an ordering of the schedule constants and flags
+\href{https://runtimeverification.github.io/evm-equivalence/docs/EvmEquivalence/KEVM2Lean/ScheduleOrdering.html}{here}.
 
 \section{Rewrite}
-The Rewrite file only contains the following \texttt{Rewrites} definition.
+The
+\href{https://github.com/runtimeverification/evm-equivalence/blob/master/EvmEquivalence/KEVM2Lean/Rewrite.lean}{\texttt{Rewrite.lean}}
+file only contains the definition of the \texttt{Rewrites} type.
+
+This type encodes the rewrite rules that are extracted to Lean.
 
 \begin{definition}[Rewrites]\label{def:Rewrites}\lean{Rewrites}\leanok
-\textbf{TODO:} Thorough explanation
+
+Rules extracted to Lean from K will be enconded as constructors of this type.
+
+We have that \texttt{Rewrites : SortGeneratedTopCell → SortGeneratedTopCell →
+  Prop} where
+\href{https://runtimeverification.github.io/evm-equivalence/docs/EvmEquivalence/KEVM2Lean/Sorts.html#SortGeneratedTopCell}{\texttt{SortGeneratedTopCell}}
+is the type for KEVM states.
+
+Given \texttt{p}, \texttt{p'} : \texttt{SortGeneratedTopCell}, \texttt{Rewrites
+  p p'} means that the KEVM state \texttt{p} rewrites to \texttt{p'}.
+
+All of the \texttt{requires} clauses of a rule are encoded as the corresponding constructor's arguments.
+
+There's an special transitivy rule that ensures the chaining of multiple rewrite
+rules:
+
+\begin{verbatim}
+| tran
+  {s1 s2 s3 : SortGeneratedTopCell}
+  (t1 : Rewrites s1 s2)
+  (t2 : Rewrites s2 s3)
+  : Rewrites s1 s3
+\end{verbatim}
+
 \end{definition}
+
+Note that we will not be extracting all KEVM rules. Instead, we have produced
+\href{https://github.com/runtimeverification/evm-semantics/tree/master/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries}{summary
+  rules} and extracted those.
+
+Summary rules are rules that capture KEVM's computational behavior. Executing an
+opcode typically takes more than one rule application. Instead of extracting
+these rules, we've put together the result of applying them as these summaries,
+which KEVM can verify its correctness.
+
+By doing this, we need only extract the summary rules to capture the semantic
+meaning of executing an opcode in KEVM.
