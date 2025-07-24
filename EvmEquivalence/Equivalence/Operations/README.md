@@ -8,8 +8,8 @@ The proofs are divided into three files, according to the shape of the KEVM gene
 The generated KEVM summaries can be divided into three shapes, depending on the number of operations the opcode takes to execute.
 This is relevant because each operation results in an additional precondition for the generated summary. Let's see what this means.
 
-Also note that there are opcodes on the same file that requrie a diferent prestate stack structure,
-but it's easier to accomodate for that than for different preconditions.
+Also note that there are opcodes on the same file that requrie a different prestate stack structure,
+but it's easier to accommodate for that than for different preconditions.
 
 #### [**One operation**](./OneOpEquivalence.lean)
 
