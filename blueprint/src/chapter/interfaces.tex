@@ -45,9 +45,9 @@ This part of the EvmYul FFI.
 \end{definition}
 
 Crucially, the \texttt{zeroes} function is a
-\href{https://en.wikipedia.org/wiki/Foreign_function_interface}{foregin function interface (FFI)}
+\href{https://en.wikipedia.org/wiki/Foreign_function_interface}{foreign function interface (FFI)}
 function. This means that there is no Lean implementation of it. Rather, when
-executed, Lean will call en external function to perform the computational
+executed, Lean will call an external function to perform the computational
 action.
 However, the \texttt{zeroes} function plays a crucial role in important
 functions such as writing to memory.
@@ -67,7 +67,7 @@ The second needed axiom is to bypass a \texttt{private} attribute of the EvmYul
 
 \begin{definition}[toBytes']\label{def:toBytes'}\leanok
 \texttt{toBytes' n} converts a given natural number \texttt{n} to its little
-endian bytes represenation.
+endian bytes representation.
 
 Crucially, this definition is \texttt{private}.
 \end{definition}
@@ -77,7 +77,7 @@ The \texttt{toBytes'} function is used by \texttt{toBytesBigEndian}:
 \begin{definition}[toBytesBigEndian]
 \label{def:toBytesBigEndian}\uses{def:toBytes'}\lean{EvmYul.toBytesBigEndian}\leanok
 \texttt{toBytes' n} converts a given natural number \texttt{n} to its big
-endian bytes represenation.
+endian bytes representation.
 
 \texttt{toBytesBigEndian = List.reverse ∘ toBytes'✝}
 \end{definition}
@@ -87,7 +87,7 @@ When dealing with \texttt{toBytesBigEndian} we need to also deal with
 equal to a \texttt{List.reverse ∘ toBytes'_ax} where \texttt{toBytes'_ax} is a
 dummy definition copied from the EvmYul model.
 
-As future work, we coudl submit a PR to the EvmYul model repository to change
+As future work, we could submit a PR to the EvmYul model repository to change
 these \texttt{private} attributes.
 
 \begin{theorem}[Axiom: toBytesBigEndian_rw]

@@ -59,4 +59,4 @@ If the `poetry install` seems to take too long or to hang, try `export PYTHON_KE
 
 ## Documentation and Blueprint
 
-For an in-depth description of the projcet you can consult the README files present in this repository and the [blueprint](https://runtimeverification.github.io/evm-equivalence/).
+For an in-depth description of the project you can consult the README files present in this repository and the [blueprint](https://runtimeverification.github.io/evm-equivalence/).

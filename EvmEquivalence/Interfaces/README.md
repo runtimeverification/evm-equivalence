@@ -12,7 +12,7 @@ This folder contains interfaces to reason with the EvmYul and KEVM models.
 
 ## Axiomatic mapping
 
-The file [`Axioms.lean`](./Axioms.lean) declares the exsistence of functions that convert `KEVM` maps into `EvmYul` ones.
+The file [`Axioms.lean`](./Axioms.lean) declares the existence of functions that convert `KEVM` maps into `EvmYul` ones.
 
 The reason for this axiomatization is twofold.
 
@@ -26,7 +26,7 @@ The reason for this axiomatization is twofold.
 2. Non reasoning-friendly maps in the `EvmYul` model:
    Currently, the `EvmYul` model is more geared towards execution than reasoning.
    This means that the map representation is not the most optimal for reasoning, and a more reasoning-friendly interface could be
-   provided in the future. This is an argument in favor of not commiting (yet) to a K map representation tailored to play well with
+   provided in the future. This is an argument in favor of not committing (yet) to a K map representation tailored to play well with
    the current `EvmYul` maps, but this argument could change in the future.
 
 ## Axioms as pre-theorems
