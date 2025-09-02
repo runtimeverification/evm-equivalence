@@ -102,11 +102,9 @@ theorem sizeWordStackAuxAdd {n : SortInt} {ws : SortWordStack} :
 
 theorem sizeWordStackIsSome {ws : SortWordStack} :
   sizeWordStackAux ws 0 = some (wsLength ws) := by
-  unfold sizeWordStackAux
   induction' ws
   . aesop (add simp [sizeWordStackAux, _432555e])
-  . simp_all [sizeWordStack_add_one, wsLength]; rewrite [←sizeWordStackAux] at *
-    aesop (add simp [sizeWordStack_add_one])
+  . simp_all [sizeWordStack_add_one, wsLength]
 
 theorem wsLength_eq_length_wordStackMap {ws : SortWordStack} :
   wsLength ws = List.length (wordStackMap ws) := by
@@ -189,7 +187,7 @@ theorem mapWriteRange_rw (mem content : SortBytes) (index : SortInt) :
   simp [«.Bytes_BYTES-HOOKED_Bytes»] <;>
   simp [«padRightBytes(_,_,_)_BYTES-HOOKED_Bytes_Bytes_Int_Int»] <;>
   simp [«replaceAtBytes(_,_,_)_BYTES-HOOKED_Bytes_Bytes_Int_Bytes»]
-  aesop; split; aesop; simp [Option.bind, notBool_def, andBool_def]
+  aesop; split; aesop; simp [Option.bind]
   aesop (add simp [ByteArray.size]) (add safe (by linarith)) (add safe (by omega))
 
 /-! ## Bytes manipulation
@@ -243,6 +241,7 @@ theorem padToWidth32_asByteStack_rw
    := by
   simp [Axioms.ffi_zeroes, «#padToWidth», _67678cd, _ebfe294, notBool_def, failure]
   simp [«padLeftBytes(_,_,_)_BYTES-HOOKED_Bytes_Bytes_Int_Int»]
+  simp [USize.toNat]
   rw [zeroes_size_eq_sub n_small, ByteArray.append_array_data]; congr
   -- To have a clearer view of the goal:
   all_goals rw [←List.toByteArray]; have: (toBytesBigEndian n).toByteArray = BE n := rfl; rw [this]
@@ -264,7 +263,7 @@ theorem Bytes2Int_fromByteArrayBigEndian_eq  (b : ByteArray) :
   induction l; simp [ByteArray.toList_empty, fromByteArrayBigEndian]; rfl
   rename_i h t ih
   rw [Axioms.ByteArray.toList_eq, List.foldr] at *
-  simp [Axioms.ByteArray.toList_eq, List.foldr]
+  --simp [Axioms.ByteArray.toList_eq, List.foldr]
   sorry
 
 /--
@@ -301,7 +300,7 @@ theorem asWord_empty : asWord .empty = some 0 := by
   simp [chop, _85aa67b, _modInt_]
   simp [«Bytes2Int(_,_,_)_BYTES-HOOKED_Int_Bytes_Endianness_Signedness».unsigned]
   simp [«Bytes2Int(_,_,_)_BYTES-HOOKED_Int_Bytes_Endianness_Signedness».res]
-  simp [ByteArray.empty, ByteArray.mkEmpty, ByteArray.toList_empty, ByteArray.toList_empty]
+  simp [ByteArray.empty, ByteArray.emptyWithCapacity, ByteArray.toList_empty, ByteArray.toList_empty]
   aesop
 
 /-! ## Misc
