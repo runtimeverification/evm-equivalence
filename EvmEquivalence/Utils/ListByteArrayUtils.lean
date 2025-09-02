@@ -6,7 +6,7 @@ namespace ByteArray
 
 theorem append_array_data (a b : Array UInt8) :
   ({data := a ++ b} : ByteArray)  = {data := a} ++ { data := b} := by
-  have := data_append {data := a} {data := b}; simp_all only [ByteArray.data, ←this]
+  have := data_append {data := a} {data := b}; simp_all only [ ←this]
 
 theorem push_size (b : ByteArray) (u : UInt8) :
   (b.push u).size = b.size + 1 := by aesop
