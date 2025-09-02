@@ -25,6 +25,9 @@ theorem toList_empty :
   ({ data := { toList := [] } } : ByteArray).toList = [] := by
   simp [toList, toList_loop_empty]
 
+theorem empty_toList_empty : ByteArray.empty.toList = [] := by
+  simp [ByteArray.empty, ByteArray.emptyWithCapacity, toList_empty]
+
 end ByteArray
 
 namespace Array
