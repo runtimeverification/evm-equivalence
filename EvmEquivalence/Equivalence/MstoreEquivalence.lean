@@ -390,13 +390,8 @@ theorem mstore_memory_write_eq
   -- TODO: This proof can probably be amply optimized
   simp [mstore_memory_write]
   simp [ByteArray.write, ByteArray.copySlice, Axioms.ffi_zeroes]
-  --rw [ByteArray.append_empty]
   simp [UInt256.toByteArray_size, UInt256.toArray_size]
-  /- have : USize.toNat (OfNat.ofNat ((intMap W0).toNat - LOCALMEM_CELL.data.size)) ≤
-    ((intMap W0).toNat - LOCALMEM_CELL.data.size) := by
-    cases System.Platform.numBits_eq <;> simp_all [USize.toNat] <;>
-    aesop (add safe (by omega)) -/
-  simp [ByteArray.size/- , this -/]; rw [intMap_toNat] <;> try linarith
+  simp [ByteArray.size]; rw [intMap_toNat] <;> try linarith
   simp [@Array.extract_of_size_le _ _ (Int.toNat W0 + 32)]
   rw [@Nat.sub_eq_zero_of_le (USize.toNat _)]
   case h => apply Nat.le_trans (USize.toNat_ofNat_le _); omega
@@ -412,40 +407,21 @@ theorem mstore_memory_write_eq
   revert defn_Val16
   rw [←defn_Val15]
   simp [mapWriteRange_rw, Axioms.ffi_zeroes]
-  --generalize fooh : ({ data := Array.replicate ((OfNat.ofNat 32 - OfNat.ofNat (BE w1).size) : USize).toNat 0 } ++ BE w1).size = foo
   rw [replicate_size_32] <;> try assumption
   split; linarith
   split; linarith
-  /- rw [ByteArray.size_append, ByteArray.size]; simp [Array.toList]
-  split; omega; rw [UInt256.toByteArray] -/
   simp [«replaceAtBytes(_,_,_)_BYTES-HOOKED_Bytes_Bytes_Int_Bytes»]
   intro h1 h2 h3; subst h3
-  simp [«padRightBytes(_,_,_)_BYTES-HOOKED_Bytes_Bytes_Int_Int», Axioms.ffi_zeroes]
-  --have _ : (intMap W0).toNat = Int.toNat W0 := by apply intMap_toNat <;> assumption
-  --have _ := BE_size_le_32 _ W1small
+  simp [«padRightBytes(_,_,_)_BYTES-HOOKED_Bytes_Bytes_Int_Int»]
   have : (intMap ↑w1).toNat = w1 := by rw [intMap_toNat, Int.toNat_ofNat] <;> try linarith
   simp_all [ByteArray.size]
-  /- have : (Int.toNat W0 - LOCALMEM_CELL.data.size) ⊓
-    (Int.toNat W0 + Int.toNat 32 - LOCALMEM_CELL.data.size) =
-    (Int.toNat W0 - LOCALMEM_CELL.data.size) := by omega -/
   rw [Int.toNat_add] <;> try linarith
   rw [sub_add_BE_32 W1small]
-  /- have : (BE w1).data.size = (BE w1).size := rfl
-  rw [this] -/
-  --generalize fooh : ((OfNat.ofNat 32 - OfNat.ofNat (BE w1).size) : USize).toNat + (BE w1).size = foo
-  /- generalize fooh : @HAdd.hAdd ℕ ℕ ℕ instHAdd ((OfNat.ofNat 32 - OfNat.ofNat (BE w1).size) : USize).toNat (BE w1).size = foo
-  rewrite [sub_add_BE_32] at fooh -/
-
-  -- <;> try exact W1small
-  --rw [Nat.min_eq_right] <;> try omega
   simp [@Array.extract_of_size_le _ _ (Int.toNat W0 + 32)]
-  /- have _ : (BE w1).data.extract 0 (32 - (32 - (BE w1).size)) = (BE w1).data := by
-    simp /- [Array.extract_eq_self_of_le] -/; right; rw [Nat.sub_sub_self]; rfl; assumption -/
   rw [Array.append_cancel_left_eq]
   rw [Array.append_cancel_left]
   case ofNat.isFalse.isFalse.a =>
     rw [←Int.toNat_lt_toNat] at W0small_realpolitik <;> try simp
-    /- simp [Array.replicate_inj];  -/
     rw [USize.toNat_ofNat_eq] <;>
     aesop (add simp [UInt32.size]) (add safe (by omega))
   conv => rhs; rw [←Array.append_assoc]
