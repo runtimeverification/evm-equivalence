@@ -392,11 +392,11 @@ theorem mstore_memory_write_eq
   simp [ByteArray.write, ByteArray.copySlice, Axioms.ffi_zeroes]
   --rw [ByteArray.append_empty]
   simp [UInt256.toByteArray_size, UInt256.toArray_size]
-  have : USize.toNat (OfNat.ofNat ((intMap W0).toNat - LOCALMEM_CELL.data.size)) ≤
+  /- have : USize.toNat (OfNat.ofNat ((intMap W0).toNat - LOCALMEM_CELL.data.size)) ≤
     ((intMap W0).toNat - LOCALMEM_CELL.data.size) := by
     cases System.Platform.numBits_eq <;> simp_all [USize.toNat] <;>
-    aesop (add safe (by omega))
-  simp [ByteArray.size, this]; rw [intMap_toNat] <;> try linarith
+    aesop (add safe (by omega)) -/
+  simp [ByteArray.size/- , this -/]; rw [intMap_toNat] <;> try linarith
   simp [@Array.extract_of_size_le _ _ (Int.toNat W0 + 32)]
   rw [@Nat.sub_eq_zero_of_le (USize.toNat _)]
   case h => apply Nat.le_trans (USize.toNat_ofNat_le _); omega
@@ -410,32 +410,53 @@ theorem mstore_memory_write_eq
   <;> try exact bs_eq
   -- Treating with `mapWriteRange`
   revert defn_Val16
-  rw [←defn_Val15]; simp [mapWriteRange_rw, Axioms.ffi_zeroes]
-  rw [zeroes_size_eq_sub] <;> try assumption
+  rw [←defn_Val15]
+  simp [mapWriteRange_rw, Axioms.ffi_zeroes]
+  --generalize fooh : ({ data := Array.replicate ((OfNat.ofNat 32 - OfNat.ofNat (BE w1).size) : USize).toNat 0 } ++ BE w1).size = foo
+  rw [replicate_size_32] <;> try assumption
   split; linarith
-  rw [ByteArray.size_append, ByteArray.size]; simp [Array.toList]
-  split; omega; rw [UInt256.toByteArray]
+  split; linarith
+  /- rw [ByteArray.size_append, ByteArray.size]; simp [Array.toList]
+  split; omega; rw [UInt256.toByteArray] -/
   simp [«replaceAtBytes(_,_,_)_BYTES-HOOKED_Bytes_Bytes_Int_Bytes»]
   intro h1 h2 h3; subst h3
   simp [«padRightBytes(_,_,_)_BYTES-HOOKED_Bytes_Bytes_Int_Int», Axioms.ffi_zeroes]
-  have _ : (intMap W0).toNat = Int.toNat W0 := by apply intMap_toNat <;> assumption
-  have _ := BE_size_le_32 _ W1small
+  --have _ : (intMap W0).toNat = Int.toNat W0 := by apply intMap_toNat <;> assumption
+  --have _ := BE_size_le_32 _ W1small
   have : (intMap ↑w1).toNat = w1 := by rw [intMap_toNat, Int.toNat_ofNat] <;> try linarith
   simp_all [ByteArray.size]
-  have : (Int.toNat W0 - LOCALMEM_CELL.data.size) ⊓
+  /- have : (Int.toNat W0 - LOCALMEM_CELL.data.size) ⊓
     (Int.toNat W0 + Int.toNat 32 - LOCALMEM_CELL.data.size) =
-    (Int.toNat W0 - LOCALMEM_CELL.data.size) := by omega
-  rw [Int.toNat_add, this] <;> try linarith
-  have : (BE w1).data.size = (BE w1).size := rfl
-  rw [this, zeroes_size_eq_sub] <;> try exact W1small
-  rw [Nat.min_eq_right] <;> try omega
+    (Int.toNat W0 - LOCALMEM_CELL.data.size) := by omega -/
+  rw [Int.toNat_add] <;> try linarith
+  rw [sub_add_BE_32 W1small]
+  /- have : (BE w1).data.size = (BE w1).size := rfl
+  rw [this] -/
+  --generalize fooh : ((OfNat.ofNat 32 - OfNat.ofNat (BE w1).size) : USize).toNat + (BE w1).size = foo
+  /- generalize fooh : @HAdd.hAdd ℕ ℕ ℕ instHAdd ((OfNat.ofNat 32 - OfNat.ofNat (BE w1).size) : USize).toNat (BE w1).size = foo
+  rewrite [sub_add_BE_32] at fooh -/
+
+  -- <;> try exact W1small
+  --rw [Nat.min_eq_right] <;> try omega
   simp [@Array.extract_of_size_le _ _ (Int.toNat W0 + 32)]
-  have _ : (BE w1).data.extract 0 (32 - (32 - (BE w1).size)) = (BE w1).data := by
-    simp [Array.extract_eq_self_of_le]; right; rw [Nat.sub_sub_self]; rfl; assumption
-  congr; rw [USize.toNat_ofNat_eq]
-  -- This is when we require the hipothesis `W0small_realpolitik`
-  rw [←Int.toNat_lt_toNat] at W0small_realpolitik <;> try simp
-  aesop (add simp [UInt32.size]) (add safe (by omega))
+  /- have _ : (BE w1).data.extract 0 (32 - (32 - (BE w1).size)) = (BE w1).data := by
+    simp /- [Array.extract_eq_self_of_le] -/; right; rw [Nat.sub_sub_self]; rfl; assumption -/
+  rw [Array.append_cancel_left_eq]
+  rw [Array.append_cancel_left]
+  case ofNat.isFalse.isFalse.a =>
+    rw [←Int.toNat_lt_toNat] at W0small_realpolitik <;> try simp
+    /- simp [Array.replicate_inj];  -/
+    rw [USize.toNat_ofNat_eq] <;>
+    aesop (add simp [UInt32.size]) (add safe (by omega))
+  conv => rhs; rw [←Array.append_assoc]
+  rw [Array.append_cancel_right_eq]
+  have extract_32_eq : (intMap ↑w1).toByteArray.data.extract 0 32 = (intMap ↑w1).toByteArray.data := by
+    have := UInt256.toByteArray_size
+    simp [ByteArray.size] at this
+    aesop
+  rw [extract_32_eq, UInt256.toByteArray]
+  rw [←ByteArray.append_array_data, Axioms.ffi_zeroes]; simp only
+  congr
 
 theorem step_mstore_equiv
   {GAS_CELL MEMORYUSED_CELL PC_CELL W0 W1 _Val0 _Val1 _Val10 _Val14mstore8 _Val17 _Val18 _Val19 _Val2 _Val20 _Val21 _Val22 _Val23 _Val24 _Val25 _Val3 _Val5 _Val6 _Val7 _Val8 _Val9 : SortInt}
