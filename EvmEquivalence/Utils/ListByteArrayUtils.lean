@@ -35,6 +35,19 @@ namespace Array
 theorem extract_of_size_le {α} {as : Array α} {i j : Nat} (h : as.size ≤ j) :
     as.extract i j = as.extract i as.size := by aesop
 
+theorem append_cancel_left_eq.{u_1} {α : Type u_1} (as bs cs : Array α) :
+  (as ++ bs = as ++ cs) = (bs = cs) := by
+  aesop (add simp [append_eq_append_iff])
+
+-- TODO: maybe revisit the name of this theorem
+theorem append_cancel_left.{u_1} {α : Type u_1} (as bs cs ds : Array α) :
+  as = cs → (as ++ bs = cs ++ ds) = (bs = ds) := by
+  aesop (add simp [append_eq_append_iff])
+
+theorem append_cancel_right_eq.{u_1} {α : Type u_1} (as bs cs : Array α) :
+  (as ++ bs = cs ++ bs) = (as = cs) := by
+  aesop (add simp [append_eq_append_iff])
+
 end Array
 
 namespace List
