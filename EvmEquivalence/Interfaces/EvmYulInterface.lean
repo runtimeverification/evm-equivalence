@@ -96,6 +96,13 @@ theorem zeroes_size_eq_32 {n : ℕ} (n_small : n < UInt256.size) :
   have := BE_size_le_32 n n_small; rw [@Nat.mod_eq_of_lt (BE n).size] <;>
   cases (System.Platform.numBits_eq) <;> simp_all <;> omega
 
+theorem sub_add_BE_32 {n : ℕ} (n_small : n < UInt256.size) :
+  @HAdd.hAdd ℕ ℕ ℕ instHAdd ((OfNat.ofNat 32 - OfNat.ofNat (BE n).data.size) : USize).toNat (BE n).data.size = 32 := by
+  simp [USize.toNat]; apply zeroes_size_eq_32 n_small
+
+theorem replicate_size_32 {n : ℕ} (n_small : n < UInt256.size) : ByteArray.size ({ data := Array.replicate ((OfNat.ofNat 32 - OfNat.ofNat (BE n).size) : USize).toNat 0 } ++ BE n) = 32 := by
+  simp [ByteArray.size]; apply sub_add_BE_32 n_small
+
 @[simp]
 theorem fromByteArrayBigEndian_empty : fromByteArrayBigEndian .empty = 0 := by
   simp [fromByteArrayBigEndian, ByteArray.empty_toList_empty]
