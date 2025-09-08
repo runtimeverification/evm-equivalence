@@ -340,8 +340,8 @@ theorem oneOp_prestate_equiv
            }
     returnData := _Gen10.val
     } := by
-    cases cop: op <;>
-    simp [oneOpLHS, cop, stateMap, stateGetter_op.from_k] <;> rfl
+    cases op <;>
+    simp [oneOpLHS, stateMap] <;> rfl
 
 theorem oneOp_poststate_equiv
   {TOP_STACK ID_CELL ORIGIN_CELL CALLER_CELL GASPRICE_CELL  COINBASE_CELL TIMESTAMP_CELL MIXHASH_CELL NUMBER_CELL GASLIMIT_CELL CHAINID_CELL PC_CELL _Val5 _Val6 _Val8 : SortInt}
@@ -476,7 +476,7 @@ theorem step_oneOp_equiv
     <;> try assumption
     simp [oneOpLHS, oneOpRHS]; constructor <;> try constructor
     . cases op <;>
-      simp [cancun, GasInterface.cancun_def] at defn_Val0 defn_Val5 <;>
+      simp at defn_Val0 defn_Val5 <;>
       aesop (add simp [stateGetter_op.gas, GasInterface.cancun_def, «_-Int_», intMap_sub_dist])
     . rw [←UInt256.add_succ_mod_size, intMap_add_dist] <;> aesop
     . generalize h_top_stack : op.do lhs = top_stack
@@ -485,6 +485,7 @@ theorem step_oneOp_equiv
       cases top_stack <;>
       aesop (add simp [Fin.val, Fin.ofNat, AccountAddress.size, State.coinBase, State.timeStamp])
       (add safe (by omega))
+      (add safe (by congr))
 
 
 attribute [local simp] GasConstants.Glow
@@ -580,7 +581,7 @@ theorem X_oneOp_equiv
   case code_h => simp [oneOpLHS]
   congr <;> try simp
   . cases op <;>
-    simp [stateGetter_op.C'_comp, stateGetter_op.from_k, oneOpLHS, oneOpRHS] <;>
+    simp [stateGetter_op.from_k, oneOpLHS, oneOpRHS] <;>
     aesop
   . -- Gas deduction
     aesop (add simp [stateGetter_op.C'_comp, stateGetter_op.from_k])
@@ -592,5 +593,6 @@ theorem X_oneOp_equiv
     simp [UInt256.ofNat, Id.run, UInt256.toSigned] <;>
     aesop (add simp [Fin.val, Fin.ofNat, AccountAddress.size, State.coinBase, State.number])
     (add safe (by omega))
+    (add safe (by congr))
 
 end StateGettersEquivalence

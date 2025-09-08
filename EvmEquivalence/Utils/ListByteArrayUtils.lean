@@ -6,7 +6,7 @@ namespace ByteArray
 
 theorem append_array_data (a b : Array UInt8) :
   ({data := a ++ b} : ByteArray)  = {data := a} ++ { data := b} := by
-  have := data_append {data := a} {data := b}; simp_all only [ByteArray.data, ←this]
+  have := data_append {data := a} {data := b}; simp_all only [ ←this]
 
 theorem push_size (b : ByteArray) (u : UInt8) :
   (b.push u).size = b.size + 1 := by aesop
@@ -25,12 +25,28 @@ theorem toList_empty :
   ({ data := { toList := [] } } : ByteArray).toList = [] := by
   simp [toList, toList_loop_empty]
 
+theorem empty_toList_empty : ByteArray.empty.toList = [] := by
+  simp [ByteArray.empty, ByteArray.emptyWithCapacity, toList_empty]
+
 end ByteArray
 
 namespace Array
 
 theorem extract_of_size_le {α} {as : Array α} {i j : Nat} (h : as.size ≤ j) :
     as.extract i j = as.extract i as.size := by aesop
+
+theorem append_cancel_left_eq.{u_1} {α : Type u_1} (as bs cs : Array α) :
+  (as ++ bs = as ++ cs) = (bs = cs) := by
+  aesop (add simp [append_eq_append_iff])
+
+-- TODO: maybe revisit the name of this theorem
+theorem append_cancel_left.{u_1} {α : Type u_1} (as bs cs ds : Array α) :
+  as = cs → (as ++ bs = cs ++ ds) = (bs = ds) := by
+  aesop (add simp [append_eq_append_iff])
+
+theorem append_cancel_right_eq.{u_1} {α : Type u_1} (as bs cs : Array α) :
+  (as ++ bs = cs ++ bs) = (as = cs) := by
+  aesop (add simp [append_eq_append_iff])
 
 end Array
 

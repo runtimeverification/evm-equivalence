@@ -48,8 +48,7 @@ lemma toBytes'_le {k n : ℕ} (h : n < 2 ^ (8 * k)) : (toBytes'_ax n).length ≤
     match n with
     | .zero => simp [toBytes'_ax]
     | .succ n =>
-      unfold toBytes'_ax
-      simp [Nat.succ_le_succ_iff]
+      simp [toBytes'_ax]
       apply ih (Nat.div_lt_of_lt_mul _)
       rw [Nat.mul_succ, Nat.pow_add] at h
       linarith
@@ -97,9 +96,17 @@ theorem zeroes_size_eq_32 {n : ℕ} (n_small : n < UInt256.size) :
   have := BE_size_le_32 n n_small; rw [@Nat.mod_eq_of_lt (BE n).size] <;>
   cases (System.Platform.numBits_eq) <;> simp_all <;> omega
 
+theorem sub_add_BE_32 {n : ℕ} (n_small : n < UInt256.size) :
+  @HAdd.hAdd ℕ ℕ ℕ instHAdd ((OfNat.ofNat 32 - OfNat.ofNat (BE n).data.size) : USize).toNat (BE n).data.size = 32 := by
+  simp [USize.toNat]; apply zeroes_size_eq_32 n_small
+
+theorem replicate_size_32 {n : ℕ} (n_small : n < UInt256.size) : ByteArray.size ({ data := Array.replicate ((OfNat.ofNat 32 - OfNat.ofNat (BE n).size) : USize).toNat 0 } ++ BE n) = 32 := by
+  simp [ByteArray.size]; apply sub_add_BE_32 n_small
+
 @[simp]
 theorem fromByteArrayBigEndian_empty : fromByteArrayBigEndian .empty = 0 := by
-  aesop (add simp [fromByteArrayBigEndian, ByteArray.empty, ByteArray.mkEmpty, ByteArray.toList_empty])
+  simp [fromByteArrayBigEndian, ByteArray.empty_toList_empty]
+  aesop
 
 namespace UInt256
 
@@ -110,16 +117,18 @@ variable {p : ℤ}
 
 -- Conversions
 
-theorem val_eq (h : n < UInt256.size): ↑(UInt256.ofNat n).1 = n := by
-  aesop (add simp [UInt256.ofNat, Id.run, Fin.ofNat])
-        (add safe (by omega))
+theorem val_eq (n_le_size : n < UInt256.size):
+  ↑(UInt256.ofNat n).1 = n := by
+  simp only [UInt256.ofNat, Id.run, Fin.ofNat]
+  exact Nat.mod_eq_of_lt n_le_size
 
-theorem ofNat_eq: UInt256.ofNat n = ⟨Fin.ofNat n⟩ := by
+theorem ofNat_eq : UInt256.ofNat n = ⟨Fin.ofNat UInt256.size n⟩ := by
   aesop (add simp [UInt256.ofNat])
 
 theorem ofNat_toNat (n_le_size : n < UInt256.size) :
   (UInt256.ofNat n).toNat = n := by
-  aesop (add simp [UInt256.ofNat, UInt256.toNat, Id.run, dbgTrace, Fin.ofNat])
+  simp [UInt256.ofNat, UInt256.toNat, Id.run, Fin.ofNat]
+  exact Nat.mod_eq_of_lt n_le_size
 
 theorem ofNat_toSigned (h : ↑n = p) :
   UInt256.ofNat n = .toSigned p := by aesop
@@ -127,7 +136,7 @@ theorem ofNat_toSigned (h : ↑n = p) :
 -- Size of conversions to `ByteArray` and `Array`
 theorem toByteArray_size (val : UInt256) : val.toByteArray.size = 32 := by
   simp [UInt256.toByteArray, ByteArray.size_append, ffi_zeroes_size]
-  rw [zeroes_size_eq_32]; exact val.val.isLt
+  simp [USize.toNat]; rw [zeroes_size_eq_32]; exact val.val.isLt
 
 theorem toArray_size (n : UInt256) : n.toByteArray.data.size = 32 := by
   have := UInt256.toByteArray_size; simp_all [ByteArray.size]
@@ -139,7 +148,7 @@ theorem sub_0 {n : UInt256} : n - .ofNat 0 = n := by
   match n with
   | UInt256.mk (Fin.mk val isLT) =>
   simp [UInt256.ofNat, Id.run, HSub.hSub, Sub.sub, UInt256.sub]
-  simp [UInt256.size, Fin.ofNat, Fin.sub]; assumption
+  simp [UInt256.size, Fin.sub]; assumption
   -- Alternatively:
   /- simp [UInt256.ofNat]; split; try contradiction
   simp [Id.run, HSub.hSub, Sub.sub, UInt256.sub]
@@ -147,8 +156,8 @@ theorem sub_0 {n : UInt256} : n - .ofNat 0 = n := by
 
 @[simp]
 theorem zero_add: .ofNat 0 + .ofNat n = UInt256.ofNat n := by
-  simp [UInt256.ofNat, Id.run, dbgTrace, Fin.ofNat, HAdd.hAdd]
-  simp [Add.add, UInt256.add, Fin.add_def]
+  simp [UInt256.ofNat, Id.run, Fin.ofNat, HAdd.hAdd]
+  simp [Add.add, UInt256.add]
 
 theorem add_succ_mod_size (pos : 0 ≤ p) (size_ok : p + 1 < UInt256.size) : (p + 1) % UInt256.size = p + 1 := by
         rw [Int.mod_cast, Int.toNat_ofNat, Nat.mod_eq_of_lt] <;> aesop (add safe (by omega))
@@ -166,13 +175,13 @@ end UInt256
 
 @[simp]
 theorem accountAddressIsSome (n : ℕ) (size : n < AccountAddress.size) : AccountAddress.ofNat n = ⟨n, size⟩ := by
-  simp [AccountAddress.ofNat, Fin.ofNat]; aesop
+  simp [AccountAddress.ofNat, Fin.ofNat]
+  exact Nat.mod_eq_of_lt size
 
 @[simp]
 theorem isCreate_false {τ : OperationType} (opcode : Operation τ) (noCreate : opcode ≠ Operation.CREATE) (noCreate2 : opcode ≠ Operation.CREATE2):
   opcode.isCreate = false := by
-  cases opc: opcode <;> rw [Operation.isCreate]; next op =>
-  cases op <;> aesop
+  cases opc: opcode <;> rw [Operation.isCreate] <;> aesop
 
 section
 

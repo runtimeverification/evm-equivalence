@@ -363,9 +363,11 @@ theorem range_lookupMemory_eq
       simp [ByteArray.extract, this, ByteArray.copySlice]
       have : (Int.toNat W0) ⊓ LOCALMEM_CELL.data.size ≤ (Int.toNat W0) := by omega
       rw [←Array.extract_eq_empty_iff] at this
-      rw [this, ←ByteArray.mkEmpty, ←ByteArray.empty]
+      rw [this]
+      have : { data := #[] } = ByteArray.empty := rfl
+      rw [this]
       intro defn_Val14; simp [←defn_Val14, asWord_empty] at defn_Val15
-      aesop
+      aesop (add simp [asWord])
     . /- This is the case where the following hipothesys
         `b : intMap MEMORYUSED_CELL * { val := 32 } ≤ intMap W0`
         has to imply that the following `#range(LM, INDEX, 32)` is empty.
