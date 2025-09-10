@@ -582,8 +582,11 @@ theorem sstore_poststate_equiv
            }
     returnData := _Gen13.val
   } := by
-  simp_all [sstoreRHS, stateMap, «_-Int_», «_+Int_», ←inj_ID_CELL]
+  simp_all [sstoreRHS, stateMap, «_-Int_», «_+Int_»]
   congr
+  -- This `simp` was inside the above `simp_all` but now
+  -- Lean (V4.22.0) complains about it being unused
+  simp [←inj_ID_CELL] at defn_Val26
   aesop (add simp [inj, Inj.inj, sstore_gas]) (add safe (by linarith))
 
 theorem step_sstore_equiv
@@ -721,7 +724,7 @@ theorem step_sstore_equiv
     omega
   rw [sstore_prestate_equiv, blockHeader_map, EVM.step_sstore_summary] <;> try assumption
   rw [sstoreLHS, sstore_poststate_equiv, sstoreRHS] <;> try congr
-  . simp only [accountMap_sstore, Aᵣ_sstore, State.lookupAccount]
+  . simp only [accountMap_sstore, State.lookupAccount]
     simp only [SortGeneratedTopCell.accounts, accountAddressMap, inj_ID_CELL]
     simp [(Axioms.accountsCell_map_find? acc (by eq_refl) defn_Val19 defn_Val20)]
     exact (Axioms.accountsCell_map_insert defn_Val34 defn_Val35 defn_Val36 defn_Val37
@@ -896,7 +899,7 @@ theorem X_sstore_equiv
       sorry
     . /- Gas Cell -/
       rw [cancun, Csstore_def, Option.some.injEq] at defn_Val10 defn_Val3
-      simp [EVM.Csstore, sstoreLHS, sstoreRHS]
+      simp [EVM.Csstore, sstoreLHS]
       simp [GasConstants.Gwarmaccess, GasConstants.Gcoldsload, GasConstants.Gsset, GasConstants.Gsreset]
       rw [intMap_sub_dist] <;> try assumption
       . congr

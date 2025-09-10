@@ -527,7 +527,7 @@ theorem step_mstore_equiv
   unfold EVM.step_mstore mstore_op.get at ms_rw
   rw [ms_rw] <;> first | assumption | try simp
   rw [mstore_poststate_equiv, mstoreRHS] <;> first | assumption | try simp
-  simp [activeWords_comp, mstore_memory_write]
+  simp [activeWords_comp]
   constructor; constructor <;> try constructor
   . sorry -- Gas goals are for now unproven
   . have aw_rw := activeWords_eq op defn_Val25

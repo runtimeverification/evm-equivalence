@@ -340,8 +340,8 @@ theorem twoOp_prestate_equiv
            }
     returnData := _Gen11.val
     } := by
-    cases cop: op <;>
-    simp [twoOpLHS, cop, stateMap, stackOps_op.from_k] <;> rfl
+    cases op <;>
+    simp [twoOpLHS, stateMap, stackOps_op.from_k] <;> rfl
 
 def modWord (n m : SortInt) := ite (m = 0) 0 n % m
 
@@ -496,7 +496,7 @@ theorem step_twoOp_equiv
     <;> try assumption
     simp [twoOpLHS, twoOpRHS]; constructor <;> try constructor
     . simp [«_-Int_»] at defn_Val7; simp [←defn_Val7]
-      simp [GasInterface.cancun_def] at defn_Val6 defn_Val0
+      simp at defn_Val6 defn_Val0
       simp [defn_Val6] at defn_Val0
       cases cop : op <;> rw [intMap_sub_dist] <;> aesop
     . rw [←UInt256.add_succ_mod_size, intMap_add_dist] <;> aesop
@@ -599,7 +599,7 @@ theorem X_twoOp_equiv
   · cases op <;> simp [stackOps_op.from_k]
     . -- `add` case
       simp [«_-Int_»] at defn_Val7; simp [←defn_Val7]
-      simp [GasInterface.cancun_def] at defn_Val6 defn_Val0
+      simp at defn_Val6 defn_Val0
       simp [defn_Val6] at defn_Val0
       aesop (add simp [GasInterface.cancun_def, «_-Int_», intMap_add_dist, twoOpLHS, twoOpRHS, stackOps_op.C'_comp])
       (add simp [stackOps_op.from_k])
@@ -619,7 +619,7 @@ theorem X_twoOp_equiv
     . -- `iszero` case
       sorry
   · simp_all [sizeWordStack_def]
-  · simp [GasInterface.cancun_def] at defn_Val6 defn_Val0
+  · simp at defn_Val6 defn_Val0
     simp [defn_Val6] at defn_Val0
     cases op <;> simp [stackOps_op.from_k] <;>
     rw [intMap_toNat] <;> aesop (add safe (by linarith))

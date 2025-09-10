@@ -472,7 +472,7 @@ theorem X_stackOps_summary
   have enough_gas_rw : (symGasAvailable.toNat < GasConstants.Gverylow) = False :=
     by aesop (add simp [stackOps_op.C'_comp, stackOps_op.C'_noexp])
     (add safe (by omega))
-  simp [α, enough_gas_rw]
+  simp [α]
   have : ((decode ss.executionEnv.code ss.pc).getD (Operation.STOP, none)).1 = op.t := by
     cases op <;> simp [ss, stackOps_op.t]
   simp [this]
@@ -489,7 +489,7 @@ theorem X_stackOps_summary
   split <;> rename_i evm cost exec <;> try contradiction
   all_goals (
     simp [EVM.step_stackOps, cop, add_instr, sub_instr, div_instr] at step_rw
-    simp only [cop, stackOps_op.to_stack_length] at stack_ok_rw
+    simp only at stack_ok_rw
     simp [stackOps_op.t, ss, cop, stack_ok_rw] at exec
     cases exec
   )

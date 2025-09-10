@@ -328,7 +328,7 @@ theorem X_getter_summary
   have enough_gas_rw : (symGasAvailable.toNat < GasConstants.Gbase) = False :=
     by aesop (add simp [stateGetter_op.C'_comp])
     (add safe (by omega))
-  simp [α, enough_gas_rw]
+  simp [α]
   have : ((decode ss.executionEnv.code ss.pc).getD (Operation.STOP, none)).1 = op.t := by
     cases op <;> simp [ss, code_h, stateGetter_op.t]
   simp [this]
@@ -346,7 +346,7 @@ theorem X_getter_summary
   all_goals (
     simp [EVM.step_arith, cop, address_instr] at step_rw
     --simp only [cop] at stack_ok_rw
-    simp [stateGetter_op.t, ss, cop, stack_ok_rw] at exec
+    simp [stateGetter_op.t, ss, stack_ok_rw] at exec
     cases exec
   )
   all_goals (
