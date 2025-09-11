@@ -373,8 +373,8 @@ theorem oneOp_prestate_equiv
            }
     returnData := _Gen11.val
     } := by
-    cases cop: op <;>
-    simp [oneOpLHS, cop, stateMap, stackOps_op.from_k] <;> rfl
+    cases op <;>
+    simp [oneOpLHS, stateMap, stackOps_op.from_k] <;> rfl
 
 def divWord (n m : SortInt) : SortInt:=
   if h : m == 0 then 0 else

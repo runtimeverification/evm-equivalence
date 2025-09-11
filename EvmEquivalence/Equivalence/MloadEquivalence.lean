@@ -385,7 +385,7 @@ theorem range_lookupMemory_eq
   rw [←Int.ofNat_eq_coe]; conv => rhs; simp only [intMap, UInt256.toSigned]
   congr
   simp [ByteArray.readWithPadding, Axioms.ffi_zeroes]
-  rename_i c; simp [not_and, not_le] at c; rcases c with ⟨c1, c2⟩
+  rename_i c; simp [not_le] at c; rcases c with ⟨c1, c2⟩
   simp [ByteArray.readWithoutPadding]
   split; omega
   simp [ByteArray.extract, ByteArray.copySlice]

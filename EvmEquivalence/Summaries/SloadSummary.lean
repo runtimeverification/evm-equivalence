@@ -241,7 +241,7 @@ theorem X_sload_summary (symState : EVM.State)
   simp [X, C', δ]
   have lt_fls_rw {n m : ℕ} (_ : n < m) : (m < n) = False := by
     simp; apply Nat.ge_of_not_lt; simp; omega
-  simp [ss, (lt_fls_rw enoughGas), α, (lt_fls_rw symStack_ok)]
+  simp [ss, lt_fls_rw enoughGas, α]
   have stack_ok_rw : (1024 < List.length symStack + 1) = False := by
     aesop (add safe (by linarith))
   simp [stack_ok_rw]; split; contradiction; next evm cost stateOk =>

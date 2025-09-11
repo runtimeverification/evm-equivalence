@@ -175,25 +175,33 @@ theorem X_mload_summary (symState : EVM.State)
   cases g_case : symGasAvailable.toNat; omega
   rename_i g_pos
   simp [X, C', δ]
+  -- This result is not explicitly used but is needed for automation
   have lt_fls_rw {n m : ℕ} (_ : n < m) : (m < n) = False := by
     simp; apply Nat.ge_of_not_lt; simp; omega
-  simp [(lt_fls_rw enoughGas), α/- , (lt_fls_rw symStack_ok) -/]
-  have fls1 : (symGasAvailable.toNat < memoryExpansionCost ss (@Operation.MLOAD .EVM)) = False :=  by
+  -- The many comments that are in the proof were put after upgrading
+  -- to Lean 4.22.0. They should be removed once it's shown that the
+  -- proof is stable w.r.t. future versions of Lean
+  simp [/- (lt_fls_rw enoughGas), -/ α/- , (lt_fls_rw symStack_ok) -/]
+  /- have fls1 : (symGasAvailable.toNat < memoryExpansionCost ss (@Operation.MLOAD .EVM)) = False :=  by
     rw [Nat.lt_sub_iff_add_lt] at enoughGas
-    aesop (add safe (by omega)) (add safe (by linarith)) (add simp [Cₘ, MachineState.M])
+    aesop (add safe (by omega)) (add safe (by linarith)) (add simp [Cₘ, MachineState.M]) -/
   have decode_rw : ((decode ss.executionEnv.code ss.pc).getD ⟨@Operation.STOP .EVM, none⟩).1 = Operation.MLOAD := rfl
-  have gavail_rw1 : ss.gasAvailable.toNat = symGasAvailable.toNat := rfl
+  /- have gavail_rw1 : ss.gasAvailable.toNat = symGasAvailable.toNat := rfl -/
   have gavail_rw2 : ss.gasAvailable = symGasAvailable := rfl
-  simp [decode_rw, gavail_rw1, gavail_rw2, fls1]
+  simp [decode_rw, /- gavail_rw1, -/ gavail_rw2/- , fls1 -/]
   simp [InstructionGasGroups.Wcopy, InstructionGasGroups.Wextaccount,
   InstructionGasGroups.Wzero, InstructionGasGroups.Wbase, InstructionGasGroups.Wverylow]
+  -- the following statement is needed for automation
   have fls2 : ((symGasAvailable - UInt256.ofNat (memoryExpansionCost ss Operation.MLOAD)).toNat < GasConstants.Gverylow) = False := by
     apply eq_false_intro; rw [Nat.not_lt]
+    have fls1 : (symGasAvailable.toNat < memoryExpansionCost ss (@Operation.MLOAD .EVM)) = False :=  by
+      rw [Nat.lt_sub_iff_add_lt] at enoughGas
+      aesop (add safe (by omega)) (add safe (by linarith)) (add simp [Cₘ, MachineState.M])
     rw [UInt256.toNat_sub_dist, UInt256.ofNat_toNat] <;>
     aesop (add simp [UInt256.ofNat_le, UInt256.ofNat_toNat])
-  have ss_lt2_f  (n : ℕ) : (n + 1 + 1 < 2) = False := by simp
-  simp [fls2, ss, ss_lt2_f, Nat.not_lt_of_lt symStack_ok]
-  simp [memoryExpansionCost_mload symActiveWords, value_and_activeWords_gas, ss] at fls1
+  --have ss_lt2_f  (n : ℕ) : (n + 1 + 1 < 2) = False := by simp
+  simp [/- fls2,  -/ss/- , ss_lt2_f, Nat.not_lt_of_lt symStack_ok -/]
+  /- simp [memoryExpansionCost_mload symActiveWords, value_and_activeWords_gas, ss] at fls1 -/
   split; aesop (add safe (by omega)) (add safe (by linarith)) (add safe (by contradiction))
   next state n state_ok =>
   repeat split at state_ok <;>
@@ -202,7 +210,7 @@ theorem X_mload_summary (symState : EVM.State)
   cases state_ok
   have g_pos_pos : 0 < g_pos := by omega
   have step_rw (g : UInt256) := (EVM.step_mload_summary g_pos GasConstants.Gverylow symGasPrice symTimestamp symNumber symGaslimit symStack (.ofNat 0) (symGasAvailable - g) symRefund offset symActiveWords symPrevrandao symExecLength symReturnData ⟨#[(0x51 : UInt8)]⟩ symMemory symAccessedStorageKeys symAccounts symCodeOwner symSender symSource symCoinbase symPerm g_pos_pos symState)
-  simp [EVM.step_mload, mload_instr, mloadEVM, ss] at step_rw
+  simp [EVM.step_mload, mload_instr, mloadEVM/- , ss -/] at step_rw
   simp [step_rw, Except.instMonad, Except.bind]
   rw [X_bad_pc] <;> aesop (add simp [GasConstants.Gverylow]) (add safe (by omega))
 

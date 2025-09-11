@@ -215,7 +215,7 @@ theorem EVM.step_mstore_summary
   cases gas; contradiction
   simp [step_mstore, EVM.step]
   have srw := EvmYul.step_mstore_summary op symGasPrice symTimestamp symNumber symGaslimit symStack symPc (symGasAvailable - UInt256.ofNat gasCost) symRefund offset value symActiveWords symPrevrandao (symExecLength + 1) symReturnData symCode symMemory
-  simp [EvmYul.step_mstore, Operation.MSTORE] at srw
+  simp [EvmYul.step_mstore] at srw
   cases op <;> aesop
 
 /--
@@ -295,14 +295,14 @@ theorem X_mstore_summary (symState : EVM.State)
   simp [X]
   have lt_fls_rw {n m : ℕ} (_ : n < m) : (m < n) = False := by
     simp; apply Nat.ge_of_not_lt; simp; omega
-  simp [(lt_fls_rw enoughGas), α]
+  simp [α]
   have fls1 : (symGasAvailable.toNat < memoryExpansionCost ss op.t) = False := by
     rw [Nat.lt_sub_iff_add_lt] at enoughGas
     aesop (add safe (by linarith))
   have decode_rw : ((decode ss.executionEnv.code ss.pc).getD ⟨@Operation.STOP .EVM, none⟩).1 = op.t := by aesop
   have gavail_rw1 : ss.gasAvailable.toNat = symGasAvailable.toNat := rfl
   have gavail_rw2 : ss.gasAvailable = symGasAvailable := rfl
-  simp [decode_rw, gavail_rw1, gavail_rw2, fls1]
+  simp [decode_rw, gavail_rw2, fls1]
   let Cgas := C'
             { toState := ss.toState, gasAvailable := symGasAvailable - UInt256.ofNat (memoryExpansionCost ss op.t),
               activeWords := ss.activeWords, memory := ss.memory, returnData := ss.returnData, H_return := ss.H_return,
@@ -324,7 +324,7 @@ theorem X_mstore_summary (symState : EVM.State)
   have : (op_stack < List.length symStack) = False := by aesop
   cases cop : op <;> simp [δ] <;>
   (
-    simp_all [op_stack, mstore_op.t, ss_lt2_f, this]; split
+    simp_all [op_stack, mstore_op.t]; split
     next _ _ h =>
       split at h; contradiction
       split at h; linarith

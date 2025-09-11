@@ -563,7 +563,7 @@ theorem step_sload_equiv
     omega
   rw [sload_prestate_equiv, executionEnv_map, blockHeader_map, EVM.step_sload_summary] <;> try assumption
   rw [sloadLHS, sload_poststate_equiv, sloadRHS] <;> try congr
-  . simp [State.lookupAccount, SortGeneratedTopCell.accounts, accountAddressMap]
+  . simp [SortGeneratedTopCell.accounts]
     aesop
   . simp
     apply (Axioms.accessedStorageCell_map_insert defn_Val17 defn_Val18 defn_Val19 defn_Val20 defn_Val21 defn_Val22)
@@ -685,8 +685,8 @@ theorem X_sload_equiv
   <;> first | assumption | try linarith
   simp
   have pc_equiv : intMap 0 = UInt256.ofNat 0 := rfl
-  simp [executionEnv_map, sloadLHS]
-  rw [pc_equiv, X_sload_summary] <;> try simp [State.lookupAccount, sloadLHS, sloadRHS]
+  simp [sloadLHS]
+  rw [pc_equiv, X_sload_summary] <;> try simp [State.lookupAccount, sloadRHS]
   <;> try assumption
   . constructor <;> constructor
     . rw [Axioms.accessedStorageCell_map_insert defn_Val17 defn_Val18 defn_Val19 defn_Val20 defn_Val21 defn_Val22]

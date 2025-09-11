@@ -260,7 +260,7 @@ theorem intMap_sub_dist {n m : SortInt} (le_m_n : m <= n) (pos : 0 <= m) (size :
   . cases cn : n with
     | ofNat p => cases m with
                 | ofNat q =>
-                simp_all [Int.ofNat]
+                simp_all
                 rw [←Int.ofNat_sub, Int.ofNat_inj] at h <;> try assumption
                 simp only [←h, HSub.hSub, Sub.sub, UInt256.sub, Fin.sub]
                 aesop (add simp [UInt256.ofNat_eq, UInt256.size, Fin.ofNat])
