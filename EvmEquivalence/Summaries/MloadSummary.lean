@@ -178,6 +178,9 @@ theorem X_mload_summary (symState : EVM.State)
   -- This result is not explicitly used but is needed for automation
   have lt_fls_rw {n m : ℕ} (_ : n < m) : (m < n) = False := by
     simp; apply Nat.ge_of_not_lt; simp; omega
+  -- The many comments that are in the proof were put after upgrading
+  -- to Lean 4.22.0. They should be removed once it's shown that the
+  -- proof is stable w.r.t. future versions of Lean
   simp [/- (lt_fls_rw enoughGas), -/ α/- , (lt_fls_rw symStack_ok) -/]
   /- have fls1 : (symGasAvailable.toNat < memoryExpansionCost ss (@Operation.MLOAD .EVM)) = False :=  by
     rw [Nat.lt_sub_iff_add_lt] at enoughGas
