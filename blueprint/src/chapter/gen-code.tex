@@ -275,9 +275,6 @@ are defined here [\ref{def:gasConstSched}, \ref{def:flagConstSched}].
 To prove termination we define an ordering of the schedule constants and flags
 \href{https://runtimeverification.github.io/evm-equivalence/docs/EvmEquivalence/KEVM2Lean/ScheduleOrdering.html}{here}.
 
-%% The generated code produced by the \href{https://github.com/runtimeverification/k/tree/master/pyk/src/pyk/klean}{\texttt{klean}} have needed of some small modifications.
-%% So far, these modifications are to provide a termination argument for big \texttt{mutual} blocks.
-
 For example, take the \texttt{mutual} block of functions needed that defines the \texttt{«_<_>_SCHEDULE_Int_ScheduleConst_Schedule»}\ref{def:gasConstSched} function:
 
 \begin{verbatim}
