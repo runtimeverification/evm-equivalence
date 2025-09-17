@@ -213,20 +213,6 @@ definition contains commas, and this apparently results in a new line.
 
 Right now there are no generated functions documented. However, we will only document those functions that play a topmost role in the theorems.
 
-\subsection{Modifications to the Generated Code}
-
-Modifications to the
-\href{https://runtimeverification.github.io/evm-equivalence/docs/EvmEquivalence/KEVM2Lean/Func.html}{\texttt{Func.lean}}
-file are for adding termination arguments to functions whenever Lean is not able
-to infer it automatically.
-
-At the moment, there are only two \texttt{mutual} blocks of functions that need
-an explicit termination argument. These most important functions of those blocks
-are defined here [\ref{def:gasConstSched}, \ref{def:flagConstSched}].
-
-To prove termination we define an ordering of the schedule constants and flags
-\href{https://runtimeverification.github.io/evm-equivalence/docs/EvmEquivalence/KEVM2Lean/ScheduleOrdering.html}{here}.
-
 \section{Rewrite}
 The
 \href{https://github.com/runtimeverification/evm-equivalence/blob/master/EvmEquivalence/KEVM2Lean/Rewrite.lean}{\texttt{Rewrite.lean}}
@@ -272,3 +258,58 @@ which KEVM can verify its correctness.
 
 By doing this, we need only extract the summary rules to capture the semantic
 meaning of executing an opcode in KEVM.
+
+\section{Code Modifications}
+The generated code produced by the \href{https://github.com/runtimeverification/k/tree/master/pyk/src/pyk/klean}{\texttt{klean}} tool has needed some small modifications.
+So far, modifications have only been applied to generated functions.
+
+In particular, modifications to the
+\href{https://runtimeverification.github.io/evm-equivalence/docs/EvmEquivalence/KEVM2Lean/Func.html}{\texttt{Func.lean}}
+file are for adding termination arguments to functions whenever Lean is not able
+to infer it automatically.
+
+At the moment, there are only two \texttt{mutual} blocks of functions that need
+an explicit termination argument. These most important functions of those blocks
+are defined here [\ref{def:gasConstSched}, \ref{def:flagConstSched}].
+
+To prove termination, we define an ordering of the schedule constants and flags
+\href{https://runtimeverification.github.io/evm-equivalence/docs/EvmEquivalence/KEVM2Lean/ScheduleOrdering.html}{here}.
+
+For example, take the \texttt{mutual} block of functions needed that defines the \texttt{«_<_>_SCHEDULE_Int_ScheduleConst_Schedule»}\ref{def:gasConstSched} function:
+
+\begin{verbatim}
+mutual
+  noncomputable def SCHEDULE_GsstoreresetBerlin : SortScheduleConst → SortSchedule → Option SortInt
+  | SortScheduleConst.Gsstorereset_SCHEDULE_ScheduleConst, SortSchedule.BERLIN_EVM => do
+  let _Val0 <- «_<_>_SCHEDULE_Int_ScheduleConst_Schedule» SortScheduleConst.Gcoldsload_SCHEDULE_ScheduleConst SortSchedule.BERLIN_EVM
+  let _Val1 <- «_-Int_» 5000 _Val0
+  return _Val1
+  | _, _ => none
+
+.
+.
+.
+
+  noncomputable def «_<_>_SCHEDULE_Int_ScheduleConst_Schedule» (x0 : SortScheduleConst) (x1 : SortSchedule) : Option SortInt :=
+  (SCHEDULE_GaccesslistaddressBerlin x0 x1) <|>
+  (SCHEDULE_GaccesslistaddressDefault x0 x1) <|>
+  .
+  .
+  .
+  (SCHEDULE_maxInitCodeSizeDefault x0 x1) <|>
+  (SCHEDULE_maxInitCodeSizeShanghai x0 x1)
+.
+.
+.
+end
+\end{verbatim}
+
+When compiling this definition Lean complains about not being able to find a termination argument for the \texttt{mutual} block.
+So, after defining the ordering of the schedule constants show above, the two modifications that need to be introduced in the code are the following:
+
+\begin{itemize}
+\item Append \texttt{termination_by (x1.toNat, x0.toNat + 1)} to the \texttt{«_<_>_SCHEDULE_Int_ScheduleConst_Schedule»} function and \texttt{termination_by sc s => (s.toNat, sc.toNat)} to the rest.
+\item Add \texttt{attribute [local simp] SortScheduleConst.toNat} before the start of the \texttt{mutual} block.
+\end{itemize}
+
+It could be possible to extend the \texttt{klean} tool to generate these modifications along with the rest of the code. However, at the moment, the tool cannot generally infer missing termination arguments. This means that in order to incorporate the changes we have highlighted we would need to provide them as an override of sorts to the code that was going to be generated.
