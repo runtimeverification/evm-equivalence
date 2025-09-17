@@ -272,7 +272,7 @@ At the moment, there are only two \texttt{mutual} blocks of functions that need
 an explicit termination argument. These most important functions of those blocks
 are defined here [\ref{def:gasConstSched}, \ref{def:flagConstSched}].
 
-To prove termination we define an ordering of the schedule constants and flags
+To prove termination, we define an ordering of the schedule constants and flags
 \href{https://runtimeverification.github.io/evm-equivalence/docs/EvmEquivalence/KEVM2Lean/ScheduleOrdering.html}{here}.
 
 For example, take the \texttt{mutual} block of functions needed that defines the \texttt{«_<_>_SCHEDULE_Int_ScheduleConst_Schedule»}\ref{def:gasConstSched} function:
@@ -305,7 +305,7 @@ end
 \end{verbatim}
 
 When compiling this definition Lean complains about not being able to find a termination argument for the \texttt{mutual} block.
-So, after defining the ordering of the schedule constants show above, the two modifications that need to be introduced in the code are the follwing:
+So, after defining the ordering of the schedule constants show above, the two modifications that need to be introduced in the code are the following:
 
 \begin{itemize}
 \item Append \texttt{termination_by (x1.toNat, x0.toNat + 1)} to the \texttt{«_<_>_SCHEDULE_Int_ScheduleConst_Schedule»} function and \texttt{termination_by sc s => (s.toNat, sc.toNat)} to the rest.
