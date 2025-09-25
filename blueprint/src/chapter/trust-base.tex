@@ -20,7 +20,7 @@ Operational assumptions are assumptions or axioms that we might employ in the pr
 
 \begin{itemize}
 \item \textbf{Well-formedness constraints:} Due to how the summaries are generated, some of the symbolic parameters are under-constrained. For instance, KEVM words are unbouned integers.
-  The semantics implements checks that ensure these symbolic parameters are indeed within the correct ranges. However, since the summaries extract the computational behavior after the appropriate checks are performed, we have to add these as extra hipotheses.
+  The semantics implements checks that ensure these symbolic parameters are indeed within the correct ranges. However, since the summaries extract the computational behavior after the appropriate checks are performed, we have to add these as extra hypotheses.
 
   Other necessary hypotheses are also added such as there being enough gas to execute the opcode.
 \item \textbf{Unproven results:} There is a number of unproven results in which we rely. These range from axioms (which most should be turned into theorems and proven) and theorems with no proofs or missing subgoals.
@@ -36,8 +36,8 @@ This is done on a per-opcode basis. We believe showing bisimilarity at the opcod
 \section{Gaps and Limitations}
 
 \begin{itemize}
-\item \textbf{EvmYulLean reasoning interfaces:} At the time of making this project the EvmYulLean model is geared towards execution. This means that the types and overall structure of the model are more execution-oriented than reasoning-oriented, which poses some reasoning challenges that are resolved through our reasoning interfaces.
+\item \textbf{EvmYulLean reasoning interfaces:} At the time of making this project, the EvmYulLean model is geared towards execution. This means that the types and overall structure of the model are more execution-oriented than reasoning-oriented, which poses some reasoning challenges that are resolved through our reasoning interfaces.
 \item \textbf{EvmYulLean ffi usage:} One particular instance of the execution orientedness of the Lean model is the use of Lean's \href{https://en.wikipedia.org/wiki/Foreign_function_interface}{ffi}. Since ffi functions are declared as \texttt{opaque} and have no explicit computational content at reasoning-time, we have circumvented this by asserting axioms (which at the moment cannot be proven) to provide the missing computational content for reasoning.
 \item \textbf{K-specific idioms when extracting Kore to K:} Kore and Lean syntaxes differ quite a bit and both have their own idiosyncrasy. Hence, to reason efficiently with the generated K code we also provide an interface to smooth out the Kore specific patterns and make it more Lean-friendly.
-\item \textbf{Slow compilation turnaround by Lean:} The Lean extracted Kore code is not small. Compiling this code and some other proofs is quite time consuming. At the moment, an the average time it takes to compile the project can be around 40 minutes. This makes that the ``deeper'' a change is in the project, the slower the iteration time.
+\item \textbf{Slow compilation turnaround by Lean:} The Lean-extracted Kore code is not small. Compiling this code and some other proofs is quite time consuming. At the moment, the average time it takes to compile the project can be around 40 minutes. This means that the ``deeper'' a change is in the project, the slower the iteration time.
 \end{itemize}

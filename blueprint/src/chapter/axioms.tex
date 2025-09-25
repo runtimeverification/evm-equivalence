@@ -67,9 +67,9 @@ the surrounding functions.
 \section{Gas subgoal sorries}
 
 One special (almost systematic) kind of subgoal sorry is that of gas-related subgoals.
-For the current opcodes targeted for equivalence we have not prioritized (given the time constraints) proving the equiavelce of gas consuption or other gas-related obligations.
+For the current opcodes targeted for equivalence we have not prioritized (given the time constraints) proving the equivalence of gas consumption or other gas-related obligations.
 
 The reason for this is that we consider gas agreeance as less critical than the other proof obligations that are covered.
 In fact, if the EvmYul model allowed for a gasless mode of execution, as does KEVM, it is very probable that the first version of the equivalence proofs would have made use of it.
 
-Another reason for not priorizing gas-related goals is that they are often quite time consuming. A good direction of research is to apply more automatic reasoning methods such as smt-based tactics or LLMs.
+Another reason for not prioritizing gas-related goals is that they are often quite time consuming. A good direction of research is to apply more automatic reasoning methods such as SMT-based tactics or LLMs.
