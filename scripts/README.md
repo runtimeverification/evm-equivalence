@@ -1,7 +1,7 @@
 Helper Scripts
 --------------
 
-This folder contains scripts that help with the modification or usage of the K-generated Lean code.
+This folder contains scripts that help with the modification or usage of the K-generated Lean code and other miscellaneous.
 
 ## `format-rewrites.py`
 
@@ -37,3 +37,13 @@ foo0 foo1 bar0 bar1
 ```
 
 We can then copy-paste the resulting line of arguments to our invocation of `opcode?HS`, which only contains implicit arguments.
+
+## `Stats4Nerds.lean`
+
+The [Stats4Nerds.lean](./Stats4Nerds.lean) script scrapes the codebase to gauge the amount of declarations of both the generated and the manually produced code.
+
+To get the stats run the following from the project directory:
+
+```bash
+lean --run scripts/Stats4Nerds.lean
+```
