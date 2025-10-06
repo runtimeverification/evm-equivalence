@@ -11,7 +11,7 @@ open System
 `str`: amount of `structure` declarations
 `ind`: amount of `inductive` declarations
 `thm`: amount of `theorem` declarations
-`axs`: amount of `axsiom` declarations
+`axs`: amount of `axiom` declarations
 -/
 structure fileStats where
   dfs : Nat
