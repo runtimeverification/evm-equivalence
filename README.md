@@ -23,6 +23,32 @@ Under [EvmEquivalence](./EvmEquivalence) we have the following structure:
 * [Utils](./EvmEquivalence/Utils): Useful results for the proving
 * [StateMap.lean](./EvmEquivalence/StateMap.lean): Function mapping `KEVM` states to `EvmYul` states
 
+## Stats4Nerds
+
+The project currently has the following amount of declarations, distinguishing between the extracted Lean 4 code and the manually produced.
+
+### Number of declarations for the generated code 🤖
+- Definitions: 266
+- Structures : 113
+- Inductives:  25
+- Theorems:    0
+- Axioms:      73
+
+Note that the elevated number of axioms is due to currently extracting a number of KEVM functions as uninterpreted functions in Lean.
+
+### Number of declarations for the manually produced code 📝
+- Definitions: 136
+- Structures : 0
+- Inductives:  8
+- Theorems:    309
+- Axioms:      17
+
+Some of the axioms present are to-be theorems left as future work.
+Some other axioms are currently needed to ensure compatibility between the EVMYulLean model and KEVM.
+For more information see the blueprint of the project.
+
+These stats are automatically produced by the [Stats4Nerds.lean](./scripts/Stats4Nerds.lean) script.
+
 ## Building the Project
 
 After cloning this repository, from its root run:
