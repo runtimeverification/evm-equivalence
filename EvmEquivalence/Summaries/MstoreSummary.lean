@@ -276,7 +276,7 @@ theorem X_mstore_summary (symState : EVM.State)
     returnData := symReturnData,
     execLength := symExecLength}
   -- Assume we have enough gas
-  GasConstants.Gverylow < symGasAvailable.toNat - (memoryExpansionCost ss op.t) →
+  GasConstants.Gverylow ≤ symGasAvailable.toNat - (memoryExpansionCost ss op.t) →
   memoryExpansionCost ss op.t < UInt256.size →
   X symGasAvailable.toNat symValidJumps ss =
   .ok (.success {ss with
@@ -297,8 +297,8 @@ theorem X_mstore_summary (symState : EVM.State)
     simp; apply Nat.ge_of_not_lt; simp; omega
   simp [α]
   have fls1 : (symGasAvailable.toNat < memoryExpansionCost ss op.t) = False := by
-    rw [Nat.lt_sub_iff_add_lt] at enoughGas
-    aesop (add safe (by linarith))
+    apply eq_false_intro; rw [Nat.not_lt]
+    rw [GasConstants.Gverylow] at enoughGas; omega
   have decode_rw : ((decode ss.executionEnv.code ss.pc).getD ⟨@Operation.STOP .EVM, none⟩).1 = op.t := by aesop
   have gavail_rw1 : ss.gasAvailable.toNat = symGasAvailable.toNat := rfl
   have gavail_rw2 : ss.gasAvailable = symGasAvailable := rfl
