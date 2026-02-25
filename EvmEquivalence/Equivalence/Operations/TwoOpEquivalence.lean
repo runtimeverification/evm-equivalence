@@ -427,6 +427,65 @@ theorem twoOp_poststate_equiv
 
 open StackOpsSummary
 
+private theorem UInt256_size_pos : (0 : ℤ) < ↑UInt256.size := by
+  simp [UInt256.size]
+
+private theorem UInt256_size_ne_zero : (↑UInt256.size : ℤ) ≠ 0 := by
+  simp [UInt256.size]
+
+private theorem UInt256_size_nat_pos : 0 < UInt256.size := by
+  simp [UInt256.size]
+
+private theorem nat_sub_add_mod_eq_int_emod (a b s : ℕ) (hs : 0 < s) :
+    (s - b % s + a % s) % s = Int.toNat ((↑a - ↑b) % (↑s : ℤ)) := by
+  have bmod_le : b % s ≤ s := le_of_lt (Nat.mod_lt b hs)
+  have s_ne_int : (↑s : ℤ) ≠ 0 := by positivity
+  have s_pos_int : (0 : ℤ) < ↑s := by positivity
+  suffices h : (↑((s - b % s + a % s) % s) : ℤ) = (↑a - ↑b) % ↑s by
+    have h2 : 0 ≤ (↑a - ↑b) % (↑s : ℤ) := Int.emod_nonneg _ s_ne_int
+    have h3 : (↑a - ↑b) % (↑s : ℤ) < ↑s := Int.emod_lt_of_pos _ s_pos_int
+    omega
+  rw [Int.natCast_mod]
+  have cast_sub : (↑(s - b % s + a % s) : ℤ) = ↑s - ↑(b % s) + ↑(a % s) := by
+    zify [bmod_le]
+  rw [cast_sub, Int.natCast_mod, Int.natCast_mod]
+  rw [show (↑s : ℤ) - ↑b % ↑s + ↑a % ↑s = ↑a % ↑s - ↑b % ↑s + ↑s * 1 from by ring,
+      Int.add_mul_emod_self_left, ← Int.sub_emod]
+
+private theorem UInt256_ofNat_sub_eq (a b : ℕ) :
+    UInt256.ofNat a - UInt256.ofNat b = UInt256.ofNat (Int.toNat ((↑a - ↑b) % (↑UInt256.size : ℤ))) := by
+  simp only [HSub.hSub, Sub.sub, UInt256.sub, UInt256.ofNat, Id.run, Fin.ofNat]
+  congr 1; ext; simp only [Fin.sub]
+  have h := nat_sub_add_mod_eq_int_emod a b UInt256.size UInt256_size_nat_pos
+  rw [h]
+  have h2 : 0 ≤ (↑a - ↑b) % (↑UInt256.size : ℤ) := Int.emod_nonneg _ UInt256_size_ne_zero
+  have h3 : (↑a - ↑b) % (↑UInt256.size : ℤ) < ↑UInt256.size := Int.emod_lt_of_pos _ UInt256_size_pos
+  have h4 : Int.toNat ((↑a - ↑b) % (↑UInt256.size : ℤ)) < UInt256.size := by
+    have : (↑a - ↑b) % (↑UInt256.size : ℤ) < (↑UInt256.size : ℤ) := h3
+    have : 0 ≤ (↑a - ↑b) % (↑UInt256.size : ℤ) := h2
+    simp only [UInt256.size] at *
+    omega
+  exact (Nat.mod_eq_of_lt h4).symm
+
+private theorem intMap_sub_mod_dist {n m : SortInt} (nh : 0 ≤ n) (mh : 0 ≤ m) :
+  intMap n - intMap m = intMap ((n - m) % ↑UInt256.size) := by
+  have s_ne : (↑UInt256.size : ℤ) ≠ 0 := UInt256_size_ne_zero
+  have mod_nonneg : 0 ≤ (n - m) % ↑UInt256.size := Int.emod_nonneg _ s_ne
+  unfold intMap UInt256.toSigned
+  cases n with
+  | ofNat a => cases m with
+    | ofNat b =>
+      simp only [Int.ofNat_eq_coe] at *
+      split
+      · rename_i c hc
+        rw [UInt256_ofNat_sub_eq]
+        congr 1
+        rw [hc]
+        rfl
+      · rename_i hc; exact absurd mod_nonneg (by simp_all)
+    | negSucc b => exact absurd mh (by simp [Int.negSucc_lt_zero])
+  | negSucc a => exact absurd nh (by simp [Int.negSucc_lt_zero])
+
 attribute [local simp] GasConstants.Gverylow GasConstants.Gmid
 
 -- We cannot prove full equivalence for the `EVM.step` function
@@ -504,7 +563,7 @@ theorem step_twoOp_equiv
       . -- `add` case
         aesop (add simp [intMap, intMap_add_dist])
       . -- `sub` case
-        sorry
+        exact intMap_sub_mod_dist W0ge0 W1ge0
       . -- `addmod` case
         sorry
       . -- `mulmod` case
@@ -605,7 +664,12 @@ theorem X_twoOp_equiv
       (add simp [stackOps_op.from_k])
       (add safe (by rw [intMap_sub_dist])) (add safe (by apply le_of_lt))
     . -- `sub` case
-      sorry
+      simp [«_-Int_»] at defn_Val7; simp [←defn_Val7]
+      simp at defn_Val6 defn_Val0
+      simp [defn_Val6] at defn_Val0
+      aesop (add simp [GasInterface.cancun_def, «_-Int_», intMap_sub_mod_dist, twoOpLHS, twoOpRHS, stackOps_op.C'_comp])
+      (add simp [stackOps_op.from_k])
+      (add safe (by rw [intMap_sub_dist])) (add safe (by apply le_of_lt))
     . -- `addmod` case
       sorry
     . -- `mulmod` case
