@@ -542,6 +542,25 @@ theorem step_mstore_equiv
       -- `rw [mstore8_memory_write_eq defn_Val14 defn_Val15 defn_Val16] <;> assumption`
   . rw [←UInt256.add_succ_mod_size, intMap_add_dist] <;> aesop
 
+private theorem mec_ceil_bound (f l : ℕ) (hf : f < UInt32.size) (hl : l ≤ 32) :
+    (f + l + 31) / 32 ≤ 134217730 := by
+  have : UInt32.size = 4294967296 := rfl
+  have : f + l + 31 ≤ 4294967358 := by omega
+  exact Nat.le_trans (Nat.div_le_div_right this) (by norm_num)
+
+private theorem mec_M_bound (s f l : ℕ) (hf : f < UInt32.size) (hl : l ≤ 32) :
+    MachineState.M s f l ≤ Nat.max s 134217730 := by
+  unfold MachineState.M
+  cases l with
+  | zero => simp
+  | succ n =>
+    have hceil : (f + (n + 1) + 31) / 32 ≤ 134217730 :=
+      mec_ceil_bound f (n + 1) hf (by omega)
+    exact max_le_max_left s hceil
+
+private theorem mec_Cm_bound_const : EVM.Cₘ (UInt256.ofNat 134217730) < UInt256.size := by
+  native_decide
+
 private theorem mec_Cm_mono (a b : UInt256) (h : a.toNat ≤ b.toNat) :
     EVM.Cₘ a ≤ EVM.Cₘ b := by
   simp [EVM.Cₘ, EVM.Cₘ.QuadraticCeofficient]
@@ -831,11 +850,124 @@ theorem X_mstore_equiv
       -- `rw [mstore8_memory_write_eq defn_Val14 defn_Val15 defn_Val16] <;> assumption`
     . aesop
   . -- Enough Gas
-    sorry
+    cases op <;> simp [mstore_op.from_k] <;> omega
   . -- Gas is not greater than `UInt256.size`
-    simp [EVM.memoryExpansionCost, EVM.Cₘ, EVM.memoryExpansionCost.μᵢ', MachineState.M]
-    sorry
+    rw [memoryExpansionCost_mstore op.from_k (wordStackMap WS) (intMap W0) (intMap W1) (intMap MEMORYUSED_CELL) _ rfl rfl,
+        vawg_eq_intMap op defn_Val18 W0ge0 W0small mucge0 mucsmall]
+    -- Re-derive variable equalities across duplicated KEVM computation chains
+    have eq_0_18 : _Val0 = _Val18 := Option.some.inj (defn_Val0.symm.trans defn_Val18)
+    have eq_1_19 : _Val1 = _Val19 := by
+      have h := defn_Val1; rw [eq_0_18] at h; exact Option.some.inj (h.symm.trans defn_Val19)
+    have eq_2_20 : _Val2 = _Val20 := Option.some.inj (defn_Val2.symm.trans defn_Val20)
+    have eq_3_21 : _Val3 = _Val21 := by
+      have h3 := defn_Val3; have h21 := defn_Val21
+      simp [«_-Int_»] at h3 h21; rw [← h3, ← h21, eq_1_19, eq_2_20]
+    have eq_5_23 : _Val5 = _Val23 := Option.some.inj (defn_Val5.symm.trans defn_Val23)
+    have eq_6_18 : _Val6 = _Val18 := Option.some.inj (defn_Val6.symm.trans defn_Val18)
+    have eq_7_19 : _Val7 = _Val19 := by
+      have h := defn_Val7; rw [eq_6_18] at h; exact Option.some.inj (h.symm.trans defn_Val19)
+    have eq_8_20 : _Val8 = _Val20 := Option.some.inj (defn_Val8.symm.trans defn_Val20)
+    have eq_9_21 : _Val9 = _Val21 := by
+      have h9 := defn_Val9; have h21 := defn_Val21
+      simp [«_-Int_»] at h9 h21; rw [← h9, ← h21, eq_7_19, eq_8_20]
+    have eq_10_22 : _Val10 = _Val22 := by
+      have h10 := defn_Val10; have h22 := defn_Val22
+      simp [«_-Int_»] at h10 h22; rw [← h10, ← h22, eq_9_21]
+    -- Extract gas bounds from req
+    have hbool13 : USEGAS_CELL = true ∧ _Val12 = true := by
+      have h := defn_Val13; simp [andBool_def] at h; rw [← h] at req; exact Bool.and_eq_true_iff.mp req
+    have hbool12 : _Val4 = true ∧ _Val11 = true := by
+      have h := defn_Val12; simp [andBool_def] at h; rw [← h] at hbool13; exact Bool.and_eq_true_iff.mp hbool13.2
+    have hmec_le_gas : _Val21 ≤ GAS_CELL := by
+      have h := defn_Val4; simp [«_<=Int_»] at h; rw [← h] at hbool12
+      rw [← eq_3_21]; exact of_decide_eq_true hbool12.1
+    have hgvl_le : _Val23 ≤ GAS_CELL - _Val21 := by
+      have h := defn_Val11; simp [«_<=Int_»] at h; rw [← h] at hbool12
+      have hle : _Val5 ≤ _Val10 := of_decide_eq_true hbool12.2
+      rw [eq_5_23] at hle; rw [eq_10_22] at hle
+      have h22 := defn_Val22; simp [«_-Int_»] at h22
+      linarith
+    -- Get _Val23 = 3 (Gverylow for Cancun)
+    have eq23 : _Val23 = 3 := by
+      rw [cancun] at defn_Val23; simp [GasInterface.cancun_def] at defn_Val23; exact defn_Val23.symm
+    -- Connect Cmem to Cₘ
+    have h18_nn := memUsageUpdate_nonneg op defn_Val18 mucge0
+    have h18_sm := memUsageUpdate_small op defn_Val18 W0ge0 mucsmall W0small_realpolitik
+    have eq19 : _Val19 = ↑(EVM.Cₘ (intMap _Val18)) := by
+      have := Cmem_cancun_eq_Cm _Val18 h18_nn h18_sm
+      rw [cancun] at defn_Val19; rw [this] at defn_Val19
+      exact (Option.some.inj defn_Val19).symm
+    have eq20 : _Val20 = ↑(EVM.Cₘ (intMap MEMORYUSED_CELL)) := by
+      have := Cmem_cancun_eq_Cm MEMORYUSED_CELL mucge0 mucsmall
+      rw [cancun] at defn_Val20; rw [this] at defn_Val20
+      exact (Option.some.inj defn_Val20).symm
+    -- Cₘ monotonicity: Cₘ(intMap MEMORYUSED_CELL) ≤ Cₘ(intMap _Val18)
+    have hCm_le : EVM.Cₘ (intMap MEMORYUSED_CELL) ≤ EVM.Cₘ (intMap _Val18) := by
+      apply mec_Cm_mono
+      rw [intMap_toNat mucge0 mucsmall, intMap_toNat h18_nn h18_sm]
+      have hw : (0 : SortInt) < op.to_width := by
+        cases op <;> simp [MstoreOpcodeEquivalence.mstore_op.to_width]
+      have defn18' := defn_Val18
+      rw [memoryUsageUpdate_rw _ _ _ hw] at defn18'
+      have eq18 : _Val18 = MEMORYUSED_CELL ⊔ Int.tdiv (W0 + ↑op.to_width + 31) 32 :=
+        (Option.some.inj defn18').symm
+      rw [eq18]
+      exact Int.toNat_le_toNat (le_max_left _ _)
+    -- _Val21 = ↑(Cₘ(intMap _Val18) - Cₘ(intMap MEMORYUSED_CELL))
+    have eq21_z : _Val21 = ↑(EVM.Cₘ (intMap _Val18)) - ↑(EVM.Cₘ (intMap MEMORYUSED_CELL)) := by
+      have h := defn_Val21; simp [«_-Int_»] at h; rw [← h, eq19, eq20]
+    have h21_nn : 0 ≤ _Val21 := by
+      rw [eq21_z]; exact sub_nonneg.mpr (Nat.cast_le.mpr hCm_le)
+    have hCm_diff : _Val21.toNat = EVM.Cₘ (intMap _Val18) - EVM.Cₘ (intMap MEMORYUSED_CELL) := by
+      rw [eq21_z, show (↑(EVM.Cₘ (intMap _Val18)) - ↑(EVM.Cₘ (intMap MEMORYUSED_CELL)) : ℤ) =
+        ↑(EVM.Cₘ (intMap _Val18) - EVM.Cₘ (intMap MEMORYUSED_CELL)) from (Nat.cast_sub hCm_le).symm]
+      exact Int.toNat_natCast _
+    -- Final: GasConstants.Gverylow ≤ (intMap GAS_CELL).toNat - (Cₘ ... - Cₘ ...)
+    simp only [GasConstants.Gverylow]
+    rw [intMap_toNat (le_of_lt gavailEnough) gavailSmall, ← hCm_diff]
+    -- Goal: 3 ≤ GAS_CELL.toNat - _Val21.toNat
+    have h3_le : 3 ≤ GAS_CELL - _Val21 := by rw [← eq23]; exact hgvl_le
+    have hGAS_nn : 0 ≤ GAS_CELL := le_of_lt gavailEnough
+    have h_sub_nn : 0 ≤ GAS_CELL - _Val21 := by linarith
+    have h_sub_eq : ↑(GAS_CELL - _Val21).toNat = GAS_CELL - _Val21 :=
+      Int.toNat_of_nonneg h_sub_nn
+    have h_gas_eq : ↑GAS_CELL.toNat = GAS_CELL := Int.toNat_of_nonneg hGAS_nn
+    have h_val_eq : ↑_Val21.toNat = _Val21 := Int.toNat_of_nonneg h21_nn
+    have h_sub_nat : (GAS_CELL - _Val21).toNat = GAS_CELL.toNat - _Val21.toNat := by
+      zify [Int.toNat_le_toNat hmec_le_gas]
+      rw [h_sub_eq, h_gas_eq, h_val_eq]
+    have h1 : (3 : ℤ).toNat ≤ (GAS_CELL - _Val21).toNat := Int.toNat_le_toNat h3_le
+    simp at h1
+    linarith
   . -- `memoryExpansionCost < UInt256.size`
-    sorry
+    rw [memoryExpansionCost_mstore op.from_k (wordStackMap WS) (intMap W0) (intMap W1) (intMap MEMORYUSED_CELL) _ rfl rfl]
+    have hoff : (intMap W0).toNat < UInt32.size := by
+      rw [intMap_toNat W0ge0 W0small]
+      exact (Int.toNat_lt_toNat (by linarith : (0 : ℤ) < (↑UInt32.size : ℤ))).mpr W0small_realpolitik
+    have hl : op.from_k.to_l ≤ 32 := by cases op <;> simp [mstore_op.from_k, MstoreSummary.mstore_op.to_l]
+    simp only [value_and_activeWords_gas]
+    have hb := mec_M_bound (intMap MEMORYUSED_CELL).toNat (intMap W0).toNat op.from_k.to_l hoff hl
+    by_cases haw : (intMap MEMORYUSED_CELL).toNat ≤ 134217730
+    · -- aw ≤ bound: M ≤ bound
+      have hM_le : MachineState.M (intMap MEMORYUSED_CELL).toNat (intMap W0).toNat op.from_k.to_l ≤ 134217730 :=
+        le_trans hb (Nat.max_le_of_le_of_le haw (le_refl _))
+      have hM_small : MachineState.M (intMap MEMORYUSED_CELL).toNat (intMap W0).toNat op.from_k.to_l < UInt256.size := by
+        have : UInt256.size = 115792089237316195423570985008687907853269984665640564039457584007913129639936 := rfl; omega
+      have hCm := mec_Cm_mono
+        (UInt256.ofNat (MachineState.M (intMap MEMORYUSED_CELL).toNat (intMap W0).toNat op.from_k.to_l))
+        (UInt256.ofNat 134217730)
+        (by rw [UInt256.ofNat_toNat hM_small, UInt256.ofNat_toNat (by native_decide)]; exact hM_le)
+      have := mec_Cm_bound_const
+      omega
+    · -- aw > bound: M = aw, cost = 0
+      push_neg at haw
+      have hM_eq : MachineState.M (intMap MEMORYUSED_CELL).toNat (intMap W0).toNat op.from_k.to_l = (intMap MEMORYUSED_CELL).toNat := by
+        unfold MachineState.M
+        have hceil := mec_ceil_bound (intMap W0).toNat op.from_k.to_l hoff hl
+        cases op <;> simp [mstore_op.from_k, MstoreSummary.mstore_op.to_l] at hceil ⊢ <;> omega
+      rw [hM_eq]
+      have hrt : (UInt256.ofNat (intMap MEMORYUSED_CELL).toNat) = (intMap MEMORYUSED_CELL) := by
+        simp [UInt256.ofNat, UInt256.toNat]; rfl
+      rw [hrt]; simp [UInt256.size]
 
 end MstoreOpcodeEquivalence
