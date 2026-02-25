@@ -618,7 +618,18 @@ theorem X_exp_equiv
   rw [stack_op, code_op, pc_equiv, X_stackOps_summary]
   /- This have could be subsumed, but it's useful for the `gt0` case above -/
   have W1_zero_eq : (intMap W1 == { val := 0 }) = true → W1 = 0 := by
-    sorry
+    intro h
+    have hEq : intMap W1 = ({ val := 0 } : UInt256) := by
+      cases hi : intMap W1 with
+      | mk v =>
+        rw [hi] at h
+        simp [BEq.beq] at h
+        have hv : v = 0 := beq_iff_eq.mp h
+        simp [hv]
+    have hNat : (intMap W1).toNat = 0 := by
+      simpa [UInt256.toNat] using congrArg UInt256.toNat hEq
+    rw [intMap_toNat W1ge0 boundedW1] at hNat
+    linarith [Int.toNat_eq_zero.mp hNat]
   have W1_zero_eq' : ec = .eq0 → W1 = 0 := by
     intro ecc; simp [ecc] at defn_Val0
     aesop (add simp [«_<=Int_»]) (add safe (by linarith))
