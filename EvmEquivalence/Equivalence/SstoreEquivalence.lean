@@ -418,6 +418,48 @@ theorem sstore_gas_pos (map : SortMap) (value stor_val ostor_val acc key: SortIn
   aesop (add simp [sstore_gas, Csstore_compute])
 
 /--
+Bridge between the KEVM `Csstore` gas chain and the local `sstore_gas`
+definition. The KEVM chain computes the gas cost in two parts:
+  - `_Val24 = Csstore_compute value stor_val ostor_val` via `Csstore`
+  - `_Val28 = if inStorage then 0 else 2100` via `kite` and `#inStorage`
+and `sstore_gas` is exactly their sum.
+-/
+private theorem sstore_gas_eq_Csstore
+  {ACCESSEDSTORAGE_CELL : SortMap}
+  {SCHEDULE_CELL : SortSchedule}
+  {W0 W1 _Val22 _Val23 _Val24 _Val25 _Val27 _Val28 _Val29 : SortInt}
+  {_Val26 : SortBool}
+  {GAS_CELL ID_CELL : SortInt}
+  (defn_Val24 : Csstore SCHEDULE_CELL W1 _Val22 _Val23 = some _Val24)
+  (defn_Val25 : «_-Int_» GAS_CELL _Val24 = some _Val25)
+  (defn_Val26 : «#inStorage» ACCESSEDSTORAGE_CELL ((@inj SortInt SortAccount) ID_CELL) W0 = some _Val26)
+  (defn_Val27 : «_<_>_SCHEDULE_Int_ScheduleConst_Schedule» SortScheduleConst.Gcoldsload_SCHEDULE_ScheduleConst SCHEDULE_CELL = some _Val27)
+  (defn_Val28 : kite _Val26 0 _Val27 = some _Val28)
+  (defn_Val29 : «_-Int_» _Val25 _Val28 = some _Val29)
+  (cancun : SCHEDULE_CELL = .CANCUN_EVM) :
+  sstore_gas ACCESSEDSTORAGE_CELL W1 _Val22 _Val23 ID_CELL W0 = _Val24 + _Val28
+  ∧ _Val29 = GAS_CELL - sstore_gas ACCESSEDSTORAGE_CELL W1 _Val22 _Val23 ID_CELL W0 := by
+  subst cancun
+  simp [Csstore_def, Option.some.injEq] at defn_Val24
+  simp [«_-Int_»] at defn_Val25 defn_Val29
+  simp only [GasInterface.cancun_def, Option.some.injEq] at defn_Val27
+  subst defn_Val24 defn_Val27
+  have h_inStorage := inStorage_def (ACCESSEDSTORAGE_CELL := ACCESSEDSTORAGE_CELL) (ID_CELL := ID_CELL) (W0 := W0)
+  rw [h_inStorage] at defn_Val26
+  simp [Option.some.injEq] at defn_Val26
+  have kite_lemma : ∀ (b : Bool) (a c : SortInt), kite b a c = some (if b then a else c) := by
+    intro b a c
+    cases b <;> rfl
+  have kite_val : _Val28 = ite (inStorage_compute ACCESSEDSTORAGE_CELL ID_CELL W0) 0 2100 := by
+    subst defn_Val26
+    rw [kite_lemma, Option.some.injEq] at defn_Val28
+    exact defn_Val28.symm
+  constructor
+  · subst defn_Val25; simp [sstore_gas, kite_val]
+  · subst defn_Val25
+    aesop (add simp [sstore_gas, kite_val, «_-Int_», Csstore_compute]) (add safe (by linarith))
+
+/--
 Computational content of `GAS_FEES_Rsstore_new`
 The function is named `rsstore` instead of `rsstore_new` because if the
 schedule is Cancun, `Rsstore` equates to this function
