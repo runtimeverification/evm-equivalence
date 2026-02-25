@@ -654,6 +654,8 @@ theorem EVM.step_mload_equiv
   (symState : EVM.State)
   -- Necessary for EVM.step
   (gasCost : ℕ)
+  -- Following the pattern in step_sstore_equiv: constrain gasCost to its KEVM value
+  (gasCostValue : gasCost = Int.toNat (_Val20 + _Val22))
   -- Necessary assumptions for equivalence
   (cancun : SCHEDULE_CELL = .CANCUN_EVM)
   (gavailEnough : 0 < GAS_CELL)
@@ -692,7 +694,81 @@ EVM.step_mload (Int.toNat GAS_CELL) gasCost (stateMap symState lhs) =
   rw [mload_poststate_equiv, mloadRHS] <;> first | assumption | try simp
   simp [MachineState.lookupMemory, /- activeWords_comp -//- , mstore_memory_write -/]
   constructor <;> constructor <;> try constructor
-  . sorry -- Gas goals are for now unproven
+  . -- Gas goal: intMap GAS_CELL - UInt256.ofNat gasCost = intMap _Val23
+    -- Use gasCostValue and the KEVM chain to discharge
+    rw [gasCostValue]
+    -- Extract concrete values from the KEVM chain
+    have eq20 : _Val18 - _Val19 = _Val20 := by simp [«_-Int_»] at defn_Val20; exact defn_Val20
+    have eq21 : GAS_CELL - _Val20 = _Val21 := by simp [«_-Int_»] at defn_Val21; exact defn_Val21
+    have eq23 : _Val21 - _Val22 = _Val23 := by simp [«_-Int_»] at defn_Val23; exact defn_Val23
+    have eq22_val : _Val22 = 3 := by
+      rw [cancun] at defn_Val22; simp [GasInterface.cancun_def] at defn_Val22; exact defn_Val22.symm
+    -- Connect Cmem to Cₘ via Cmem_cancun_eq_Cm (reusing mstore infrastructure)
+    have h17_nn := MstoreOpcodeEquivalence.memUsageUpdate_nonneg_pub .mstore defn_Val17 mucge0
+    have h17_sm := MstoreOpcodeEquivalence.memUsageUpdate_small_pub .mstore defn_Val17 W0ge0 mucsmall W0small_realpolitik
+    have eq18 : _Val18 = ↑(EVM.Cₘ (intMap _Val17)) := by
+      have := MstoreOpcodeEquivalence.Cmem_cancun_eq_Cm_pub _Val17 h17_nn h17_sm
+      rw [cancun] at defn_Val18; rw [this] at defn_Val18
+      exact (Option.some.inj defn_Val18).symm
+    have eq19 : _Val19 = ↑(EVM.Cₘ (intMap MEMORYUSED_CELL)) := by
+      have := MstoreOpcodeEquivalence.Cmem_cancun_eq_Cm_pub MEMORYUSED_CELL mucge0 mucsmall
+      rw [cancun] at defn_Val19; rw [this] at defn_Val19
+      exact (Option.some.inj defn_Val19).symm
+    -- Cₘ monotonicity
+    have hCm_le : EVM.Cₘ (intMap MEMORYUSED_CELL) ≤ EVM.Cₘ (intMap _Val17) := by
+      apply MstoreOpcodeEquivalence.mec_Cm_mono_pub
+      rw [intMap_toNat mucge0 mucsmall, intMap_toNat h17_nn h17_sm]
+      have defn17' := defn_Val17
+      rw [memoryUsageUpdate_rw _ _ _ (by norm_num : (0 : SortInt) < 32)] at defn17'
+      have eq17 : _Val17 = MEMORYUSED_CELL ⊔ Int.tdiv (W0 + 32 + 31) 32 :=
+        (Option.some.inj defn17').symm
+      rw [eq17]
+      exact Int.toNat_le_toNat (le_max_left _ _)
+    -- 0 ≤ _Val20 (Cmem is monotone)
+    have h20_nn : 0 ≤ _Val20 := by
+      rw [← eq20, eq18, eq19]; exact sub_nonneg.mpr (Nat.cast_le.mpr hCm_le)
+    have h22_nn : 0 ≤ _Val22 := by linarith
+    -- _Val23 = GAS_CELL - (_Val20 + _Val22)
+    have hv23 : _Val23 = GAS_CELL - (_Val20 + _Val22) := by linarith
+    rw [hv23]
+    -- Derive bounds from req
+    have hbool13 : USEGAS_CELL = true ∧ _Val12 = true := by
+      have h := defn_Val13; simp [andBool_def] at h; rw [← h] at req; exact Bool.and_eq_true_iff.mp req
+    have hbool12 : _Val4 = true ∧ _Val11 = true := by
+      have h := defn_Val12; simp [andBool_def] at h; rw [← h] at hbool13; exact Bool.and_eq_true_iff.mp hbool13.2
+    have h_val3_le : _Val3 ≤ GAS_CELL := by
+      have h := defn_Val4; simp [«_<=Int_»] at h; rw [← h] at hbool12; exact of_decide_eq_true hbool12.1
+    have eq_0_17 : _Val0 = _Val17 := Option.some.inj (defn_Val0.symm.trans defn_Val17)
+    have eq_1_18 : _Val1 = _Val18 := by
+      have h := defn_Val1; rw [eq_0_17] at h; exact Option.some.inj (h.symm.trans defn_Val18)
+    have eq_2_19 : _Val2 = _Val19 := Option.some.inj (defn_Val2.symm.trans defn_Val19)
+    have eq_3_20 : _Val3 = _Val20 := by
+      have h3 := defn_Val3; have h20 := defn_Val20
+      simp [«_-Int_»] at h3 h20; linarith
+    have hmec_le_gas : _Val20 ≤ GAS_CELL := by linarith
+    have h_val5_le_val10 : _Val5 ≤ _Val10 := by
+      have h := defn_Val11; simp [«_<=Int_»] at h; rw [← h] at hbool12; exact of_decide_eq_true hbool12.2
+    have eq_5_22 : _Val5 = _Val22 := Option.some.inj (defn_Val5.symm.trans defn_Val22)
+    have eq_6_17 : _Val6 = _Val17 := Option.some.inj (defn_Val6.symm.trans defn_Val17)
+    have eq_7_18 : _Val7 = _Val18 := by
+      have h := defn_Val7; rw [eq_6_17] at h; exact Option.some.inj (h.symm.trans defn_Val18)
+    have eq_8_19 : _Val8 = _Val19 := Option.some.inj (defn_Val8.symm.trans defn_Val19)
+    have eq_9_20 : _Val9 = _Val20 := by
+      have h9 := defn_Val9; have h20 := defn_Val20
+      simp [«_-Int_»] at h9 h20; linarith
+    have eq_10_21 : _Val10 = _Val21 := by
+      have h10 := defn_Val10; have h21 := defn_Val21
+      simp [«_-Int_»] at h10 h21; linarith
+    have hgvl_le : _Val22 ≤ GAS_CELL - _Val20 := by
+      rw [eq_5_22] at h_val5_le_val10; rw [eq_10_21] at h_val5_le_val10; linarith
+    have hsum_nn : 0 ≤ _Val20 + _Val22 := by linarith
+    have hsum_le : _Val20 + _Val22 ≤ GAS_CELL := by linarith
+    have ofNat_eq : UInt256.ofNat (Int.toNat (_Val20 + _Val22)) = intMap (_Val20 + _Val22) := by
+      simp [intMap, UInt256.toSigned]
+      cases h : (_Val20 + _Val22) with
+      | ofNat n => rfl
+      | negSucc n => rw [h] at hsum_nn; simp at hsum_nn
+    rw [ofNat_eq, intMap_sub_dist hsum_le hsum_nn gavailSmall]
   . have := MstoreOpcodeEquivalence.activeWords_eq .mstore defn_Val24
     rw [MloadSummary.activeWords_comp]; aesop
   . rw [←UInt256.add_succ_mod_size, intMap_add_dist] <;> aesop
