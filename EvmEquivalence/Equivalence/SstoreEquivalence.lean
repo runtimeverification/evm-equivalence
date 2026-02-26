@@ -418,6 +418,48 @@ theorem sstore_gas_pos (map : SortMap) (value stor_val ostor_val acc key: SortIn
   aesop (add simp [sstore_gas, Csstore_compute])
 
 /--
+Bridge between the KEVM `Csstore` gas chain and the local `sstore_gas`
+definition. The KEVM chain computes the gas cost in two parts:
+  - `_Val24 = Csstore_compute value stor_val ostor_val` via `Csstore`
+  - `_Val28 = if inStorage then 0 else 2100` via `kite` and `#inStorage`
+and `sstore_gas` is exactly their sum.
+-/
+private theorem sstore_gas_eq_Csstore
+  {ACCESSEDSTORAGE_CELL : SortMap}
+  {SCHEDULE_CELL : SortSchedule}
+  {W0 W1 _Val22 _Val23 _Val24 _Val25 _Val27 _Val28 _Val29 : SortInt}
+  {_Val26 : SortBool}
+  {GAS_CELL ID_CELL : SortInt}
+  (defn_Val24 : Csstore SCHEDULE_CELL W1 _Val22 _Val23 = some _Val24)
+  (defn_Val25 : «_-Int_» GAS_CELL _Val24 = some _Val25)
+  (defn_Val26 : «#inStorage» ACCESSEDSTORAGE_CELL ((@inj SortInt SortAccount) ID_CELL) W0 = some _Val26)
+  (defn_Val27 : «_<_>_SCHEDULE_Int_ScheduleConst_Schedule» SortScheduleConst.Gcoldsload_SCHEDULE_ScheduleConst SCHEDULE_CELL = some _Val27)
+  (defn_Val28 : kite _Val26 0 _Val27 = some _Val28)
+  (defn_Val29 : «_-Int_» _Val25 _Val28 = some _Val29)
+  (cancun : SCHEDULE_CELL = .CANCUN_EVM) :
+  sstore_gas ACCESSEDSTORAGE_CELL W1 _Val22 _Val23 ID_CELL W0 = _Val24 + _Val28
+  ∧ _Val29 = GAS_CELL - sstore_gas ACCESSEDSTORAGE_CELL W1 _Val22 _Val23 ID_CELL W0 := by
+  subst cancun
+  simp [Csstore_def, Option.some.injEq] at defn_Val24
+  simp [«_-Int_»] at defn_Val25 defn_Val29
+  simp only [GasInterface.cancun_def, Option.some.injEq] at defn_Val27
+  subst defn_Val24 defn_Val27
+  have h_inStorage := inStorage_def (ACCESSEDSTORAGE_CELL := ACCESSEDSTORAGE_CELL) (ID_CELL := ID_CELL) (W0 := W0)
+  rw [h_inStorage] at defn_Val26
+  simp [Option.some.injEq] at defn_Val26
+  have kite_lemma : ∀ (b : Bool) (a c : SortInt), kite b a c = some (if b then a else c) := by
+    intro b a c
+    cases b <;> rfl
+  have kite_val : _Val28 = ite (inStorage_compute ACCESSEDSTORAGE_CELL ID_CELL W0) 0 2100 := by
+    subst defn_Val26
+    rw [kite_lemma, Option.some.injEq] at defn_Val28
+    exact defn_Val28.symm
+  constructor
+  · subst defn_Val25; simp [sstore_gas, kite_val]
+  · subst defn_Val25
+    aesop (add simp [sstore_gas, kite_val, «_-Int_», Csstore_compute]) (add safe (by linarith))
+
+/--
 Computational content of `GAS_FEES_Rsstore_new`
 The function is named `rsstore` instead of `rsstore_new` because if the
 schedule is Cancun, `Rsstore` equates to this function
@@ -442,6 +484,52 @@ theorem rsstore_def {new current original} {sched} (h : sched = .CANCUN_EVM) :
   Rsstore sched new current original = some (rsstore new current original) := by
   unfold Rsstore GAS_FEES_Rsstore_new rsstore; split; subst h
   simp [Option.bind]
+
+/- -- Private helper infrastructure -- -/
+
+/-- Modular-arithmetic helper used by `intMap_negSucc_add`. -/
+private theorem nat_mod_helper (v n size : ℕ) (hsize : 1 < size) (hv : v < size) (hn : n < size) :
+    (size - 1 + (size - n + v) % size) % size = (v + (size - 1 - n)) % size := by
+  by_cases hvn : n ≤ v
+  · rw [show size - n + v = (v - n) + size from by omega, Nat.add_mod_right,
+         Nat.mod_eq_of_lt (show v - n < size by omega),
+         show size - 1 + (v - n) = v + (size - 1 - n) from by omega]
+  · push_neg at hvn
+    rw [Nat.mod_eq_of_lt (show size - n + v < size by omega),
+        show size - 1 + (size - n + v) = (v + (size - 1 - n)) + size from by omega,
+        Nat.add_mod_right]
+
+/--
+Negative-delta identity for `Aᵣ_sstore`:
+  `x − .ofNat n − ⟨1⟩ = x + intMap (Int.negSucc n)`.
+-/
+private theorem intMap_negSucc_add (x : UInt256) (n : ℕ) (hn : n < UInt256.size) :
+    x - .ofNat n - ⟨1⟩ = x + UInt256.toSigned (Int.negSucc n) := by
+  unfold UInt256.toSigned
+  rcases x with ⟨⟨v, hv⟩⟩
+  show (⟨⟨_, _⟩⟩ : UInt256) = ⟨⟨_, _⟩⟩
+  congr 1
+  congr 1
+  show (UInt256.size - 1 % UInt256.size + (UInt256.size - n % UInt256.size + v) % UInt256.size) % UInt256.size =
+       (v + (UInt256.size - 1 - n) % UInt256.size) % UInt256.size
+  rw [Nat.mod_eq_of_lt (show (1 : ℕ) < UInt256.size from by decide),
+      Nat.mod_eq_of_lt hn,
+      Nat.mod_eq_of_lt (show UInt256.size - 1 - n < UInt256.size from by omega)]
+  exact nat_mod_helper v n UInt256.size (by decide) hv hn
+
+/--
+The integer-refund match in `Aᵣ_sstore` equals addition by `intMap delta`.
+-/
+private theorem match_delta_eq_add_intMap (x : UInt256) (delta : ℤ)
+    (h_small : match delta with | .ofNat _ => True | .negSucc n => n < UInt256.size) :
+    (match delta with
+     | .ofNat n => x + .ofNat n
+     | .negSucc n => x - .ofNat n - ⟨1⟩) = x + UInt256.toSigned delta := by
+  cases delta with
+  | ofNat _ => rfl
+  | negSucc n =>
+    simp at h_small
+    exact intMap_negSucc_add x n h_small
 
 section Aᵣ_equivalence
 variable (gas gasCost : ℕ)
