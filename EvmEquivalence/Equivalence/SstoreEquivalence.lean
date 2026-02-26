@@ -485,6 +485,52 @@ theorem rsstore_def {new current original} {sched} (h : sched = .CANCUN_EVM) :
   unfold Rsstore GAS_FEES_Rsstore_new rsstore; split; subst h
   simp [Option.bind]
 
+/- -- Private helper infrastructure -- -/
+
+/-- Modular-arithmetic helper used by `intMap_negSucc_add`. -/
+private theorem nat_mod_helper (v n size : ℕ) (hsize : 1 < size) (hv : v < size) (hn : n < size) :
+    (size - 1 + (size - n + v) % size) % size = (v + (size - 1 - n)) % size := by
+  by_cases hvn : n ≤ v
+  · rw [show size - n + v = (v - n) + size from by omega, Nat.add_mod_right,
+         Nat.mod_eq_of_lt (show v - n < size by omega),
+         show size - 1 + (v - n) = v + (size - 1 - n) from by omega]
+  · push_neg at hvn
+    rw [Nat.mod_eq_of_lt (show size - n + v < size by omega),
+        show size - 1 + (size - n + v) = (v + (size - 1 - n)) + size from by omega,
+        Nat.add_mod_right]
+
+/--
+Negative-delta identity for `Aᵣ_sstore`:
+  `x − .ofNat n − ⟨1⟩ = x + intMap (Int.negSucc n)`.
+-/
+private theorem intMap_negSucc_add (x : UInt256) (n : ℕ) (hn : n < UInt256.size) :
+    x - .ofNat n - ⟨1⟩ = x + UInt256.toSigned (Int.negSucc n) := by
+  unfold UInt256.toSigned
+  rcases x with ⟨⟨v, hv⟩⟩
+  show (⟨⟨_, _⟩⟩ : UInt256) = ⟨⟨_, _⟩⟩
+  congr 1
+  congr 1
+  show (UInt256.size - 1 % UInt256.size + (UInt256.size - n % UInt256.size + v) % UInt256.size) % UInt256.size =
+       (v + (UInt256.size - 1 - n) % UInt256.size) % UInt256.size
+  rw [Nat.mod_eq_of_lt (show (1 : ℕ) < UInt256.size from by decide),
+      Nat.mod_eq_of_lt hn,
+      Nat.mod_eq_of_lt (show UInt256.size - 1 - n < UInt256.size from by omega)]
+  exact nat_mod_helper v n UInt256.size (by decide) hv hn
+
+/--
+The integer-refund match in `Aᵣ_sstore` equals addition by `intMap delta`.
+-/
+private theorem match_delta_eq_add_intMap (x : UInt256) (delta : ℤ)
+    (h_small : match delta with | .ofNat _ => True | .negSucc n => n < UInt256.size) :
+    (match delta with
+     | .ofNat n => x + .ofNat n
+     | .negSucc n => x - .ofNat n - ⟨1⟩) = x + UInt256.toSigned delta := by
+  cases delta with
+  | ofNat _ => rfl
+  | negSucc n =>
+    simp at h_small
+    exact intMap_negSucc_add x n h_small
+
 section Aᵣ_equivalence
 variable (gas gasCost : ℕ)
 variable (symStack : Stack UInt256)
