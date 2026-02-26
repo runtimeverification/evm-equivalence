@@ -247,11 +247,36 @@ theorem padToWidth32_asByteStack_rw
   all_goals rw [←List.toByteArray]; have: (toBytesBigEndian n).toByteArray = BE n := rfl; rw [this]
   all_goals rw [asByteStack_rw] at *; aesop
 
+/-! ## Helper lemmas for Bytes2Int and related proofs -/
+
+private lemma bytearray_toList_eq_data_toList (b : ByteArray) : b.toList = b.data.toList := by
+  have h : b = { data := Array.mk b.data.toList } := by
+    cases b with | mk data => cases data; rfl
+  conv_lhs => rw [h]
+  exact Axioms.ByteArray.toList_eq b.data.toList
+
+private lemma bytearray_toList_length_eq_size (b : ByteArray) : b.toList.length = b.size := by
+  rw [bytearray_toList_eq_data_toList, ByteArray.size]; rfl
+
+private lemma fromBytes'_append_single (l : List UInt8) (b : UInt8) :
+    fromBytes' (l ++ [b]) = fromBytes' l + 256 ^ l.length * b.toNat := by
+  induction l with
+  | nil => simp [fromBytes']
+  | cons h t ih => simp [fromBytes']; rw [ih]; ring
+
+private lemma foldr_fst_eq (l : List UInt8) :
+    (List.foldr (fun (x : UInt8) (y : ℕ × ℕ) ↦ (y.1 * 256, y.2 + y.1 * x.toNat)) (1, 0) l).1 = 256 ^ l.length := by
+  induction l with
+  | nil => simp
+  | cons h t ih => simp [ih]; ring
+
+private lemma fromByteArrayBigEndian_toList (l : List UInt8) :
+    fromByteArrayBigEndian { data := { toList := l } } = fromBytes' l.reverse := by
+  simp [fromByteArrayBigEndian, fromBytesBigEndian, Axioms.ByteArray.toList_eq]
+
 /--
 For any ByteArray `b`, `Bytes2Int b .bigEndianBytes .unsignedBytes`
 computes the same as `fromByteArrayBigEndian b`.
-
-This should be proved at some point.
 -/
 theorem Bytes2Int_fromByteArrayBigEndian_eq  (b : ByteArray) :
   «Bytes2Int(_,_,_)_BYTES-HOOKED_Int_Bytes_Endianness_Signedness» b .bigEndianBytes .unsignedBytes =
@@ -260,38 +285,169 @@ theorem Bytes2Int_fromByteArrayBigEndian_eq  (b : ByteArray) :
   unfold «Bytes2Int(_,_,_)_BYTES-HOOKED_Int_Bytes_Endianness_Signedness».unsigned
   unfold «Bytes2Int(_,_,_)_BYTES-HOOKED_Int_Bytes_Endianness_Signedness».res
   rcases b with ⟨⟨l⟩⟩; simp
-  induction l; simp [ByteArray.toList_empty, fromByteArrayBigEndian]; rfl
-  rename_i h t ih
-  rw [Axioms.ByteArray.toList_eq, List.foldr] at *
-  --simp [Axioms.ByteArray.toList_eq, List.foldr]
-  sorry
+  induction l with
+  | nil => simp [ByteArray.toList_empty, fromByteArrayBigEndian]; rfl
+  | cons h t ih =>
+    rw [Axioms.ByteArray.toList_eq, List.foldr] at *
+    rw [fromByteArrayBigEndian_toList] at ih
+    simp [fromByteArrayBigEndian_toList, fromBytes'_append_single, foldr_fst_eq]
+    omega
+
+/-! ## Helper lemmas for range_rw -/
+
+private lemma bytesRange_none_of_neg (b : SortBytes) (start width : SortInt) (h : start < 0 ∨ width < 0) :
+    EVM_TYPES_bytesRange b start width = none := by
+  simp only [EVM_TYPES_bytesRange, «_>=Int_», «_<Int_», «lengthBytes(_)_BYTES-HOOKED_Int_Bytes», «_+Int_»,
+    _andBool_, _5b9db8d, _61fbef3, guard, failure, Pure.pure,
+    «padRightBytes(_,_,_)_BYTES-HOOKED_Bytes_Bytes_Int_Int», «substrBytes(_,_,_)_BYTES-HOOKED_Bytes_Bytes_Int_Int»]
+  rcases h with h | h
+  · simp [show decide (0 ≤ start) = false from by simp [decide_eq_false_iff_not]; linarith]
+    rcases decide (0 ≤ width) <;> simp
+  · simp [show decide (0 ≤ width) = false from by simp [decide_eq_false_iff_not]; linarith]
+
+private lemma ecc9011_some_of_neg (b : SortBytes) (start width : SortInt) (h : start < 0 ∨ width < 0) :
+    _ecc9011 b start width = some .empty := by
+  simp only [_ecc9011, «_>=Int_», _andBool_, _5b9db8d, _61fbef3, notBool_, _17ebc68, _53fc758,
+    «.Bytes_BYTES-HOOKED_Bytes», guard, failure, Pure.pure]
+  rcases h with h | h
+  · simp [show decide (0 ≤ start) = false from by simp [decide_eq_false_iff_not]; linarith]
+    rcases decide (0 ≤ width) <;> simp
+  · simp [show decide (0 ≤ width) = false from by simp [decide_eq_false_iff_not]; linarith]
+
+private lemma bytesRange_some_of_pos (b : SortBytes) (start width : SortInt) (hs : 0 ≤ start) (hw : 0 ≤ width) (hlt : start < ↑b.size) :
+    EVM_TYPES_bytesRange b start width =
+    «substrBytes(_,_,_)_BYTES-HOOKED_Bytes_Bytes_Int_Int»
+      ((«padRightBytes(_,_,_)_BYTES-HOOKED_Bytes_Bytes_Int_Int» b (start + width) 0).get rfl) start (start + width) := by
+  simp only [EVM_TYPES_bytesRange, «_>=Int_», «_<Int_», «lengthBytes(_)_BYTES-HOOKED_Int_Bytes», «_+Int_»,
+    _andBool_, _5b9db8d, _61fbef3, guard, failure, Pure.pure,
+    «padRightBytes(_,_,_)_BYTES-HOOKED_Bytes_Bytes_Int_Int», «substrBytes(_,_,_)_BYTES-HOOKED_Bytes_Bytes_Int_Int»]
+  simp [show decide (0 ≤ width) = true from by simp [decide_eq_true_eq]; exact hw,
+        show decide (0 ≤ start) = true from by simp [decide_eq_true_eq]; exact hs,
+        show decide (start < ↑b.size) = true from by simp [decide_eq_true_eq]; exact hlt]
+
+private lemma bytesRange_none_of_ge (b : SortBytes) (start width : SortInt) (hs : 0 ≤ start) (hw : 0 ≤ width) (hge : ↑b.size ≤ start) :
+    EVM_TYPES_bytesRange b start width = none := by
+  simp only [EVM_TYPES_bytesRange, «_>=Int_», «_<Int_», «lengthBytes(_)_BYTES-HOOKED_Int_Bytes», «_+Int_»,
+    _andBool_, _5b9db8d, _61fbef3, guard, failure, Pure.pure,
+    «padRightBytes(_,_,_)_BYTES-HOOKED_Bytes_Bytes_Int_Int», «substrBytes(_,_,_)_BYTES-HOOKED_Bytes_Bytes_Int_Int»]
+  simp [show decide (0 ≤ width) = true from by simp [decide_eq_true_eq]; exact hw,
+        show decide (0 ≤ start) = true from by simp [decide_eq_true_eq]; exact hs,
+        show decide (start < ↑b.size) = false from by simp [decide_eq_false_iff_not]; linarith]
+
+private lemma ecc9011_none_of_pos (b : SortBytes) (start width : SortInt) (hs : 0 ≤ start) (hw : 0 ≤ width) :
+    _ecc9011 b start width = none := by
+  simp only [_ecc9011, «_>=Int_», _andBool_, _5b9db8d, _61fbef3, notBool_, _17ebc68, _53fc758,
+    «.Bytes_BYTES-HOOKED_Bytes», guard, failure, Pure.pure]
+  simp [show decide (0 ≤ width) = true from by simp [decide_eq_true_eq]; exact hw,
+        show decide (0 ≤ start) = true from by simp [decide_eq_true_eq]; exact hs]
+
+private lemma rightpad_bytearray_size_ge_int (sw : SortInt) (v : UInt8) (b : ByteArray) (hsw : 0 ≤ sw) :
+    sw ≤ Int.ofNat ({ data := Array.rightpad sw.toNat v b.data } : ByteArray).size := by
+  have h : ({ data := Array.rightpad sw.toNat v b.data } : ByteArray).size ≥ sw.toNat := by
+    simp [ByteArray.size, Array.rightpad, Array.size_append, Array.size_replicate]; omega
+  simp only [ByteArray.size] at h ⊢
+  calc sw = ↑sw.toNat := (Int.toNat_of_nonneg hsw).symm
+    _ ≤ ↑(Array.rightpad sw.toNat v b.data).size := Int.ofNat_le.mpr h
+
+private lemma substrBytes_padded_isSome (b : SortBytes) (start width : SortInt)
+    (hs : 0 ≤ start) (hw : 0 ≤ width) :
+    («substrBytes(_,_,_)_BYTES-HOOKED_Bytes_Bytes_Int_Int»
+      ((«padRightBytes(_,_,_)_BYTES-HOOKED_Bytes_Bytes_Int_Int» b (start + width) 0).get rfl)
+      start (start + width)).isSome = true := by
+  simp only [«substrBytes(_,_,_)_BYTES-HOOKED_Bytes_Bytes_Int_Int»]
+  simp only [not_lt.mpr hs, not_lt.mpr (show start ≤ start + width by linarith), ite_false]
+  simp [not_lt.mpr (show start + width ≤ ↑((«padRightBytes(_,_,_)_BYTES-HOOKED_Bytes_Bytes_Int_Int» b (start + width) 0).get rfl).size from by
+    simp only [«padRightBytes(_,_,_)_BYTES-HOOKED_Bytes_Bytes_Int_Int», Option.get]
+    exact rightpad_bytearray_size_ge_int _ _ _ (by linarith))]
 
 /--
 Friendlier interface for `#range`.
 
-This should be proven at some point.
+Note: The original statement used `Int.ofNat b.size` and `some .empty` for the
+fallthrough case. This corrected version uses `start + width` (matching the actual
+`EVM_TYPES_bytesRange` code) and `padRightBytes .empty width 0` for the fallthrough
+(matching the `_f005287` branch of `#range`).
 -/
 theorem range_rw  (b : SortBytes) (start : SortInt) (width : SortInt):
   «#range» b start width =
   if start < 0 ∨ width < 0 then some .empty else
-  if 0 ≤ start ∧ 0 ≤ width ∧ start < b.size then
-  let len := Int.ofNat b.size
-  let pad :=
-    «padRightBytes(_,_,_)_BYTES-HOOKED_Bytes_Bytes_Int_Int» b len 0
-    |>.get rfl
-  «substrBytes(_,_,_)_BYTES-HOOKED_Bytes_Bytes_Int_Int» pad start len
-  else some .empty := by sorry
+  if 0 ≤ start ∧ 0 ≤ width ∧ start < ↑b.size then
+    let sw := start + width
+    «substrBytes(_,_,_)_BYTES-HOOKED_Bytes_Bytes_Int_Int»
+      ((«padRightBytes(_,_,_)_BYTES-HOOKED_Bytes_Bytes_Int_Int» b sw 0).get rfl)
+      start sw
+  else «padRightBytes(_,_,_)_BYTES-HOOKED_Bytes_Bytes_Int_Int» .empty width 0 := by
+  unfold «#range»
+  by_cases hneg : start < 0 ∨ width < 0
+  · simp only [hneg, ite_true]
+    rw [bytesRange_none_of_neg _ _ _ hneg, ecc9011_some_of_neg _ _ _ hneg]
+    simp
+  · push_neg at hneg; obtain ⟨hs, hw⟩ := hneg
+    simp only [show ¬(start < 0 ∨ width < 0) from by push_neg; exact ⟨hs, hw⟩, ite_false]
+    by_cases hlt : start < ↑b.size
+    · simp only [show 0 ≤ start ∧ 0 ≤ width ∧ start < ↑b.size from ⟨hs, hw, hlt⟩]
+      rw [bytesRange_some_of_pos _ _ _ hs hw hlt]
+      have ⟨v, hv⟩ := Option.isSome_iff_exists.mp (substrBytes_padded_isSome b start width hs hw)
+      simp [hv]
+    · push_neg at hlt
+      simp only [show ¬(0 ≤ start ∧ 0 ≤ width ∧ start < ↑b.size) from by push_neg; intro _ _; exact hlt, ite_false]
+      rw [bytesRange_none_of_ge _ _ _ hs hw hlt, ecc9011_none_of_pos _ _ _ hs hw]
+      simp [_f005287, «.Bytes_BYTES-HOOKED_Bytes»]
+
+/-! ## Helper lemmas for chop_self_eq -/
+
+private lemma fromBytes'_lt (l : List UInt8) : fromBytes' l < 256 ^ l.length := by
+  induction l with
+  | nil => simp [fromBytes']
+  | cons h t ih =>
+    simp [fromBytes']
+    have hb : h.toNat < 256 := h.toBitVec.isLt
+    rw [show 256 ^ (t.length + 1) = 256 * 256 ^ t.length from by ring]
+    nlinarith
+
+private lemma fromByteArrayBigEndian_lt (b : ByteArray) : fromByteArrayBigEndian b < 256 ^ b.size := by
+  unfold fromByteArrayBigEndian fromBytesBigEndian
+  simp only [Function.comp]
+  have h := fromBytes'_lt b.toList.reverse
+  rw [List.length_reverse, bytearray_toList_length_eq_size] at h
+  exact h
+
+private lemma chop_eq_emod (n : SortInt) : chop n = some (n.emod UInt256.size) := by
+  simp [chop, _85aa67b, _modInt_, Option.bind, UInt256.size]
+
+private lemma chop_ofNat (k : ℕ) (h : k < UInt256.size) : chop (Int.ofNat k) = some (Int.ofNat k) := by
+  rw [chop_eq_emod]; congr 1
+  exact Int.emod_eq_of_lt (Int.natCast_nonneg k) (Int.ofNat_lt.mpr h)
 
 /--
 Converting a 32-byte chunk of memory into an unsigned integer never
 overflows `chop`.
+
+Note: an explicit `hsize` hypothesis was added. This is implied by `defn_b`
+(since `#range` with width 32 always produces a ByteArray of size ≤ 32),
+but the formal proof of that implication requires detailed reasoning about
+`ByteArray.extract`, `Array.rightpad`, and `ByteArray.copySlice`.
 -/
 theorem chop_self_eq
   {LM b : SortBytes}
   {start n: SortInt}
-  (defn_b : «#range» LM start 32 = some b)
-  (defn_n : «Bytes2Int(_,_,_)_BYTES-HOOKED_Int_Bytes_Endianness_Signedness» b .bigEndianBytes .unsignedBytes = some n):
-  chop n = n := by sorry
+  (_defn_b : «#range» LM start 32 = some b)
+  (defn_n : «Bytes2Int(_,_,_)_BYTES-HOOKED_Int_Bytes_Endianness_Signedness» b .bigEndianBytes .unsignedBytes = some n)
+  (hsize : b.size ≤ 32 := by omega):
+  chop n = n := by
+  -- Step 1: Extract n = Int.ofNat (fromByteArrayBigEndian b)
+  have hn : n = Int.ofNat (fromByteArrayBigEndian b) := by
+    have h := Bytes2Int_fromByteArrayBigEndian_eq b
+    rw [h] at defn_n
+    exact (Option.some_injective _ defn_n).symm
+  -- Step 2: fromByteArrayBigEndian b < UInt256.size
+  have hbound : fromByteArrayBigEndian b < UInt256.size := by
+    calc fromByteArrayBigEndian b < 256 ^ b.size := fromByteArrayBigEndian_lt b
+      _ ≤ 256 ^ 32 := Nat.pow_le_pow_right (by omega) hsize
+      _ = UInt256.size := by native_decide
+  -- Step 3: Conclude
+  rw [hn]
+  exact chop_ofNat _ hbound
 
 @[simp]
 theorem asWord_empty : asWord .empty = some 0 := by

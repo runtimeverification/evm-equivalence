@@ -159,7 +159,7 @@ theorem X_mload_summary (symState : EVM.State)
     returnData := symReturnData,
     execLength := symExecLength}
   -- Assume we have enough gas
-  GasConstants.Gverylow < symGasAvailable.toNat - (memoryExpansionCost ss Operation.MLOAD) →
+  GasConstants.Gverylow ≤ symGasAvailable.toNat - (memoryExpansionCost ss Operation.MLOAD) →
   memoryExpansionCost ss Operation.MLOAD < UInt256.size →
   X symGasAvailable.toNat symValidJumps ss =
   .ok (.success {ss with
@@ -195,8 +195,7 @@ theorem X_mload_summary (symState : EVM.State)
   have fls2 : ((symGasAvailable - UInt256.ofNat (memoryExpansionCost ss Operation.MLOAD)).toNat < GasConstants.Gverylow) = False := by
     apply eq_false_intro; rw [Nat.not_lt]
     have fls1 : (symGasAvailable.toNat < memoryExpansionCost ss (@Operation.MLOAD .EVM)) = False :=  by
-      rw [Nat.lt_sub_iff_add_lt] at enoughGas
-      aesop (add safe (by omega)) (add safe (by linarith)) (add simp [Cₘ, MachineState.M])
+      apply eq_false_intro; rw [Nat.not_lt]; rw [GasConstants.Gverylow] at enoughGas; omega
     rw [UInt256.toNat_sub_dist, UInt256.ofNat_toNat] <;>
     aesop (add simp [UInt256.ofNat_le, UInt256.ofNat_toNat])
   --have ss_lt2_f  (n : ℕ) : (n + 1 + 1 < 2) = False := by simp

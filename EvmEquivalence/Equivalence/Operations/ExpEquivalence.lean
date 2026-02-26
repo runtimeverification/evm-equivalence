@@ -343,7 +343,8 @@ theorem exp_prestate_equiv
 /--
 We should specify a reasoning friendly `exp` behavior
 -/
-opaque TODO.exp_representation : SortInt → SortInt → SortInt
+def TODO.exp_representation (W0 W1 : SortInt) : SortInt :=
+  Int.emod (W0 ^ W1.toNat) (↑UInt256.size)
 
 theorem exp_poststate_equiv
   {PC_CELL W0 W1 _Val6 _Val11 _Val12 _Val20 : SortInt}
@@ -399,7 +400,19 @@ theorem exp_poststate_equiv
     returnData := _Gen11.val
     } := by
     aesop (add simp [expRHS, stateMap, «_+Int_»])
-    sorry
+    -- remaining goal: intMap _Val11 = intMap (TODO.exp_representation W0 W1)
+    congr 1
+    simp only [TODO.exp_representation, powmod, EVM_TYPES_powmod_nonzero, EVM_TYPES_powmod_zero,
+      «_=/=Int_», «_==Int_», «_^%Int__», UInt256.size] at defn_Val11 ⊢
+    -- The powmod unfolding should eventually give _Val11 = (W0 ^ W1.toNat).emod 2^256
+    -- Try to simplify everything in defn_Val11
+    simp only [_4de6e05, «notBool_», _17ebc68, _53fc758, «_==Int_», Option.bind, Option.some.injEq,
+      Option.guard, Option.orElse, beq_iff_eq, BEq.beq, decide_eq_true_eq] at defn_Val11
+    norm_num at defn_Val11
+    cases W1 with
+    | ofNat n => simp at defn_Val11; rw [← defn_Val11]; simp [Int.toNat]
+    | negSucc n =>
+      simp [failure] at defn_Val11
 
 open StackOpsSummary
 
@@ -618,7 +631,18 @@ theorem X_exp_equiv
   rw [stack_op, code_op, pc_equiv, X_stackOps_summary]
   /- This have could be subsumed, but it's useful for the `gt0` case above -/
   have W1_zero_eq : (intMap W1 == { val := 0 }) = true → W1 = 0 := by
-    sorry
+    intro h
+    have hEq : intMap W1 = ({ val := 0 } : UInt256) := by
+      cases hi : intMap W1 with
+      | mk v =>
+        rw [hi] at h
+        simp [BEq.beq] at h
+        have hv : v = 0 := beq_iff_eq.mp h
+        simp [hv]
+    have hNat : (intMap W1).toNat = 0 := by
+      simpa [UInt256.toNat] using congrArg UInt256.toNat hEq
+    rw [intMap_toNat W1ge0 boundedW1] at hNat
+    linarith [Int.toNat_eq_zero.mp hNat]
   have W1_zero_eq' : ec = .eq0 → W1 = 0 := by
     intro ecc; simp [ecc] at defn_Val0
     aesop (add simp [«_<=Int_»]) (add safe (by linarith))
